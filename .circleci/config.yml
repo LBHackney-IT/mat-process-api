@@ -10,7 +10,6 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: build
           command: docker-compose build base-api-test
