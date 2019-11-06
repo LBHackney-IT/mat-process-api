@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
 using base_api.Controllers.V1;
@@ -34,6 +34,12 @@ namespace UnitTests.V1.Controllers
         public void ThrowErrorThrows()
         {
             Assert.Throws<TestOpsErrorException>(_classUnderTest.ThrowError);
+        }
+
+        [Test]
+        public void WillCircleCIStopTheBuild()
+        {
+            Assert.AreEqual(2 + 2, 5);
         }
     }
 }
