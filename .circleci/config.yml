@@ -1,0 +1,137 @@
+version: 2.1
+
+orbs:
+  aws-ecr: circleci/aws-ecr@3.0.0
+  aws-cli: circleci/aws-cli@0.1.9
+
+commands:
+  deploy-env:
+    description: "Sets ecs-deploy to update a service with a target docker image"
+    parameters:
+      cluster-name:
+        type: string
+      service-name:
+        type: string
+      image-tag:
+        type: string
+    steps:
+      - run:
+          name: Install ecs deploy
+          command: |
+            sudo pip install ecs-deploy
+      - run:
+          name: Premote target image
+          command: |
+            ecs deploy \
+            --no-deregister \
+            --access-key-id $AWS_ACCESS_KEY_ID \
+            --secret-access-key $AWS_SECRET_ACCESS_KEY \
+            --timeout 1800 \
+            --region $AWS_REGION \
+            << parameters.cluster-name >> \
+            << parameters.service-name >> \
+            -t << parameters.image-tag >>
+          no_output_timeout: 30m
+
+jobs:
+  check:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - aws-cli/install
+      - aws-cli/configure:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_REGION
+      - aws-ecr/ecr-login
+      - setup_remote_docker
+      - run:
+          name: build
+          command: docker-compose build base-api-test
+      - run:
+          name: Run tests
+          command: docker-compose up base-api-test
+
+  deploy-to-development:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - deploy-env:
+          cluster-name: "$DEVELOPMENT_CLUSTER"
+          service-name: 'base-api-development'
+          image-tag: "$CIRCLE_SHA1"
+
+  deploy-to-staging:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - deploy-env:
+          cluster-name: "$STAGING_CLUSTER"
+          service-name: 'base-api-staging'
+          image-tag: "$CIRCLE_SHA1"
+
+  deploy-to-production:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - deploy-env:
+          cluster-name: "$PRODUCTION_CLUSTER"
+          service-name: 'base-api-production'
+          image-tag: "$AWS_ECR_HOST/$AWS_ECR_PATH:$CIRCLE_SHA1"
+
+workflows:
+  build-and-deploy:
+      jobs:
+      - check
+      - aws-ecr/build_and_push_image:
+          name: build_and_push_image
+          dockerfile: ./base-api/Dockerfile
+          path: ./base-api
+          account-url: AWS_ECR_HOST
+          repo: $AWS_ECR_PATH
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          region: AWS_REGION
+          tag: "${CIRCLE_SHA1}"
+          filters:
+            branches:
+              only: master
+
+      - deploy-to-development:
+          requires:
+            - check
+            - build_and_push_image
+          filters:
+            branches:
+              only: master
+
+      - permit-staging-release:
+          type: approval
+          requires:
+            - deploy-to-development
+          filters:
+            branches:
+              only: master
+
+      - deploy-to-staging:
+          requires:
+            - permit-staging-release
+          filters:
+            branches:
+              only: master
+
+      - permit-production-release:
+          type: approval
+          requires:
+            - deploy-to-staging
+          filters:
+            branches:
+              only: master
+
+      - deploy-to-production:
+          requires:
+            - permit-production-release
+          filters:
+            branches:
+              only: master
