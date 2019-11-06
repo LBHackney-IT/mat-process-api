@@ -1,6 +1,6 @@
-# LBH Base API
+# MAT Process API
 
-Base API is a boilerplate code for being reused for new APIs for LBH
+API for Manage a tenancy processes.
 
 ## Stack
 
@@ -66,14 +66,13 @@ $ make test
 
 ### Active Maintainers
 
-- **Selwyn Preston**, Lead Developer at London Borough of Hackney (selwyn.preston@hackney.gov.uk)
-- **Mirela Georgieva**, Developer at London Borough of Hackney (mirela.georgieva@hackney.gov.uk)
-- **Miguel Saitz**, Junior Developer at London Borough of Hackney (miguel.saitz@hackney.gov.uk)
+- **Mirela Georgieva**, Lead Developer at London Borough of Hackney (mirela.georgieva@hackney.gov.uk)
 
 ### Other Contacts
 
 - **Rashmi Shetty**, Development Manager at London Borough of Hackney (rashmi.shetty@hackney.gov.uk)
-- **Cormac Brady**, Developer at [Made Tech][made-tech] (cormac@madetech.com)
+- **Selwyn Preston**, Lead Developer at London Borough of Hackney (selwyn.preston@hackney.gov.uk)
+- **Matthew Keyworth**, Lead Developer at London Borough of Hackney (matthew.keyworth@hackney.gov.uk)
 
 
 [docker-download]: https://www.docker.com/products/docker-desktop
