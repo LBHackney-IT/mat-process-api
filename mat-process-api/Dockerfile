@@ -26,4 +26,4 @@ WORKDIR /app
 COPY --from=builder /app/out .
 
 EXPOSE ${PORT:-3000}
-CMD ASPNETCORE_URLS=http://+:${PORT:-3000} dotnet ./base-api.dll
+CMD ASPNETCORE_URLS=http://+:${PORT:-3000} dotnet ./mat-process-api.dll

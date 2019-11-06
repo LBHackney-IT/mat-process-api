@@ -6,16 +6,16 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT='true'
 WORKDIR /app
 
 # Copy csproj and restore as distinct layers
-COPY ./base-api.sln ./
-COPY ./base-api/base-api.csproj ./base-api/
-COPY ./base-api.Tests/base-api.Tests.csproj ./base-api.Tests/
+COPY ./mat-process-api.sln ./
+COPY ./mat-process-api/mat-process-api.csproj ./mat-process-api/
+COPY ./mat-process-api.Tests/mat-process-api.Tests.csproj ./mat-process-api.Tests/
 
-RUN dotnet restore ./base-api/base-api.csproj
-RUN dotnet restore ./base-api.Tests/base-api.Tests.csproj
+RUN dotnet restore ./mat-process-api/mat-process-api.csproj
+RUN dotnet restore ./mat-process-api.Tests/mat-process-api.Tests.csproj
 
 # Copy everything else and build
 COPY . .
 
-RUN dotnet build -c debug -o out base-api.Tests/base-api.Tests.csproj
+RUN dotnet build -c debug -o out mat-process-api.Tests/mat-process-api.Tests.csproj
 
 CMD dotnet test

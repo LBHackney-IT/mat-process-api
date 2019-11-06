@@ -1,16 +1,16 @@
 version: '3.2'
 
 services:
-  base-api:
-    image: base-api
+  mat-process-api:
+    image: mat-process-api
     build:
-      context: base-api/
+      context: mat-process-api/
       dockerfile: ./Dockerfile
     ports:
       - 3000:3000
 
-  base-api-test:
-    image: base-api-test
+  mat-process-api-test:
+    image: mat-process-api-test
     build:
       context: .
-      dockerfile: base-api.Tests/Dockerfile
+      dockerfile: mat-process-api.Tests/Dockerfile

@@ -4,16 +4,16 @@ setup:
 
 .PHONY: build
 build:
-	docker-compose run base-api dotnet build
+	docker-compose run mat-process-api dotnet build
 
 .PHONY: serve
 serve:
-	docker-compose up base-api
+	docker-compose up mat-process-api
 
 .PHONY: shell
 shell:
-	docker-compose run base-api bash
+	docker-compose run mat-process-api bash
 
 .PHONY: test
 test:
-	docker-compose build base-api-test && docker-compose up base-api-test
+	docker-compose build mat-process-api-test && docker-compose up mat-process-api-test
