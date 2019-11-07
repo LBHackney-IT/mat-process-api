@@ -14,3 +14,12 @@ services:
     build:
       context: .
       dockerfile: mat-process-api.Tests/Dockerfile
+    environment:
+        - MONGO_CONN_STRING=mongodb://mongo-db:27017/?gssapiServiceName=mongodb
+    links:
+      - mongo-db
+  mongo-db:
+    image: mongo:3.6
+    ports:
+      - 1433:27017
+
