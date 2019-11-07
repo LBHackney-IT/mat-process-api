@@ -14,23 +14,22 @@ namespace UnitTests
 
         [OneTimeSetUp]
         public void RunBeforeAnyTests()
-        {
-  
+        { 
             string MONGO_CONN_STRING = Environment.GetEnvironmentVariable("MONGO_CONN_STRING") ??
                                  @"mongodb://localhost:1433/?gssapiServiceName=mongodb";
          
             //connect to local mongo DB
             MongoClient mongoClient = new MongoClient(new MongoUrl(MONGO_CONN_STRING));
-            //create a new blank database
+            //create a new blank database if database does not exist, otherwise get existing database
             mongoDatabase = mongoClient.GetDatabase("mat-processes");
-            //create collection to hold the documents
+            //create collection to hold the documents if it does not exist, otherwise retrieve existing
             collection = mongoDatabase.GetCollection<BsonDocument>("process-data");
         }
 
         [OneTimeTearDown]
         public void RunAfterAnyTests()
         {
-           //clear collection
+           //clear collection - remove any documents inserted during thet test
            collection.DeleteMany(Builders<BsonDocument>.Filter.Empty);
         }
     }
