@@ -16,7 +16,7 @@ jobs:
           command: docker-compose build mat-process-api-test
       - run:
           name: Run tests
-          command: docker-compose up mat-process-api-test
+          command: docker-compose run mat-process-api-test
 
 workflows:
   check-and-deploy:
