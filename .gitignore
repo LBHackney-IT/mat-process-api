@@ -60,3 +60,5 @@ bin/
 tmp/
 .vs/
 /base-api.Tests/Properties/launchSettings.json
+/mat-process-api/Properties/launchSettings.json
+/mat-process-api.Tests/Properties/launchSettings.json
