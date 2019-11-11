@@ -22,8 +22,7 @@ namespace matprocess_api.Tests.V1.Domain
         [Test]
         public void process_data_has_id()
         {
-            Assert.NotNull(processData.Id);
-            Assert.IsInstanceOf<Guid>(processData.Id);
+            Assert.Null(processData.Id);
         }
 
         [Test]
