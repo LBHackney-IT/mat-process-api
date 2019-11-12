@@ -13,6 +13,7 @@ using mat_process_api.UseCase.V1;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
+using mat_process_api.V1.UseCase;
 using mat_process_api.Versioning;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
@@ -31,7 +32,7 @@ namespace mat_process_api
         public IConfiguration Configuration { get; }
         private static List<ApiVersionDescription> _apiVersions { get; set; }
         //TODO update the below to the name of your API
-        private const string ApiName = "Your API Name";
+        private const string ApiName = "MAT Process API";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -99,22 +100,28 @@ namespace mat_process_api
 
         private static void ConfigureDbContext(IServiceCollection services)
         {
-            var connectionString = Environment.GetEnvironmentVariable("UH_URL");
+            services.Configure<ConnectionSettings>(options =>
+            {
+                options.ConnectionString
+                    = Environment.GetEnvironmentVariable("UH_URL");
+                options.Database
+                    = Environment.GetEnvironmentVariable("UH_URL");
+            });
 
-            DbContextOptionsBuilder builder = new DbContextOptionsBuilder()
-                .UseSqlServer(connectionString);
-
-            services.AddSingleton<IUHContext>(s => new UhContext(builder.Options));
+            services.AddSingleton<IMatDbContext,MatDbContext>();
         }
 
         private static void RegisterGateWays(IServiceCollection services)
         {
             services.AddSingleton<ITransactionsGateway, TransactionsGateway>();
+            services.AddSingleton<IProcessDataGateway, ProcessDataGateway>();
+
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
             services.AddSingleton<IListTransactions, ListTransactionsUsecase>();
+            services.AddSingleton<IProcessData, ProcessDataUseCase>();
         }
 
 

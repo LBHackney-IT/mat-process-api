@@ -59,6 +59,19 @@ namespace mat_process_api.Tests.V1.UseCase
             mockMatGateway.Verify(x => x.GetProcessData(processRef));
         }
 
+        [TestCase("123")]
+        [TestCase("acb5")]
+        [TestCase("aa-bb-123")]
+        public void verif_gateway_calls_database_with_parameters(string processRef)
+        {
+            //arrange            
+            var request = new GetProcessDataRequest { processRef = processRef };
+            //act
+            var result = processDataUseCase.ExecuteGet(request);
+            //assert
+            mockMatGateway.Verify(v => v.GetProcessData(It.Is<string>(i => i == processRef)), Times.Once);
+        }
+
         [Test]
         public void check_gateway_returns_expected_response()
         {

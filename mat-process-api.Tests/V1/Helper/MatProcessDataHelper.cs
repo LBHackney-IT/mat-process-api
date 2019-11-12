@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
@@ -18,12 +19,12 @@ namespace mat_process_api.Tests.V1.Helper
             {
                 DateCreated = faker.Date.Recent(),
                 DateLastModified = faker.Date.Recent(),
-                ProcessData = new object(),
+                ProcessData = {},
                 DataSchemaVersion = faker.Random.Int(0,10),
                 DateCompleted = faker.Date.Recent(),
                 Id = faker.Random.Word(),
-                PostProcessData = new object(),
-                PreProcessData = new object(),
+                PostProcessData = {},
+                PreProcessData = {},
                 ProcessStage = faker.Random.Word(),
                 ProcessType = faker.Random.Word()
             };
