@@ -25,8 +25,8 @@ namespace UnitTests.V1.Gateways
         private Mock<IMatDbContext> mockContext;
 
         [SetUp]
-        public void Setup()
-        {
+        public void set_up()
+        {           
             mockContext = new Mock<IMatDbContext>();
             mockContext.Setup(x => x.getCollection()).Returns(collection);
             processDataGateway = new ProcessDataGateway(mockContext.Object);
@@ -81,23 +81,6 @@ namespace UnitTests.V1.Gateways
             Assert.AreEqual(result.DateCompleted, DateTime.MinValue);
             Assert.AreEqual(result.DataSchemaVersion, 0);
             Assert.IsInstanceOf<MatProcessData>(result);
-        }
-
-        [Test]
-        public void dummy_example_test_tmongo()
-        {
-            //leave test temporarily for reference
-            JObject test = new JObject();
-            test.Add("_id",_faker.Random.Guid());
-            test.Add("processType", _faker.Random.Word());
-
-            //parse to bson
-            var update = BsonDocument.Parse(test.ToString());
-            //insert into db
-            collection.InsertOne(update);
-
-            //ensure we have inserted document
-            Assert.AreEqual(collection.CountDocuments(Builders<BsonDocument>.Filter.Empty),1);
         }
     }
 }

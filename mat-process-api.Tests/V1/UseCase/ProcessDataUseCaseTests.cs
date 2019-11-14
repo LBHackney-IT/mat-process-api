@@ -25,8 +25,6 @@ namespace mat_process_api.Tests.V1.UseCase
             faker = new Faker();
             mockMatGateway = new Mock<IProcessDataGateway>();
             processDataUseCase = new ProcessDataUseCase(mockMatGateway.Object);
-          
-
         }
         [Test]
         public void get_process_data_by_processref_returns_getprocessdataresponse_object()
@@ -35,8 +33,7 @@ namespace mat_process_api.Tests.V1.UseCase
             var processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new MatProcessData();
-            //act
-          
+            //act        
             mockMatGateway.Setup(x => x.GetProcessData(processRef)).Returns(response);
             var result = processDataUseCase.ExecuteGet(request);
             //assert

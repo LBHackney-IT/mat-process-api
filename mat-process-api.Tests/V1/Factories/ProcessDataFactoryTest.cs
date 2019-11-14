@@ -20,9 +20,11 @@ namespace mat_process_api.Tests.V1.Factories
         [Test]
         public void can_create_mat_process_data_object_from_empty_object()
         {
+            //arrange
             var matProcessData = new MatProcessData();
-            //var matProcessData = MatProcessDataHelper.CreateProcessDataObject();
+            //act
             var processDataFromFactory = ProcessDataFactory.CreateProcessDataObject(BsonDocument.Parse(JsonConvert.SerializeObject(matProcessData)));
+            //assert
             Assert.AreEqual(matProcessData.DataSchemaVersion,processDataFromFactory.DataSchemaVersion);
             Assert.AreEqual(matProcessData.DateCompleted, processDataFromFactory.DateCompleted);
             Assert.AreEqual(matProcessData.DateCreated, processDataFromFactory.DateCreated);
@@ -38,8 +40,11 @@ namespace mat_process_api.Tests.V1.Factories
         [Test]
         public void can_create_mat_process_data_object_from_populated_object()
         {
+            //arrange
             var matProcessData = MatProcessDataHelper.CreateProcessDataObject();
+            //act
             var processDataFromFactory = ProcessDataFactory.CreateProcessDataObject(BsonDocument.Parse(JsonConvert.SerializeObject(matProcessData)));
+            //assert
             Assert.AreEqual(matProcessData.DataSchemaVersion, processDataFromFactory.DataSchemaVersion);
             Assert.AreEqual(matProcessData.DateCompleted, processDataFromFactory.DateCompleted);
             Assert.AreEqual(matProcessData.DateCreated, processDataFromFactory.DateCreated);

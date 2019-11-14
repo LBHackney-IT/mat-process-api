@@ -9,5 +9,6 @@ namespace mat_process_api.V1.Infrastructure
     {
         public string Database { get; set; }
         public string ConnectionString { get; set; }
+        public string CollectionName { get; set; }
     }
 }

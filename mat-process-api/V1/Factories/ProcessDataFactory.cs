@@ -18,6 +18,7 @@ namespace mat_process_api.V1.Factories
             }
             else
             {
+                //return empty object, rather than null, as front end will be expecting emtpy object?
                 return new MatProcessData();
             }
         }

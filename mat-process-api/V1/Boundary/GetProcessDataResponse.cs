@@ -15,8 +15,8 @@ namespace mat_process_api.V1.Boundary
         public GetProcessDataResponse(GetProcessDataRequest request, MatProcessData processData, DateTime generatedAt)
         {
             Request = request;
-            ProcessData = processData;
             GeneratedAt = generatedAt;
+            ProcessData = processData;
         }
     }
 }

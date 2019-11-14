@@ -14,7 +14,7 @@ namespace matprocess_api.Tests.V1.Domain
         private MatProcessData processData;
 
         [SetUp]
-        public void SetUp()
+        public void set_up()
         {
             processData = new MatProcessData();
         }

@@ -103,9 +103,11 @@ namespace mat_process_api
             services.Configure<ConnectionSettings>(options =>
             {
                 options.ConnectionString
-                    = Environment.GetEnvironmentVariable("UH_URL");
+                    = Environment.GetEnvironmentVariable("DocumentDbConnString");
                 options.Database
-                    = Environment.GetEnvironmentVariable("UH_URL");
+                    = Environment.GetEnvironmentVariable("DatabaseName");
+                options.CollectionName
+                    = Environment.GetEnvironmentVariable("CollectionName");
             });
 
             services.AddSingleton<IMatDbContext,MatDbContext>();

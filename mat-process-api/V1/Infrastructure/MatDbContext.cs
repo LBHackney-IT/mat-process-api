@@ -17,9 +17,9 @@ namespace mat_process_api.V1.Infrastructure
         {
             mongoClient = new MongoClient(new MongoUrl(appSettings.Value.ConnectionString));
             //create a new blank database if database does not exist, otherwise get existing database
-            mongoDatabase = mongoClient.GetDatabase("mat-processes");
+            mongoDatabase = mongoClient.GetDatabase(appSettings.Value.Database);
             //create collection to hold the documents if it does not exist, otherwise retrieve existing
-            matProcessCollection = mongoDatabase.GetCollection<BsonDocument>("process-data");
+            matProcessCollection = mongoDatabase.GetCollection<BsonDocument>(appSettings.Value.CollectionName);
         }
         public IMongoCollection<BsonDocument> getCollection()
         {

@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.HealthChecks" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="2.1.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="MongoDB.Bson" Version="2.9.2" />
     <PackageReference Include="MongoDB.Driver" Version="2.9.2" />
     <PackageReference Include="Sentry.AspNetCore" Version="1.1.2" />
