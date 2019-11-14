@@ -20,7 +20,7 @@ namespace mat_process_api.Tests.V1.Helper
                 DateCreated = faker.Date.Recent(),
                 DateLastModified = faker.Date.Recent(),
                 ProcessData = {},
-                DataSchemaVersion = faker.Random.Int(0,10),
+                ProcessDataSchemaVersion = faker.Random.Int(0,10),
                 DateCompleted = faker.Date.Recent(),
                 Id = faker.Random.Word(),
                 PostProcessData = {},

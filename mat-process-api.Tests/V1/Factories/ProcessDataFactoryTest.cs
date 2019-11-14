@@ -25,7 +25,7 @@ namespace mat_process_api.Tests.V1.Factories
             //act
             var processDataFromFactory = ProcessDataFactory.CreateProcessDataObject(BsonDocument.Parse(JsonConvert.SerializeObject(matProcessData)));
             //assert
-            Assert.AreEqual(matProcessData.DataSchemaVersion,processDataFromFactory.DataSchemaVersion);
+            Assert.AreEqual(matProcessData.ProcessDataSchemaVersion,processDataFromFactory.ProcessDataSchemaVersion);
             Assert.AreEqual(matProcessData.DateCompleted, processDataFromFactory.DateCompleted);
             Assert.AreEqual(matProcessData.DateCreated, processDataFromFactory.DateCreated);
             Assert.AreEqual(matProcessData.DateLastModified, processDataFromFactory.DateLastModified);
@@ -45,7 +45,7 @@ namespace mat_process_api.Tests.V1.Factories
             //act
             var processDataFromFactory = ProcessDataFactory.CreateProcessDataObject(BsonDocument.Parse(JsonConvert.SerializeObject(matProcessData)));
             //assert
-            Assert.AreEqual(matProcessData.DataSchemaVersion, processDataFromFactory.DataSchemaVersion);
+            Assert.AreEqual(matProcessData.ProcessDataSchemaVersion, processDataFromFactory.ProcessDataSchemaVersion);
             Assert.AreEqual(matProcessData.DateCompleted, processDataFromFactory.DateCompleted);
             Assert.AreEqual(matProcessData.DateCreated, processDataFromFactory.DateCreated);
             Assert.AreEqual(matProcessData.DateLastModified, processDataFromFactory.DateLastModified);

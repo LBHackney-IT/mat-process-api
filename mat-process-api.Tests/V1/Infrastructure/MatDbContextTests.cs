@@ -57,7 +57,7 @@ namespace mat_process_api.Tests.V1.Infrastructure
             Assert.AreEqual(processData.ProcessData, resultDesirialzie.ProcessData);
             Assert.AreEqual(processData.ProcessStage, resultDesirialzie.ProcessStage);
             Assert.AreEqual(processData.ProcessType, resultDesirialzie.ProcessType);
-            Assert.AreEqual(processData.DataSchemaVersion, resultDesirialzie.DataSchemaVersion);
+            Assert.AreEqual(processData.ProcessDataSchemaVersion, resultDesirialzie.ProcessDataSchemaVersion);
         }
     }
 }

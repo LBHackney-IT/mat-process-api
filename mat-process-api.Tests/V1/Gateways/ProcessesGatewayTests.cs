@@ -57,7 +57,7 @@ namespace UnitTests.V1.Gateways
             Assert.AreEqual(result.PostProcessData, processData.PostProcessData);
             Assert.AreEqual(result.DateCreated, processData.DateCreated);
             Assert.AreEqual(result.DateCompleted, processData.DateCompleted);
-            Assert.AreEqual(result.DataSchemaVersion,processData.DataSchemaVersion);
+            Assert.AreEqual(result.ProcessDataSchemaVersion,processData.ProcessDataSchemaVersion);
             Assert.IsInstanceOf<MatProcessData>(result);
         }
 
@@ -79,7 +79,7 @@ namespace UnitTests.V1.Gateways
             Assert.AreEqual(result.PostProcessData, null);
             Assert.AreEqual(result.DateCreated, DateTime.MinValue);
             Assert.AreEqual(result.DateCompleted, DateTime.MinValue);
-            Assert.AreEqual(result.DataSchemaVersion, 0);
+            Assert.AreEqual(result.ProcessDataSchemaVersion, 0);
             Assert.IsInstanceOf<MatProcessData>(result);
         }
     }

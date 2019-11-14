@@ -56,7 +56,7 @@ namespace matprocess_api.Tests.V1.Domain
         [Test]
         public void process_data_has_data_schema_version()
         {
-            Assert.Zero(processData.DataSchemaVersion);
+            Assert.Zero(processData.ProcessDataSchemaVersion);
         }
 
         [Test]

@@ -29,7 +29,7 @@ namespace mat_process_api.V1.Domain
         public DateTime DateCompleted { get; set; }
         [JsonProperty("dataSchemaVersion")]
         [BsonElement("dataSchemaVersion")]
-        public int DataSchemaVersion { get; set; }
+        public int ProcessDataSchemaVersion { get; set; }
         [JsonProperty("processStage")]
         [BsonElement("processStage")]
         public string ProcessStage { get; set; }
