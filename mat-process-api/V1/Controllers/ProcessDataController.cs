@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace mat_process_api.V1.Controllers
 {
-    [ApiVersion("1")]
+    [ApiVersion("1.0")]
     [Route("api/v1/processData")]
     [ApiController]
     [Produces("application/json")]
@@ -33,12 +33,13 @@ namespace mat_process_api.V1.Controllers
         /// <param name="processRef"></param>
         /// <returns></returns>
         [HttpGet]
+        [Route("{propertyReference}")]
+        [Produces("application/json")]
         [ProducesResponseType(typeof(GetProcessDataResponse), 200)]
-        [Route("{processRef}")]
-        public IActionResult GetProcessData(string processRef)
+        public IActionResult GetProcessData(string propertyReference)
         {
-            _logger.LogInformation($"Get ProcessData request for process ID {processRef}");
-            var request = new GetProcessDataRequest() {processRef = processRef};
+            _logger.LogInformation($"Get ProcessData request for process ID {propertyReference}");
+            var request = new GetProcessDataRequest() {processRef = propertyReference };
             var result = _processDataUsecase.ExecuteGet(request);
             return Ok(result);
         }
