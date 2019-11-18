@@ -43,5 +43,20 @@ namespace mat_process_api.V1.Controllers
             var result = _processDataUsecase.ExecuteGet(request);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Creates an intial JSON document in the database.
+        /// Upon creating a resource returns 201
+        /// If the supplied 'processObject' is invalid, then should return 400 --not implement yet
+        /// </summary>
+        /// <param name="processObject"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(object), 201)] // response object structure is tbd, so I put 'object' for the time being
+        public IActionResult PostInitialProcessDocument()
+        {
+            return Created("api/v1/processData", new { _id = "someGUID_87g8iu8b", text = "shape_of_response_object_is_not_covered_in_documentation" });
+        }
     }
 }
