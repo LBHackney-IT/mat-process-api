@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.UseCase;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -42,6 +43,20 @@ namespace mat_process_api.V1.Controllers
             var request = new GetProcessDataRequest() {processRef = propertyReference };
             var result = _processDataUsecase.ExecuteGet(request);
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Updates proccess object JSON document by updating its "processData" property.
+        /// The shape of the response has not been decided on yet, for the time being it's just a "204 No Content" (which is one of the options).
+        /// </summary>
+        /// <param name="processDataJSON"></param>
+        /// <returns></returns>
+        [HttpPut] //This is set as PUT, however I feel it should be PATCH, but it's up for discussion later.
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public IActionResult UpdateExistingProcessDocument()
+        {
+            return NoContent();
         }
     }
 }
