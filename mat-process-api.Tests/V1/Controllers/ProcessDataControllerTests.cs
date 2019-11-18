@@ -68,5 +68,20 @@ namespace mat_process_api.Tests.V1.Controllers
             //assert
             _mockUsecase.Verify(x => x.ExecuteGet((It.Is<GetProcessDataRequest>(i => i.processRef == processRef))));
         }
+
+        [Test]
+        public void when_updateexistingprocessdocument_method_is_called_then_it_returns_a_success_response()
+        {
+            //arrange
+            int expectedStatusCode = 204; //status code not yet decided, so I go with the one that does not require content body
+            //act
+            IActionResult controllerResponse = _processDataController.UpdateExistingProcessDocument();
+            NoContentResult noContentResult = (NoContentResult)controllerResponse;
+            var actualStatusCode = noContentResult.StatusCode;
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(noContentResult);
+            Assert.AreEqual(expectedStatusCode, actualStatusCode);
+        }
     }
 }
