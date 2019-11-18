@@ -37,7 +37,7 @@ namespace mat_process_api.Tests.V1.Controllers
         [TestCase("01231-12")]
         [TestCase("324r23/12")]
         [TestCase("34urjkhu7")]
-        public void controller_returns_correct_json_response(string processRef)
+        public void given_a_processRef_when_getprocessdata_method_is_called_the_controller_returns_correct_json_response(string processRef)
         {
             //arange
             var request = new GetProcessDataRequest() { processRef = processRef };
@@ -56,7 +56,7 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(200, okResult.StatusCode);
         }
         [Test]
-        public void test_use_case_is_called()
+        public void given_a_processRef_when_getprocessdata_method_is_called_it_then_calls_the_use_case_with_request_object_containing_that_processRef()
         {
             //arrange
             var processRef = faker.Random.Guid().ToString();
