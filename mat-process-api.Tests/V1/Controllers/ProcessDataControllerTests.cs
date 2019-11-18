@@ -68,5 +68,20 @@ namespace mat_process_api.Tests.V1.Controllers
             //assert
             _mockUsecase.Verify(x => x.ExecuteGet((It.Is<GetProcessDataRequest>(i => i.processRef == processRef))));
         }
+
+        [Test]
+        public void when_postinitialprocessdocument_method_is_called_then_it_returns_a_response_that_resource_was_created() //temporary test until actual implementation will be worked on.
+        {
+            //arrange
+            int expectedStatusCode = 201;
+            //act
+            IActionResult controllerResponse = _processDataController.PostInitialProcessDocument();
+            CreatedResult createdResult = (CreatedResult)controllerResponse;
+            var actualStatusCode = createdResult.StatusCode;
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(createdResult);
+            Assert.AreEqual(expectedStatusCode, actualStatusCode);
+        }
     }
 }
