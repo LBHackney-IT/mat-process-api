@@ -47,16 +47,17 @@ namespace mat_process_api.V1.Controllers
 
         /// <summary>
         /// Updates proccess object JSON document by updating its "processData" property.
-        /// The shape of the response has not been decided on yet, for the time being it's just a "204 No Content" (which is one of the options).
+        /// If processData needs to be update, it's instead replaced with a full new one.
+        /// Returning flat out 200 on successful update
         /// </summary>
         /// <param name="processDataJSON"></param>
         /// <returns></returns>
-        [HttpPut] //This is set as PUT, however I feel it should be PATCH, but it's up for discussion later.
+        [HttpPatch]
         [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult UpdateExistingProcessDocument()
         {
-            return NoContent();
+            return Ok();
         }
     }
 }

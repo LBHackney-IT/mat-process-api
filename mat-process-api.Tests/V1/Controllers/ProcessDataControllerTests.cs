@@ -73,14 +73,14 @@ namespace mat_process_api.Tests.V1.Controllers
         public void when_updateexistingprocessdocument_method_is_called_then_it_returns_a_success_response()
         {
             //arrange
-            int expectedStatusCode = 204; //status code not yet decided, so I go with the one that does not require content body
+            int expectedStatusCode = 200; //status code not yet decided, so I go with the one that does not require content body
             //act
             IActionResult controllerResponse = _processDataController.UpdateExistingProcessDocument();
-            NoContentResult noContentResult = (NoContentResult)controllerResponse;
-            var actualStatusCode = noContentResult.StatusCode;
+            OkResult okResult = (OkResult)controllerResponse;
+            int actualStatusCode = okResult.StatusCode;
             //assert
             Assert.NotNull(controllerResponse);
-            Assert.NotNull(noContentResult);
+            Assert.NotNull(okResult);
             Assert.AreEqual(expectedStatusCode, actualStatusCode);
         }
     }
