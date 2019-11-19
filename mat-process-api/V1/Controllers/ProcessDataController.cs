@@ -53,7 +53,7 @@ namespace mat_process_api.V1.Controllers
         /// <returns></returns>
         [HttpPost]
         [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)] // response object structure is tbd, so I put 'object' for the time being
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult PostInitialProcessDocument()
         {
             return Ok();
