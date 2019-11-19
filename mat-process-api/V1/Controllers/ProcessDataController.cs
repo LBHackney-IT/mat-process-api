@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.UseCase;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -45,18 +46,17 @@ namespace mat_process_api.V1.Controllers
         }
 
         /// <summary>
-        /// Creates an intial JSON document in the database.
-        /// Upon creating a resource returns 201
-        /// If the supplied 'processObject' is invalid, then should return 400 --not implement yet
+        /// Creates an intial process JSON document in the database.
+        /// Upon creating a resource returns 200 Ok
         /// </summary>
         /// <param name="processObject"></param>
         /// <returns></returns>
         [HttpPost]
         [Produces("application/json")]
-        [ProducesResponseType(typeof(object), 201)] // response object structure is tbd, so I put 'object' for the time being
+        [ProducesResponseType(StatusCodes.Status200OK)] // response object structure is tbd, so I put 'object' for the time being
         public IActionResult PostInitialProcessDocument()
         {
-            return Created("api/v1/processData", new { _id = "someGUID_87g8iu8b", text = "shape_of_response_object_is_not_covered_in_documentation" });
+            return Ok();
         }
     }
 }
