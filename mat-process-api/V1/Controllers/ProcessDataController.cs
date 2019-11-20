@@ -46,6 +46,21 @@ namespace mat_process_api.V1.Controllers
         }
 
         /// <summary>
+        /// Updates proccess object JSON document by updating its "processData" property.
+        /// If processData needs to be update, it's instead replaced with a full new one.
+        /// Returning flat out 200 on successful update
+        /// </summary>
+        /// <param name="processDataJSON"></param>
+        /// <returns></returns>
+        [HttpPatch]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult UpdateExistingProcessDocument()
+        {
+            return Ok();
+        }
+
+        /// <summary>
         /// Creates an intial process JSON document in the database.
         /// Upon creating a resource returns 200 Ok
         /// </summary>

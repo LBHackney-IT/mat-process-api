@@ -70,6 +70,21 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
+        public void when_updateexistingprocessdocument_method_is_called_then_it_returns_a_success_response()
+        {
+            //arrange
+            int expectedStatusCode = 200; //status code not yet decided, so I go with the 200 for now
+            //act
+            IActionResult controllerResponse = _processDataController.UpdateExistingProcessDocument();
+            OkResult okResult = (OkResult)controllerResponse;
+            int actualStatusCode = okResult.StatusCode;
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(okResult);
+            Assert.AreEqual(expectedStatusCode, actualStatusCode);
+        }
+  
+        [Test]
         public void when_postinitialprocessdocument_method_is_called_then_it_returns_a_response_that_resource_was_created() //temporary test until actual implementation will be worked on.
         {
             //arrange
