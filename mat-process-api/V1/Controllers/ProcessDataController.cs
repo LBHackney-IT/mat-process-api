@@ -59,5 +59,19 @@ namespace mat_process_api.V1.Controllers
         {
             return Ok();
         }
+
+        /// <summary>
+        /// Creates an intial process JSON document in the database.
+        /// Upon creating a resource returns 200 Ok
+        /// </summary>
+        /// <param name="processObject"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult PostInitialProcessDocument()
+        {
+            return Ok();
+        }
     }
 }
