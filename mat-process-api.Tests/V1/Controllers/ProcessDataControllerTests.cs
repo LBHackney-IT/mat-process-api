@@ -37,7 +37,7 @@ namespace mat_process_api.Tests.V1.Controllers
         [TestCase("01231-12")]
         [TestCase("324r23/12")]
         [TestCase("34urjkhu7")]
-        public void controller_returns_correct_json_response(string processRef)
+        public void given_a_processRef_when_getprocessdata_method_is_called_the_controller_returns_correct_json_response(string processRef)
         {
             //arange
             var request = new GetProcessDataRequest() { processRef = processRef };
@@ -56,7 +56,7 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(200, okResult.StatusCode);
         }
         [Test]
-        public void test_use_case_is_called()
+        public void given_a_processRef_when_getprocessdata_method_is_called_it_then_calls_the_use_case_with_request_object_containing_that_processRef()
         {
             //arrange
             var processRef = faker.Random.Guid().ToString();
@@ -67,6 +67,21 @@ namespace mat_process_api.Tests.V1.Controllers
             _processDataController.GetProcessData(processRef);
             //assert
             _mockUsecase.Verify(x => x.ExecuteGet((It.Is<GetProcessDataRequest>(i => i.processRef == processRef))));
+        }
+
+        [Test]
+        public void when_postinitialprocessdocument_method_is_called_then_it_returns_a_response_that_resource_was_created() //temporary test until actual implementation will be worked on.
+        {
+            //arrange
+            int expectedStatusCode = 200;
+            //act
+            IActionResult controllerResponse = _processDataController.PostInitialProcessDocument();
+            OkResult okResult = (OkResult)controllerResponse;
+            int actualStatusCode = okResult.StatusCode;
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(okResult);
+            Assert.AreEqual(expectedStatusCode, actualStatusCode);
         }
     }
 }

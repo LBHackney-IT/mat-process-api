@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.UseCase;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -42,6 +43,20 @@ namespace mat_process_api.V1.Controllers
             var request = new GetProcessDataRequest() {processRef = propertyReference };
             var result = _processDataUsecase.ExecuteGet(request);
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Creates an intial process JSON document in the database.
+        /// Upon creating a resource returns 200 Ok
+        /// </summary>
+        /// <param name="processObject"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult PostInitialProcessDocument()
+        {
+            return Ok();
         }
     }
 }
