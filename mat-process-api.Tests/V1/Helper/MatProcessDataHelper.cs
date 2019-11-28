@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Boundary;
 using Newtonsoft.Json.Linq;
 
 namespace mat_process_api.Tests.V1.Helper
@@ -28,6 +29,17 @@ namespace mat_process_api.Tests.V1.Helper
                 ProcessStage = faker.Random.Word(),
                 ProcessType = faker.Random.Word()
             };
+        }
+
+        public static PostInitialProcessDocumentRequest CreatePostInitialProcessDocumentRequestObject()
+        {
+            Faker faker = new Faker();
+
+            string processRef = faker.Random.Guid().ToString();
+            string processType = faker.Random.Guid().ToString();
+            int processDataSchemaVersion = faker.Random.Int();
+
+            return new PostInitialProcessDocumentRequest() { processRef = processRef, processType = processType, processDataSchemaVersion = processDataSchemaVersion };
         }
     }
 }
