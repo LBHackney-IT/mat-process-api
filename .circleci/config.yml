@@ -4,12 +4,48 @@ orbs:
   aws-ecr: circleci/aws-ecr@3.0.0
   aws-cli: circleci/aws-cli@0.1.9
 
+  
+commands:
+  deploy-env:
+    description: "Sets ecs-deploy to update a service with a target docker image"
+    parameters:
+      cluster-name:
+        type: string
+      service-name:
+        type: string
+      image-tag:
+        type: string
+    steps:
+      - run:
+          name: Install ecs deploy
+          command: |
+            sudo pip install ecs-deploy
+      - run:
+          name: Premote target image
+          command: |
+            ecs deploy \
+            --no-deregister \
+            --access-key-id $AWS_ACCESS_KEY_ID \
+            --secret-access-key $AWS_SECRET_ACCESS_KEY \
+            --timeout 1800 \
+            --region $AWS_REGION \
+            << parameters.cluster-name >> \
+            << parameters.service-name >> \
+            -t << parameters.image-tag >>
+          no_output_timeout: 30m  
+  
 jobs:
   build-and-test:
     docker:
       - image: circleci/python:3.7
     steps:
       - checkout
+      - aws-cli/install
+      - aws-cli/configure:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_REGION
+      - aws-ecr/ecr-login
       - setup_remote_docker
       - run:
           name: build
@@ -17,8 +53,36 @@ jobs:
       - run:
           name: Run tests
           command: docker-compose run mat-process-api-test
+  deploy-to-development:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - deploy-env:
+          cluster-name: 'hackney-mat-development'
+          service-name: 'mat-process-api-development'
+          image-tag: "$CIRCLE_SHA1"
 
 workflows:
   check-and-deploy:
       jobs:
       - build-and-test
+      - aws-ecr/build_and_push_image:
+          name: build_and_push_image
+          dockerfile: ./mat-process-api/Dockerfile
+          path: ./mat-process-api
+          account-url: AWS_ECR_HOST
+          repo: $AWS_ECR_PATH
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          region: AWS_REGION
+          tag: "${CIRCLE_SHA1}"
+          filters:
+            branches:
+              only: test-aws-deployment
+      - deploy-to-development:
+          requires:
+            - build-and-test
+            - build_and_push_image
+          filters:
+            branches:
+              only: test-aws-deployment
