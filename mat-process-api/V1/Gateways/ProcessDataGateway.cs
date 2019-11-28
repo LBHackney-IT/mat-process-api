@@ -29,5 +29,9 @@ namespace mat_process_api.V1.Gateways
 
             return ProcessDataFactory.CreateProcessDataObject(result);
         }
+        public void PostInitialProcessDocument(MatProcessData processDoc)
+        {
+
+        }
     }
 }

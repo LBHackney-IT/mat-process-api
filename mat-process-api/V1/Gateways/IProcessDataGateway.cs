@@ -9,5 +9,6 @@ namespace mat_process_api.V1.Gateways
     public interface IProcessDataGateway
     {
         MatProcessData GetProcessData(string processRef);
+        void PostInitialProcessDocument(MatProcessData processDoc);
     }
 }

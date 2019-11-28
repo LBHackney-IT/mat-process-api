@@ -7,6 +7,8 @@ using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.UseCase;
+using mat_process_api.V1.Factories;
+using mat_process_api.Tests.V1.Helper;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using NUnit.Framework;
@@ -83,5 +85,27 @@ namespace mat_process_api.Tests.V1.UseCase
             Assert.AreEqual(response, result.ProcessData);
         }
 
+        [Test]
+        public void given_the_requestObject_when_executePost_usecase_method_is_called_then_the_gateway_is_called_with_factory_output() // this should be 2 tests really, one to see if factory gets called, and the other to see if gateway is called, but due to using static factory method this becomes impossible to separate.
+        {
+            //arrange
+            PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(requestObject);
+
+            //act
+            processDataUseCase.ExecutePost(requestObject);
+
+            //assert
+            mockMatGateway.Verify(g => g.PostInitialProcessDocument(It.Is<MatProcessData>(
+                d => d.Id == requestObject.processRef &&
+                d.ProcessType == requestObject.processType &&
+                d.ProcessDataSchemaVersion == requestObject.processDataSchemaVersion &&
+                d.ProcessStage == "0"
+                )), Times.Once);
+
+            // I need to include into assertion just enough object properties so that it would be demonstrated that all the data from the request is in a mapped-to object (probably 1 would be enough).
+            // and at least one of the properties that factory method generated in order to show that the mapping was done through factory.
+            // I don't need to include all the object properties since that's what the Factory method test is for - to test if everything gets mapped and generated as per spec.
+        }
     }
 }
