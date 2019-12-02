@@ -79,12 +79,11 @@ namespace mat_process_api
                     var version = $"v{apiVersion.ApiVersion.ToString()}";
                     c.SwaggerDoc(version, new Info
                     {
-                        Title = $"{ApiName}-api {version}",
+                        Title = $"mat-process-api {version}",
                         Version = version,
-                        Description = $"{ApiName} version {version}. Please check older versions for depreceted endpoints."
+                        Description = "This is the Hackney Property API which allows client applications to securely retrieve property information for a given property reference."
                     });
                 }
-
                 c.CustomSchemaIds(x => x.FullName);
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -99,12 +98,12 @@ namespace mat_process_api
 
         private static void ConfigureDbContext(IServiceCollection services)
         {
-            var connectionString = Environment.GetEnvironmentVariable("UH_URL");
-
-            DbContextOptionsBuilder builder = new DbContextOptionsBuilder()
-                .UseSqlServer(connectionString);
-
-            services.AddSingleton<IUHContext>(s => new UhContext(builder.Options));
+//            var connectionString = Environment.GetEnvironmentVariable("UH_URL");
+//
+//            DbContextOptionsBuilder builder = new DbContextOptionsBuilder()
+//                .UseSqlServer(connectionString);
+//
+//            services.AddSingleton<IUHContext>(s => new UhContext(builder.Options));
         }
 
         private static void RegisterGateWays(IServiceCollection services)
@@ -142,7 +141,7 @@ namespace mat_process_api
                 {
                     //Create a swagger endpoint for each swagger version
                     c.SwaggerEndpoint($"{apiVersionDescription.GetFormattedApiVersion()}/swagger.json",
-                        $"{ApiName}-api {apiVersionDescription.GetFormattedApiVersion()}");
+                        $"mat-process-api {apiVersionDescription.GetFormattedApiVersion()}");
                 }
             });
 

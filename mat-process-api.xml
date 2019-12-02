@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>mat-process-api</name>
+    </assembly>
+    <members>
+        <member name="M:mat_process_api.V1.Controllers.ProcessDataController.GetProcessData(System.String)">
+            <summary>
+            Returns a process data object for a given process reference.
+            Only one process data object will be returned at a time
+            If no match is found then empty process data response object is returned with 200
+            </summary>
+            <param name="processRef"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
