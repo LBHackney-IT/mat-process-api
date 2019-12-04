@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@3.0.0
-  aws_assume_role: lbh-test/aws_assume_role_test@dev:first
+  aws-cli: circleci/aws-cli@0.1.9
 
   
 commands:
@@ -44,6 +44,11 @@ jobs:
           account: $AWS_ACCOUNT
           profile_name: circlecitest
           role: 'LBH_Circle_CI_Deployment_Role'
+      - aws-cli/install
+      - aws-cli/configure:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_REGION
       - aws-ecr/ecr-login
       - setup_remote_docker
       - run:
@@ -57,8 +62,8 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - deploy-env:
-          cluster-name: $AWS_CLUSTER_DEV //make this a project variable based on environment
-          service-name: $AWS_SERVICE_DEV //make this a project variable
+          cluster-name: $AWS_CLUSTER_DEV 
+          service-name: $AWS_SERVICE_DEV 
           image-tag: "$CIRCLE_SHA1"
   deploy-to-staging:
     docker:
@@ -90,17 +95,20 @@ workflows:
           tag: "${CIRCLE_SHA1}"
           filters:
             branches:
-              only: test-aws-deployment
+              only: development
       - deploy-to-development:
           requires:
             - build-and-test
             - build_and_push_image
           filters:
             branches:
-              only: test-aws-deployment 
+              only: development 
   check-and-deploy-staging-and-production:
       jobs:
       - build-and-test
+          filters:
+            branches:
+              only: master   
       - permit-staging-release:
           type: approval
           requires:
