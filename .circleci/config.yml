@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@3.0.0
-  aws-cli: circleci/aws-cli@0.1.9
+  aws_assume_role: lbh-test/aws_assume_role_test@dev:configure
 
   
 commands:
@@ -40,11 +40,10 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - aws-cli/install
-      - aws-cli/configure:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: AWS_REGION
+      - aws_assume_role/assume_role:
+          account: $AWS_ACCOUNT
+          profile_name: circlecitest
+          role: 'LBH_Circle_CI_Deployment_Role'
       - aws-ecr/ecr-login
       - setup_remote_docker
       - run:
@@ -58,10 +57,25 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - deploy-env:
-          cluster-name: 'hackney-mat-development'
-          service-name: 'mat-process-api-development'
+          cluster-name: $AWS_CLUSTER_DEV //make this a project variable based on environment
+          service-name: $AWS_SERVICE_DEV //make this a project variable
           image-tag: "$CIRCLE_SHA1"
-
+  deploy-to-staging:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - deploy-env:
+          cluster-name: $AWS_CLUSTER_STAGING
+          service-name: $AWS_SERVICE_STAGING
+          image-tag: "$CIRCLE_SHA1"
+  deploy-to-production:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - deploy-env:
+          cluster-name: $AWS_SERVICE_PROD
+          service-name: $AWS_SERVICE_PROD
+          image-tag: "$CIRCLE_SHA1"
 workflows:
   check-and-deploy:
       jobs:
@@ -69,11 +83,9 @@ workflows:
       - aws-ecr/build_and_push_image:
           name: build_and_push_image
           dockerfile: ./mat-process-api/Dockerfile
-          path: ./mat-process-api
+          path: $PROJECT_PATH 
           account-url: AWS_ECR_HOST
-          repo: $AWS_ECR_PATH
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          repo: $AWS_ECR_PATH_DEV
           region: AWS_REGION
           tag: "${CIRCLE_SHA1}"
           filters:
@@ -85,4 +97,34 @@ workflows:
             - build_and_push_image
           filters:
             branches:
-              only: test-aws-deployment
+              only: test-aws-deployment 
+  check-and-deploy-staging-and-production:
+      jobs:
+      - build-and-test
+      - permit-staging-release:
+          type: approval
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only: master           
+      - aws-ecr/build_and_push_image:
+          name: build_and_push_image
+          dockerfile: ./mat-process-api/Dockerfile 
+          path: $PROJECT_PATH 
+          account-url: AWS_ECR_HOST
+          repo: $AWS_ECR_PATH_STAGING
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          region: AWS_REGION
+          tag: "${CIRCLE_SHA1}"
+          filters:
+            branches:
+              only: master
+      - deploy-to-staging:
+          requires:
+            - build-and-test
+            - build_and_push_image
+          filters:
+            branches:
+              only: master
