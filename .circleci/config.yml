@@ -91,14 +91,14 @@ workflows:
           tag: "${CIRCLE_SHA1}"
           filters:
             branches:
-              only: development
+              only: test-aws-deployment
       - deploy-to-development:
           requires:
             - build-and-test
             - build_and_push_image
           filters:
             branches:
-              only: development 
+              only: test-aws-deployment 
   check-and-deploy-staging-and-production:
       jobs:
       - build-and-test:
