@@ -105,7 +105,7 @@ workflows:
               only: development 
   check-and-deploy-staging-and-production:
       jobs:
-      - build-and-test
+      - build-and-test:
           filters:
             branches:
               only: master   
