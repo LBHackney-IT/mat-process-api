@@ -40,10 +40,6 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - aws_assume_role/assume_role:
-          account: $AWS_ACCOUNT
-          profile_name: circlecitest
-          role: 'LBH_Circle_CI_Deployment_Role'
       - aws-cli/install
       - aws-cli/configure:
           aws-access-key-id: AWS_ACCESS_KEY_ID
