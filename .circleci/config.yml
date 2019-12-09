@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@3.0.0
   aws-cli: circleci/aws-cli@0.1.9
+  aws_assume_role: lbh-test/aws_assume_role_test@dev:configure
 
   
 commands:
@@ -40,11 +41,6 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - aws-cli/install
-      - aws-cli/configure:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: AWS_REGION
       - aws-ecr/ecr-login
       - setup_remote_docker
       - run:
@@ -80,6 +76,10 @@ jobs:
 workflows:
   check-and-deploy:
       jobs:
+      - aws_assume_role/assume_role:
+          account: $AWS_ACCOUNT
+          profile_name: default
+          role: 'LBH_Circle_CI_Deployment_Role'
       - build-and-test
       - aws-ecr/build_and_push_image:
           name: build_and_push_image
