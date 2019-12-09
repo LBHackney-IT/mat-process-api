@@ -26,31 +26,19 @@ commands:
           command: |
             ecs deploy \
             --no-deregister \
-            --access-key-id $AWS_ACCESS_KEY_ID \
-            --secret-access-key $AWS_SECRET_ACCESS_KEY \
+            --profile default \
             --timeout 1800 \
-            --region $AWS_REGION \
             << parameters.cluster-name >> \
             << parameters.service-name >> \
             -t << parameters.image-tag >>
           no_output_timeout: 30m  
   
 jobs:
-  testing_assume_role:    
-    docker:
-      - image: circleci/python:3.7
-    steps:
-      - checkout
-      - aws_assume_role/assume_role:
-          account: $AWS_ACCOUNT
-          profile_name: default
-          role: 'LBH_Circle_CI_Deployment_Role'
   build-and-test:
     docker:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - aws-ecr/ecr-login
       - setup_remote_docker
       - run:
           name: build
@@ -82,25 +70,64 @@ jobs:
           cluster-name: $AWS_SERVICE_PROD
           service-name: $AWS_SERVICE_PROD
           image-tag: "$CIRCLE_SHA1"
+  build_and_push_image:
+    parameters:
+      account-url:
+        default: AWS_ECR_ACCOUNT_URL
+        type: env_var_name
+      region:
+        default: AWS_REGION
+        type: env_var_name
+      dockerfile:
+        default: Dockerfile
+        type: string
+      path:
+        default: .
+        type: string
+      repo:
+        type: string
+      tag:
+        default: latest
+        type: string
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - aws_assume_role/assume_role:
+          account: $AWS_ACCOUNT
+          profile_name: default
+          role: 'LBH_Circle_CI_Deployment_Role'
+      - aws-ecr/ecr-login:
+          region: <<parameters.region>>
+      - aws-ecr/build-image:
+          account-url: <<parameters.account-url>>
+          dockerfile: <<parameters.dockerfile>>
+          path: <<parameters.path>>
+          repo: <<parameters.repo>>
+          tag: <<parameters.tag>>
+      - aws-ecr/push-image:
+          account-url: <<parameters.account-url>>
+          repo: <<parameters.repo>>
+          tag: <<parameters.tag>>
+          
 workflows:
   check-and-deploy:
       jobs:
-      - testing_assume_role
       - build-and-test
-      - aws-ecr/build_and_push_image:
-          name: build_and_push_image
+      - build_and_push_image:
           dockerfile: ./mat-process-api/Dockerfile
           path: $PROJECT_PATH 
           account-url: AWS_ECR_HOST
           repo: $AWS_ECR_PATH_DEV
           region: AWS_REGION
           tag: "${CIRCLE_SHA1}"
+          requires:
+            - build-and-test
           filters:
             branches:
               only: test-aws-deployment
       - deploy-to-development:
           requires:
-            - build-and-test
             - build_and_push_image
           filters:
             branches:
@@ -117,17 +144,16 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: master           
-      - aws-ecr/build_and_push_image:
-          name: build_and_push_image
-          dockerfile: ./mat-process-api/Dockerfile 
+              only: master
+      - build_and_push_image:
+          dockerfile: ./mat-process-api/Dockerfile
           path: $PROJECT_PATH 
           account-url: AWS_ECR_HOST
           repo: $AWS_ECR_PATH_STAGING
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
           region: AWS_REGION
           tag: "${CIRCLE_SHA1}"
+          requires:
+            - permit-staging-release
           filters:
             branches:
               only: master
