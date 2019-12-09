@@ -36,15 +36,15 @@ commands:
           no_output_timeout: 30m  
   
 jobs:
-  assume-role:
+  testing_assume_role:    
     docker:
       - image: circleci/python:3.7
     steps:
-       - checkout
-       - aws_assume_role/assume_role:
-         account: $AWS_ACCOUNT
-         profile_name: default
-         role: 'LBH_Circle_CI_Deployment_Role'
+      - checkout
+      - aws_assume_role/assume_role:
+          account: $AWS_ACCOUNT
+          profile_name: circlecitest
+          role: 'LBH_Circle_CI_Deployment_Role'
   build-and-test:
     docker:
       - image: circleci/python:3.7
@@ -85,7 +85,7 @@ jobs:
 workflows:
   check-and-deploy:
       jobs:
-      - assume-role
+      - testing_assume_role
       - build-and-test
       - aws-ecr/build_and_push_image:
           name: build_and_push_image
