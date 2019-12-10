@@ -3,7 +3,7 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@3.0.0
   aws-cli: circleci/aws-cli@0.1.9
-  aws_assume_role: lbh-test/aws_assume_role_test@dev:configure
+  aws_assume_role: lbh-hackit/aws_assume_role@dev:second
 
 executors:
   docker-python:
