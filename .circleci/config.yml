@@ -105,6 +105,9 @@ jobs:
       #- aws-ecr/ecr-login:
       #    region: <<parameters.region>>
       - run:
+          name: docker exists check
+          command: docker ps
+      - run:
           name: authorize docker to access aws ecr
           command: >
             # aws ecr get-login returns a login command w/ a temp token
@@ -116,6 +119,9 @@ jobs:
             # save it to an env var & use that env var to login
 
             $LOGIN_COMMAND
+      - run:
+          name: docker exists check
+          command: docker ps
       - aws-ecr/build-image:
           account-url: <<parameters.account-url>>
           dockerfile: <<parameters.dockerfile>>
