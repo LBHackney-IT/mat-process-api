@@ -77,6 +77,7 @@ jobs:
           service-name: $AWS_SERVICE_PROD
           image-tag: "$CIRCLE_SHA1"
   build_and_push_image:
+    executor: docker-python
     parameters:
       account-url:
         default: AWS_ECR_ACCOUNT_URL
@@ -95,7 +96,6 @@ jobs:
       tag:
         default: latest
         type: string
-    executor: docker-python
     steps:
       - checkout
       - aws_assume_role/assume_role:
