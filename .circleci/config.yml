@@ -104,19 +104,18 @@ jobs:
           role: 'LBH_Circle_CI_Deployment_Role'
       #- aws-ecr/ecr-login:
       #    region: <<parameters.region>>
-      - ecr-login:
+      - run:
           name: authorize docker to access aws ecr
-          steps:
-            - run: >
-                # aws ecr get-login returns a login command w/ a temp token
+          command: >
+            # aws ecr get-login returns a login command w/ a temp token
 
-                LOGIN_COMMAND=$(aws ecr get-login --no-include-email --region
-                $<<parameters.region>> --profile default) # default default default default default default default 
+            LOGIN_COMMAND=$(aws ecr get-login --no-include-email --region
+            $<<parameters.region>> --profile default) # default default default default default default default 
 
 
-                # save it to an env var & use that env var to login
+            # save it to an env var & use that env var to login
 
-                $LOGIN_COMMAND
+            $LOGIN_COMMAND
       - aws-ecr/build-image:
           account-url: <<parameters.account-url>>
           dockerfile: <<parameters.dockerfile>>
