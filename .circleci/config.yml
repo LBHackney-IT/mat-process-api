@@ -126,12 +126,14 @@ workflows:
           repo: $AWS_ECR_PATH_DEV
           region: AWS_REGION
           tag: "${CIRCLE_SHA1}"
+          context: mat-assume-role-context
           requires:
             - build-and-test
           filters:
             branches:
               only: test-aws-deployment
       - deploy-to-development:
+          context: mat-assume-role-context
           requires:
             - build_and_push_image
           filters:
@@ -157,14 +159,17 @@ workflows:
           repo: $AWS_ECR_PATH_STAGING
           region: AWS_REGION
           tag: "${CIRCLE_SHA1}"
+          context: mat-assume-role-context
           requires:
             - permit-staging-release
           filters:
             branches:
               only: master
       - deploy-to-staging:
+          context: mat-assume-role-context
           requires:
             - build_and_push_image
           filters:
             branches:
               only: master
+      #- no production?
