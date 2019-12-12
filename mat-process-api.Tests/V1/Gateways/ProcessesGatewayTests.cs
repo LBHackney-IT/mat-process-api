@@ -14,6 +14,9 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
+using mat_process_api.V1.Factories;
+using mat_process_api.V1.Boundary;
+using MongoDB.Bson.Serialization;
 
 namespace UnitTests.V1.Gateways
 {
@@ -82,5 +85,48 @@ namespace UnitTests.V1.Gateways
             Assert.AreEqual(result.ProcessDataSchemaVersion, 0);
             Assert.IsInstanceOf<MatProcessData>(result);
         }
+
+        #region Post Initial Process Document
+
+        [Test]
+        public void given_the_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_the_parsed_object_gets_added_into_the_database()
+        {
+            //arrange
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+
+            //act
+            processDataGateway.PostInitialProcessDocument(domainObject);
+
+            //assert
+            var documentFromDB = BsonSerializer.Deserialize<MatProcessData>(collection.FindAsync(Builders<BsonDocument>.Filter.Eq("_id", domainObject.Id)).Result.FirstOrDefault());
+
+            Assert.AreEqual(domainObject.Id, documentFromDB.Id);
+            Assert.AreEqual(domainObject.ProcessType, documentFromDB.ProcessType);
+            Assert.AreEqual(domainObject.ProcessDataSchemaVersion, documentFromDB.ProcessDataSchemaVersion);
+        }
+
+        [Test]
+        public void given_the_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_the_number_of_documents_in_the_database_increases_by_one() //test that checks whether the db doesn't get cleared or overwritten somehow upon insertion
+        {
+            //arrange
+            //pre-insert between 0 and 7 documents into database, so that it wouldn't be necessarily empty (triangulation)
+            int startingDocumentCount = _faker.Random.Int(0, 7);
+            for (int i = startingDocumentCount; i > 0; i--)
+            {
+                MatProcessData preInsertedDomainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+                collection.InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(preInsertedDomainObject)));
+            }
+
+            //a new object that will be inserted upon gateway call
+            MatProcessData toBeInsertedDomainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+
+            //act
+            processDataGateway.PostInitialProcessDocument(toBeInsertedDomainObject);
+
+            //assert
+            Assert.AreEqual(startingDocumentCount + 1, collection.CountDocuments(Builders<BsonDocument>.Filter.Empty));
+        }
+
+        #endregion
     }
 }
