@@ -18,16 +18,22 @@ namespace mat_process_api.Tests.V1.Helper
 
             return new MatProcessData
             {
+                Id = faker.Random.Guid(),
+                ProcessType = new ProcessType()
+                {
+                    value = faker.Random.Int(),
+                    name = faker.Random.Word()
+                },
                 DateCreated = faker.Date.Recent(),
                 DateLastModified = faker.Date.Recent(),
-                ProcessData = {},
-                ProcessDataSchemaVersion = faker.Random.Int(0,10),
                 DateCompleted = faker.Date.Recent(),
-                Id = faker.Random.Word(),
-                PostProcessData = {},
-                PreProcessData = {},
+                ProcessDataAvailable = false,
+                ProcessDataSchemaVersion = faker.Random.Int(0,10),
                 ProcessStage = faker.Random.Word(),
-                ProcessType = faker.Random.Word()
+                LinkedProcessId = Guid.Empty,
+                PreProcessData = {},
+                ProcessData = {},
+                PostProcessData = {},
             };
         }
 
@@ -35,8 +41,12 @@ namespace mat_process_api.Tests.V1.Helper
         {
             Faker faker = new Faker();
 
-            string processRef = faker.Random.Guid().ToString();
-            string processType = faker.Random.Guid().ToString();
+            Guid processRef = faker.Random.Guid();
+            ProcessType processType = new ProcessType()
+            {
+                value = faker.Random.Int(),
+                name = faker.Random.Word()
+            };
             int processDataSchemaVersion = faker.Random.Int();
 
             return new PostInitialProcessDocumentRequest() { processRef = processRef, processType = processType, processDataSchemaVersion = processDataSchemaVersion };

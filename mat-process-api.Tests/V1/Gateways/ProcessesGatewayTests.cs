@@ -51,16 +51,19 @@ namespace UnitTests.V1.Gateways
             //act
             var result = processDataGateway.GetProcessData(processData.Id);
             //assert
-            Assert.AreEqual(result.Id, processData.Id);
-            Assert.AreEqual(result.DateLastModified, processData.DateLastModified);
-            Assert.AreEqual(result.ProcessType, processData.ProcessType);
-            Assert.AreEqual(result.ProcessStage, processData.ProcessStage);
-            Assert.AreEqual(result.PreProcessData, processData.PreProcessData);
-            Assert.AreEqual(result.ProcessData, processData.ProcessData);
-            Assert.AreEqual(result.PostProcessData, processData.PostProcessData);
-            Assert.AreEqual(result.DateCreated, processData.DateCreated);
-            Assert.AreEqual(result.DateCompleted, processData.DateCompleted);
-            Assert.AreEqual(result.ProcessDataSchemaVersion,processData.ProcessDataSchemaVersion);
+            Assert.AreEqual(processData.Id, result.Id);
+            Assert.AreEqual(processData.ProcessType.value, result.ProcessType.value);
+            Assert.AreEqual(processData.ProcessType.name, result.ProcessType.name);
+            Assert.AreEqual(processData.DateCreated, result.DateCreated);
+            Assert.AreEqual(processData.DateLastModified, result.DateLastModified);
+            Assert.AreEqual(processData.DateCompleted, result.DateCompleted);
+            Assert.AreEqual(processData.ProcessDataAvailable, result.ProcessDataAvailable);
+            Assert.AreEqual(processData.ProcessDataSchemaVersion, result.ProcessDataSchemaVersion);
+            Assert.AreEqual(processData.ProcessStage, result.ProcessStage);
+            Assert.AreEqual(processData.LinkedProcessId, result.LinkedProcessId);
+            Assert.AreEqual(processData.PreProcessData, result.PreProcessData);
+            Assert.AreEqual(processData.ProcessData, result.ProcessData);
+            Assert.AreEqual(processData.PostProcessData, result.PostProcessData);
             Assert.IsInstanceOf<MatProcessData>(result);
         }
 
@@ -69,20 +72,22 @@ namespace UnitTests.V1.Gateways
         public void test_that_gateway_return_mat_process_object_if_no_match_is_found()
         {
             //arrange
-            var id = _faker.Random.Word();
+            Guid id = _faker.Random.Guid();
             //act
             var result = processDataGateway.GetProcessData(id);
             //assert
-            Assert.AreEqual(result.Id, null);
-            Assert.AreEqual(result.DateLastModified, DateTime.MinValue);
-            Assert.AreEqual(result.ProcessType, null);
-            Assert.AreEqual(result.ProcessStage, null);
-            Assert.AreEqual(result.PreProcessData,null);
-            Assert.AreEqual(result.ProcessData, null);
-            Assert.AreEqual(result.PostProcessData, null);
-            Assert.AreEqual(result.DateCreated, DateTime.MinValue);
-            Assert.AreEqual(result.DateCompleted, DateTime.MinValue);
-            Assert.AreEqual(result.ProcessDataSchemaVersion, 0);
+            Assert.AreEqual(Guid.Empty, result.Id);
+            Assert.Null(result.ProcessType);
+            Assert.AreEqual(DateTime.MinValue, result.DateCreated);
+            Assert.AreEqual(DateTime.MinValue, result.DateLastModified);
+            Assert.AreEqual(DateTime.MinValue, result.DateCompleted);
+            Assert.False(result.ProcessDataAvailable);
+            Assert.Zero(result.ProcessDataSchemaVersion);
+            Assert.Null(result.ProcessStage);
+            Assert.AreEqual(Guid.Empty, result.LinkedProcessId);
+            Assert.Null(result.PreProcessData);
+            Assert.Null(result.ProcessData);
+            Assert.Null(result.PostProcessData);
             Assert.IsInstanceOf<MatProcessData>(result);
         }
 
@@ -98,10 +103,11 @@ namespace UnitTests.V1.Gateways
             processDataGateway.PostInitialProcessDocument(domainObject);
 
             //assert
-            var documentFromDB = BsonSerializer.Deserialize<MatProcessData>(collection.FindAsync(Builders<BsonDocument>.Filter.Eq("_id", domainObject.Id)).Result.FirstOrDefault());
+            var documentFromDB = BsonSerializer.Deserialize<MatProcessData>(collection.FindAsync(Builders<BsonDocument>.Filter.Eq("_id", domainObject.Id.ToString())).Result.FirstOrDefault());
 
             Assert.AreEqual(domainObject.Id, documentFromDB.Id);
-            Assert.AreEqual(domainObject.ProcessType, documentFromDB.ProcessType);
+            Assert.AreEqual(domainObject.ProcessType.value, documentFromDB.ProcessType.value);
+            Assert.AreEqual(domainObject.ProcessType.name, documentFromDB.ProcessType.name);
             Assert.AreEqual(domainObject.ProcessDataSchemaVersion, documentFromDB.ProcessDataSchemaVersion);
         }
 

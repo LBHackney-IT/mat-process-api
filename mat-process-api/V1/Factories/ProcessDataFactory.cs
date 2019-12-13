@@ -35,8 +35,10 @@ namespace mat_process_api.V1.Factories
                 DateCreated = dateOfCreation,
                 DateLastModified = dateOfCreation,
                 DateCompleted = DateTime.MinValue,
+                ProcessDataAvailable = false,
                 ProcessDataSchemaVersion = requestObject.processDataSchemaVersion,
                 ProcessStage = "0",
+                LinkedProcessId = Guid.Empty,
                 PreProcessData = new { },
                 ProcessData = new { },
                 PostProcessData = new { }

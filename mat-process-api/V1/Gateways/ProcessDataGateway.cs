@@ -20,10 +20,10 @@ namespace mat_process_api.V1.Gateways
         {
             matDbContext = _matDbContext;
         }
-        public MatProcessData GetProcessData(string processRef)
+        public MatProcessData GetProcessData(Guid processRef)
         {
             //retrieve data by id
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", processRef);
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", processRef.ToString());
             //we will never expect more than one JSON documents matching an ID so we always choose the first/default result
             var result = matDbContext.getCollection().FindAsync(filter).Result.FirstOrDefault();
 

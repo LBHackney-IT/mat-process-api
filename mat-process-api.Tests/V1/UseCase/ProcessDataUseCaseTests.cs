@@ -32,7 +32,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void get_process_data_by_processref_returns_getprocessdataresponse_object()
         {
             //arrange
-            var processRef = faker.Random.Guid().ToString();
+            Guid processRef = faker.Random.Guid();
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new MatProcessData();
             //act        
@@ -51,31 +51,29 @@ namespace mat_process_api.Tests.V1.UseCase
         public void test_gateway_is_called()
         {
             //arrange
-            var processRef = faker.Random.Guid().ToString();
+            Guid processRef = faker.Random.Guid();
             var request = new GetProcessDataRequest{processRef = processRef};
             //act
             processDataUseCase.ExecuteGet(request);
             mockMatGateway.Verify(x => x.GetProcessData(processRef));
         }
 
-        [TestCase("123")]
-        [TestCase("acb5")]
-        [TestCase("aa-bb-123")]
-        public void verif_gateway_calls_database_with_parameters(string processRef)
+        public void verif_gateway_calls_database_with_parameters()
         {
-            //arrange            
+            //arrange
+            Guid processRef = faker.Random.Guid();
             var request = new GetProcessDataRequest { processRef = processRef };
             //act
             var result = processDataUseCase.ExecuteGet(request);
             //assert
-            mockMatGateway.Verify(v => v.GetProcessData(It.Is<string>(i => i == processRef)), Times.Once);
+            mockMatGateway.Verify(v => v.GetProcessData(It.Is<Guid>(i => i == processRef)), Times.Once);
         }
 
         [Test]
         public void check_gateway_returns_expected_response()
         {
             //arrange
-            var processRef = faker.Random.Guid().ToString();
+            Guid processRef = faker.Random.Guid();
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new MatProcessData();
             //act
@@ -98,7 +96,8 @@ namespace mat_process_api.Tests.V1.UseCase
             //assert
             mockMatGateway.Verify(g => g.PostInitialProcessDocument(It.Is<MatProcessData>(
                 d => d.Id == requestObject.processRef &&
-                d.ProcessType == requestObject.processType &&
+                d.ProcessType.value == requestObject.processType.value &&
+                d.ProcessType.name == requestObject.processType.name &&
                 d.ProcessDataSchemaVersion == requestObject.processDataSchemaVersion &&
                 d.ProcessStage == "0"
                 )), Times.Once);
