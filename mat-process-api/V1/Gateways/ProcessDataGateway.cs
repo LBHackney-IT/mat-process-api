@@ -9,6 +9,7 @@ using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 
 namespace mat_process_api.V1.Gateways
 {
@@ -29,9 +30,12 @@ namespace mat_process_api.V1.Gateways
 
             return ProcessDataFactory.CreateProcessDataObject(result);
         }
-        public void PostInitialProcessDocument(MatProcessData processDoc)
+        public Guid PostInitialProcessDocument(MatProcessData processDoc)
         {
-
+            string jsonObject = JsonConvert.SerializeObject(processDoc);
+            BsonDocument bsonObject = BsonDocument.Parse(jsonObject);
+            matDbContext.getCollection().InsertOneAsync(bsonObject);
+            return processDoc.Id;
         }
     }
 }
