@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using mat_process_api.UseCase.V1;
 
 namespace mat_process_api.Controllers.V1
 {
+    [ApiVersion("1.0")]
     [Route("api/v1/healthcheck")]
     [ApiController]
     [Produces("application/json")]
