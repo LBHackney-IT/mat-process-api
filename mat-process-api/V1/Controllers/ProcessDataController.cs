@@ -37,10 +37,10 @@ namespace mat_process_api.V1.Controllers
         [Route("{propertyReference}")]
         [Produces("application/json")]
         [ProducesResponseType(typeof(GetProcessDataResponse), 200)]
-        public IActionResult GetProcessData(string propertyReference)
+        public IActionResult GetProcessData(string processRef)
         {
-            _logger.LogInformation($"Get ProcessData request for process ID {propertyReference}");
-            var request = new GetProcessDataRequest() {processRef = propertyReference };
+            _logger.LogInformation($"Get ProcessData request for process ID {processRef}");
+            var request = new GetProcessDataRequest() {processRef = processRef };
             var result = _processDataUsecase.ExecuteGet(request);
             return Ok(result);
         }
