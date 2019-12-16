@@ -109,9 +109,9 @@ jobs:
           command: docker ps
       - run:
           name: authorize docker to access aws ecr
-          command: >
+          command: |
             # aws ecr get-login returns a login command w/ a temp token
-            LOGIN_COMMAND=$(aws ecr get-login --no-include-email --region
+            LOGIN_COMMAND=$(aws ecr get-login --no-include-email --region \
             $<<parameters.region>> --profile default) # default default default default default default default 
             # save it to an env var & use that env var to login
             $LOGIN_COMMAND
