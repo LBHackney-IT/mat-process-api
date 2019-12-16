@@ -8,7 +8,7 @@ namespace mat_process_api.V1.Gateways
 {
     public interface IProcessDataGateway
     {
-        MatProcessData GetProcessData(Guid processRef);
-        Guid PostInitialProcessDocument(MatProcessData processDoc);
+        MatProcessData GetProcessData(string processRef);
+        string PostInitialProcessDocument(MatProcessData processDoc);
     }
 }

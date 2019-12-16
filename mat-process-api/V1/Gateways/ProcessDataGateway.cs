@@ -21,16 +21,16 @@ namespace mat_process_api.V1.Gateways
         {
             matDbContext = _matDbContext;
         }
-        public MatProcessData GetProcessData(Guid processRef)
+        public MatProcessData GetProcessData(string processRef)
         {
             //retrieve data by id
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", processRef.ToString());
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", processRef);
             //we will never expect more than one JSON documents matching an ID so we always choose the first/default result
             var result = matDbContext.getCollection().FindAsync(filter).Result.FirstOrDefault();
 
             return ProcessDataFactory.CreateProcessDataObject(result);
         }
-        public Guid PostInitialProcessDocument(MatProcessData processDoc)
+        public string PostInitialProcessDocument(MatProcessData processDoc)
         {
             string jsonObject = JsonConvert.SerializeObject(processDoc);
             BsonDocument bsonObject = BsonDocument.Parse(jsonObject);

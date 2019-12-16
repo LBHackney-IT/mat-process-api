@@ -57,7 +57,7 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arrange
             var dataToInsert = MatProcessDataHelper.CreateProcessDataObject();
-            Guid processRef = _faker.Random.Guid();
+            string processRef = _faker.Random.Guid().ToString();
             dataToInsert.Id = processRef;
             _dbcontext.getCollection().InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(dataToInsert)));
             //act

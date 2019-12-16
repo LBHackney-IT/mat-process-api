@@ -9,10 +9,10 @@ namespace mat_process_api.V1.Boundary
     public class PostInitialProcessDocumentResponse
     {
         public GetProcessDataRequest Request { get; set; }
-        public Guid ProcessRef { get; set; }
+        public string ProcessRef { get; set; }
         public DateTime GeneratedAt { get; set; }
 
-        public PostInitialProcessDocumentResponse(GetProcessDataRequest request, Guid processRef, DateTime generatedAt)
+        public PostInitialProcessDocumentResponse(GetProcessDataRequest request, string processRef, DateTime generatedAt)
         {
             Request = request;
             GeneratedAt = generatedAt;

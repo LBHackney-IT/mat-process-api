@@ -38,7 +38,7 @@ namespace mat_process_api.V1.Factories
                 ProcessDataAvailable = false,
                 ProcessDataSchemaVersion = requestObject.processDataSchemaVersion,
                 ProcessStage = "0",
-                LinkedProcessId = Guid.Empty,
+                LinkedProcessId = null,
                 PreProcessData = new { },
                 ProcessData = new { },
                 PostProcessData = new { }

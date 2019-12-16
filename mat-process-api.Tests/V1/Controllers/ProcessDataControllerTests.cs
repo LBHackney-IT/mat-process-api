@@ -37,7 +37,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void given_a_processRef_when_getprocessdata_method_is_called_the_controller_returns_correct_json_response()
         {
             //arange
-            Guid processRef = faker.Random.Guid();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest() { processRef = processRef };
             var response = new GetProcessDataResponse(request, new MatProcessData(), DateTime.Now);
             _mockUsecase.Setup(x=> x.ExecuteGet(It.Is<GetProcessDataRequest>(i => i.processRef == processRef))).Returns(response);
@@ -57,7 +57,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void given_a_processRef_when_getprocessdata_method_is_called_it_then_calls_the_use_case_with_request_object_containing_that_processRef()
         {
             //arrange
-            Guid processRef = faker.Random.Guid();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new GetProcessDataResponse(request, new MatProcessData(), DateTime.Now);
             _mockUsecase.Setup(x => x.ExecuteGet(It.Is<GetProcessDataRequest>(i => i.processRef == processRef))).Returns(response);

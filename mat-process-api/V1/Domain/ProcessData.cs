@@ -14,8 +14,8 @@ namespace mat_process_api.V1.Domain
     public class MatProcessData
     {
         [JsonProperty("_id")]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        public Guid Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
         [JsonProperty("processType")]
         [BsonElement("processType")]
         public ProcessType ProcessType { get; set; }
@@ -39,7 +39,7 @@ namespace mat_process_api.V1.Domain
         public string ProcessStage { get; set; }
         [JsonProperty("linkedProcessId")]
         [BsonElement("linkedProcessId")]
-        public Guid LinkedProcessId { get; set; }
+        public string LinkedProcessId { get; set; }
         [JsonProperty("preProcessData")]
         [BsonElement("preProcessData")]
         public object PreProcessData { get; set; }

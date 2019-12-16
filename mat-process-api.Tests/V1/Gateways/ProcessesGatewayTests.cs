@@ -72,11 +72,11 @@ namespace UnitTests.V1.Gateways
         public void test_that_gateway_return_mat_process_object_if_no_match_is_found()
         {
             //arrange
-            Guid id = _faker.Random.Guid();
+            string id = _faker.Random.Guid().ToString();
             //act
             var result = processDataGateway.GetProcessData(id);
             //assert
-            Assert.AreEqual(Guid.Empty, result.Id);
+            Assert.Null(result.Id);
             Assert.Null(result.ProcessType);
             Assert.AreEqual(DateTime.MinValue, result.DateCreated);
             Assert.AreEqual(DateTime.MinValue, result.DateLastModified);
@@ -84,7 +84,7 @@ namespace UnitTests.V1.Gateways
             Assert.False(result.ProcessDataAvailable);
             Assert.Zero(result.ProcessDataSchemaVersion);
             Assert.Null(result.ProcessStage);
-            Assert.AreEqual(Guid.Empty, result.LinkedProcessId);
+            Assert.Null(result.LinkedProcessId);
             Assert.Null(result.PreProcessData);
             Assert.Null(result.ProcessData);
             Assert.Null(result.PostProcessData);
@@ -103,7 +103,7 @@ namespace UnitTests.V1.Gateways
             processDataGateway.PostInitialProcessDocument(domainObject);
 
             //assert
-            var documentFromDB = BsonSerializer.Deserialize<MatProcessData>(collection.FindAsync(Builders<BsonDocument>.Filter.Eq("_id", domainObject.Id.ToString())).Result.FirstOrDefault());
+            var documentFromDB = BsonSerializer.Deserialize<MatProcessData>(collection.FindAsync(Builders<BsonDocument>.Filter.Eq("_id", domainObject.Id)).Result.FirstOrDefault());
 
             Assert.AreEqual(domainObject.Id, documentFromDB.Id);
             Assert.AreEqual(domainObject.ProcessType.value, documentFromDB.ProcessType.value);
@@ -144,7 +144,7 @@ namespace UnitTests.V1.Gateways
             MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
 
             //act
-            Guid response_Id = processDataGateway.PostInitialProcessDocument(domainObject);
+            string response_Id = processDataGateway.PostInitialProcessDocument(domainObject);
 
             //assert
             Assert.AreEqual(domainObject.Id, response_Id);

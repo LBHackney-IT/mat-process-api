@@ -86,7 +86,7 @@ namespace mat_process_api.Tests.V1.Factories
             Assert.False(domainObject.ProcessDataAvailable);
             Assert.AreEqual(requestObject.processDataSchemaVersion, domainObject.ProcessDataSchemaVersion);
             Assert.AreEqual("0", domainObject.ProcessStage); //it's not confirmed yet whether it's going to be int or string
-            Assert.AreEqual(Guid.Empty, domainObject.LinkedProcessId);
+            Assert.Null(domainObject.LinkedProcessId);
 
             // Assert.AreEqual(new { }, domainObject.PreProcessData); //Causes error --> Expected: <{ }> (<>f__AnonymousType0); But was:  <{ }> (<> f__AnonymousType0)
             Assert.AreEqual(0, domainObject.PreProcessData.GetType().GetProperties().Count()); // using reflections, because the above won't work

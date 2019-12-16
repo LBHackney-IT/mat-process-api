@@ -44,7 +44,7 @@ namespace mat_process_api.Tests.V1.Infrastructure
             collection.InsertOne(bsonObject);
             //act
             var context = new MatDbContext(mockOptions.Object);
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", processData.Id.ToString());
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", processData.Id);
             var result = context.getCollection().FindAsync(filter).Result.FirstOrDefault();
             var resultDesirialzie = BsonSerializer.Deserialize<MatProcessData>(result);
             //assert

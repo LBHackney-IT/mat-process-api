@@ -32,7 +32,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void get_process_data_by_processref_returns_getprocessdataresponse_object()
         {
             //arrange
-            Guid processRef = faker.Random.Guid();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new MatProcessData();
             //act        
@@ -51,7 +51,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void test_gateway_is_called()
         {
             //arrange
-            Guid processRef = faker.Random.Guid();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest{processRef = processRef};
             //act
             processDataUseCase.ExecuteGet(request);
@@ -61,19 +61,19 @@ namespace mat_process_api.Tests.V1.UseCase
         public void verif_gateway_calls_database_with_parameters()
         {
             //arrange
-            Guid processRef = faker.Random.Guid();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             //act
             var result = processDataUseCase.ExecuteGet(request);
             //assert
-            mockMatGateway.Verify(v => v.GetProcessData(It.Is<Guid>(i => i == processRef)), Times.Once);
+            mockMatGateway.Verify(v => v.GetProcessData(It.Is<string>(i => i == processRef)), Times.Once);
         }
 
         [Test]
         public void check_gateway_returns_expected_response()
         {
             //arrange
-            Guid processRef = faker.Random.Guid();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new MatProcessData();
             //act

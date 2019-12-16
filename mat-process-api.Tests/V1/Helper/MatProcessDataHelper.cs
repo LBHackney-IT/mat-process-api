@@ -18,7 +18,7 @@ namespace mat_process_api.Tests.V1.Helper
 
             return new MatProcessData
             {
-                Id = faker.Random.Guid(),
+                Id = faker.Random.Guid().ToString(),
                 ProcessType = new ProcessType()
                 {
                     value = faker.Random.Int(),
@@ -30,7 +30,7 @@ namespace mat_process_api.Tests.V1.Helper
                 ProcessDataAvailable = false,
                 ProcessDataSchemaVersion = faker.Random.Int(0,10),
                 ProcessStage = faker.Random.Word(),
-                LinkedProcessId = Guid.Empty,
+                LinkedProcessId = null,
                 PreProcessData = {},
                 ProcessData = {},
                 PostProcessData = {},
@@ -41,7 +41,7 @@ namespace mat_process_api.Tests.V1.Helper
         {
             Faker faker = new Faker();
 
-            Guid processRef = faker.Random.Guid();
+            string processRef = faker.Random.Guid().ToString();
             ProcessType processType = new ProcessType()
             {
                 value = faker.Random.Int(),
