@@ -83,6 +83,10 @@ namespace mat_process_api.Tests.V1.UseCase
             Assert.AreEqual(response, result.ProcessData);
         }
 
+        #region Post Initial Process Document
+
+        //Ideally would have a test for whether the usecase calls factory method, unfortunatelly, there's no way to test that due to factory being a 'static' method, which can't be mocked.
+
         [Test]
         public void given_the_requestObject_when_executePost_usecase_method_is_called_then_the_gateway_is_called_with_factory_output() // this should be 2 tests really, one to see if factory gets called, and the other to see if gateway is called, but due to using static factory method this becomes impossible to separate.
         {
@@ -106,5 +110,31 @@ namespace mat_process_api.Tests.V1.UseCase
             // and at least one of the properties that factory method generated in order to show that the mapping was done through factory.
             // I don't need to include all the object properties since that's what the Factory method test is for - to test if everything gets mapped and generated as per spec.
         }
+
+        [Test]
+        public void given_the_requestObject_when_executePost_usecase_method_is_called_then_it_wraps_gateway_output_into_postInitialDocumentResponse_object()
+        {
+            //arrange
+            PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(requestObject);
+            mockMatGateway.Setup(g => g.PostInitialProcessDocument(It.IsAny<MatProcessData>())).Returns((MatProcessData dobj) => dobj.Id);
+
+            //act
+            var usecaseResponse = processDataUseCase.ExecutePost(requestObject);
+
+            //assert
+            Assert.IsInstanceOf<PostInitialProcessDocumentResponse>(usecaseResponse);
+
+            Assert.IsInstanceOf<PostInitialProcessDocumentRequest>(usecaseResponse.Request);
+            Assert.IsInstanceOf<string>(usecaseResponse.ProcessRef);
+            Assert.IsInstanceOf<DateTime>(usecaseResponse.GeneratedAt);
+
+            Assert.AreEqual(requestObject.processRef, usecaseResponse.Request.processRef);
+            Assert.AreEqual(requestObject.processRef, usecaseResponse.ProcessRef);
+            Assert.NotNull(usecaseResponse.GeneratedAt);
+            Assert.AreNotEqual(DateTime.MinValue, usecaseResponse.GeneratedAt);
+        }
+
+        #endregion
     }
 }

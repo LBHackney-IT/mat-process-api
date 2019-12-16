@@ -22,10 +22,12 @@ namespace mat_process_api.V1.UseCase
 
             return new GetProcessDataResponse(request, gatewayResult,DateTime.Now);
         }
-        public void ExecutePost(PostInitialProcessDocumentRequest request) //void because there should be no data about the object in api response, as discussed 
+        public PostInitialProcessDocumentResponse ExecutePost(PostInitialProcessDocumentRequest request)
         {
             MatProcessData mappedRequest = ProcessDataFactory.CreateProcessDataObject(request); //mapping request into to be inserted domain object
-            _processDataGateway.PostInitialProcessDocument(mappedRequest);
+            string gatewayResponse = _processDataGateway.PostInitialProcessDocument(mappedRequest);
+
+            return new PostInitialProcessDocumentResponse(request, gatewayResponse, DateTime.Now);
         }
     }
 }
