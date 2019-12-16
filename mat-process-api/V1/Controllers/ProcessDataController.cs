@@ -34,7 +34,7 @@ namespace mat_process_api.V1.Controllers
         /// <param name="processRef"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("{propertyReference}")]
+        [Route("{processRef}")]
         [Produces("application/json")]
         [ProducesResponseType(typeof(GetProcessDataResponse), 200)]
         public IActionResult GetProcessData(string processRef)
