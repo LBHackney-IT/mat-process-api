@@ -18,7 +18,7 @@ namespace mat_process_api.V1.Infrastructure
         public IMongoCollection<BsonDocument> matProcessCollection { get; set; }
         public MatDbContext(IOptions<ConnectionSettings> appSettings)
         {
-            string pathToCAFile = "/ssl/rds-combined-ca-bundle.pem";
+            string pathToCAFile = "/ssl/rds-ca-2019-root.pem";
 
             // ADD CA certificate to local trust store
             // DO this once - Maybe when your service starts
@@ -40,6 +40,8 @@ namespace mat_process_api.V1.Infrastructure
             {
                 localTrustStore.Close();
             }
+
+
             mongoClient = new MongoClient(new MongoUrl(appSettings.Value.ConnectionString));
             //create a new blank database if database does not exist, otherwise get existing database
             mongoDatabase = mongoClient.GetDatabase(appSettings.Value.Database);

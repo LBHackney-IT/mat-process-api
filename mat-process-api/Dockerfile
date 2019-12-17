@@ -25,7 +25,7 @@ NEW_RELIC_APP_NAME="${NEW_RELIC_APP_NAME}"
 # Copy over the compiled application from the build image
 WORKDIR /app
 COPY --from=builder /app/out .
-COPY ./rds-combined-ca-bundle.pem /ssl/rds-combined-ca-bundle.pem
+COPY ./rds-ca-2019-root.pem /ssl/rds-ca-2019-root.pem
 
 
 
