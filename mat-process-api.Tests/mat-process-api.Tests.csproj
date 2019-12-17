@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="V1\Validators\" />
   </ItemGroup>
 
 </Project>
