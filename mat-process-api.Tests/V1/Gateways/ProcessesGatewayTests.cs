@@ -121,7 +121,6 @@ namespace UnitTests.V1.Gateways
             int toBeInsertedDocumentCount = _faker.Random.Int(0, 7);
             for (int i = toBeInsertedDocumentCount; i > 0; i--)
             {
-                var aa = collection.CountDocuments(Builders<BsonDocument>.Filter.Empty);
                 MatProcessData preInsertedDomainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
                 collection.InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(preInsertedDomainObject)));
             }

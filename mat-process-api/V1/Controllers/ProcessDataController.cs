@@ -68,10 +68,12 @@ namespace mat_process_api.V1.Controllers
         /// <returns></returns>
         [HttpPost]
         [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult PostInitialProcessDocument()
+        [ProducesResponseType(typeof(PostInitialProcessDocumentResponse), 201)]
+        public IActionResult PostInitialProcessDocument([FromBody] PostInitialProcessDocumentRequest request)
         {
-            return Ok();
+            PostInitialProcessDocumentResponse usecaseResponse = _processDataUsecase.ExecutePost(request);
+
+            return StatusCode(201, usecaseResponse);
         }
     }
 }

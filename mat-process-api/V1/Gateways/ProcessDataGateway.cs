@@ -34,7 +34,7 @@ namespace mat_process_api.V1.Gateways
         {
             string jsonObject = JsonConvert.SerializeObject(processDoc);
             BsonDocument bsonObject = BsonDocument.Parse(jsonObject);
-            matDbContext.getCollection().InsertOneAsync(bsonObject);
+            matDbContext.getCollection().InsertOneAsync(bsonObject); //change the async once you get to the error handling
             return processDoc.Id;
         }
     }

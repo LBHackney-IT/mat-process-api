@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
+using mat_process_api.Tests.V1.Helper;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Controllers;
 using mat_process_api.V1.Domain;
@@ -81,20 +82,71 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.NotNull(okResult);
             Assert.AreEqual(expectedStatusCode, actualStatusCode);
         }
-  
+
+        #region Post Initial Process Document
+
         [Test]
-        public void when_postinitialprocessdocument_method_is_called_then_it_returns_a_response_that_resource_was_created() //temporary test until actual implementation will be worked on.
+        public void when_postinitialprocessdocument__controller_method_is_called_then_it_returns_a_response_that_resource_was_created() //temporary test until actual implementation will be worked on.
         {
             //arrange
-            int expectedStatusCode = 200;
+            int expectedStatusCode = 201;
+
+            PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
             //act
-            IActionResult controllerResponse = _processDataController.PostInitialProcessDocument();
-            OkResult okResult = (OkResult)controllerResponse;
-            int actualStatusCode = okResult.StatusCode;
+            IActionResult controllerResponse = _processDataController.PostInitialProcessDocument(requestObject);
+            var result = (ObjectResult)controllerResponse;
+            var actualStatusCode = result.StatusCode;
+
             //assert
             Assert.NotNull(controllerResponse);
-            Assert.NotNull(okResult);
+            Assert.NotNull(result);
             Assert.AreEqual(expectedStatusCode, actualStatusCode);
         }
+
+        [Test]
+        public void given_a_postInitialProcessDocumentRequest_when_postInitialProcessDocument_controller_method_is_called_it_then_calls_the_use_case_while_passing_the_request_object_to_it()
+        {
+            //arrange
+            PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>()));
+
+            //act
+            _processDataController.PostInitialProcessDocument(requestObject);
+
+            //assert
+            _mockUsecase.Verify(x => x.ExecutePost(
+                It.Is<PostInitialProcessDocumentRequest>(req => req.processRef == requestObject.processRef)
+                ), Times.Once);
+        }
+
+        //Controlled calls validation test...
+
+        [Test]
+        public void given_a_valid_postInitialProcessDocumentRequest_when_postInitialProcessDocument_controller_method_is_called_then_the_controller_returns_correct_json_response()
+        {
+            //arange
+            PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            var expectedResponse = new PostInitialProcessDocumentResponse(requestObject, requestObject.processRef, DateTime.Now);
+            _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(expectedResponse);
+
+            ////act
+            var actualResponse = _processDataController.PostInitialProcessDocument(requestObject);
+            var result = (ObjectResult)actualResponse;
+            var resultContent = (PostInitialProcessDocumentResponse)result.Value;
+
+            ////assert
+            Assert.NotNull(actualResponse);
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<PostInitialProcessDocumentResponse>(resultContent);
+            Assert.NotNull(resultContent);
+            Assert.AreEqual(expectedResponse.ProcessRef, resultContent.ProcessRef);
+            Assert.AreEqual(expectedResponse.GeneratedAt, resultContent.GeneratedAt);
+            Assert.AreEqual(expectedResponse.Request.processRef, resultContent.Request.processRef);
+            Assert.AreEqual(JsonConvert.SerializeObject(expectedResponse), JsonConvert.SerializeObject(resultContent));
+        }
+
+        //There should be test for given invalid request... essentially invalid GUID, but it should be done after the validation is done.
+
+        #endregion
     }
 }
