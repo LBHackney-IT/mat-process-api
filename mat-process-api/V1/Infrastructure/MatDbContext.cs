@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -17,7 +18,7 @@ namespace mat_process_api.V1.Infrastructure
         public IMongoCollection<BsonDocument> matProcessCollection { get; set; }
         public MatDbContext(IOptions<ConnectionSettings> appSettings)
         {
-            string pathToCAFile = "rds-combined-ca-bundle.pem";
+            string pathToCAFile = "/tmp/rds-combined-ca-bundle.pem";
 
             // ADD CA certificate to local trust store
             // DO this once - Maybe when your service starts
