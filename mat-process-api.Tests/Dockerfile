@@ -15,7 +15,7 @@ RUN dotnet restore ./mat-process-api.Tests/mat-process-api.Tests.csproj
 
 # Copy everything else and build
 COPY . .
-
+COPY ./mat-process-api/rds-combined-ca-bundle.pem /tmp/rds-combined-ca-bundle.pem
 RUN dotnet build -c debug -o out mat-process-api.Tests/mat-process-api.Tests.csproj
 
 CMD dotnet test
