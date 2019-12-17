@@ -40,7 +40,21 @@ namespace mat_process_api.V1.Infrastructure
             {
                 localTrustStore.Close();
             }
-            mongoClient = new MongoClient(new MongoUrl(appSettings.Value.ConnectionString));
+            var clientSettings = MongoClientSettings.FromUrl(new MongoUrl(appSettings.Value.ConnectionString));
+
+            clientSettings.UseTls = true;
+            clientSettings.SslSettings = new SslSettings()
+            {
+                ClientCertificates = new List<X509Certificate2>()
+                {
+                    caCert
+                },
+                EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls,
+                CheckCertificateRevocation = true
+            };
+
+            clientSettings.AllowInsecureTls = true;
+            mongoClient = new MongoClient(clientSettings);
             //create a new blank database if database does not exist, otherwise get existing database
             mongoDatabase = mongoClient.GetDatabase(appSettings.Value.Database);
             //create collection to hold the documents if it does not exist, otherwise retrieve existing
