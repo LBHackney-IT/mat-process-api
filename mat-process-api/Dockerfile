@@ -7,8 +7,8 @@ COPY *.csproj ./
 RUN dotnet restore
 
 # Copy everything else and build
+
 COPY . ./
-COPY ./rds-combined-ca-bundle.pem /tmp/rds-combined-ca-bundle.pem
 RUN dotnet publish -c Release -o out
 
 # Use a smaller image
@@ -25,6 +25,7 @@ NEW_RELIC_APP_NAME="${NEW_RELIC_APP_NAME}"
 # Copy over the compiled application from the build image
 WORKDIR /app
 COPY --from=builder /app/out .
+COPY ./rds-combined-ca-bundle.pem /ssl/rds-combined-ca-bundle.pem
 
 
 

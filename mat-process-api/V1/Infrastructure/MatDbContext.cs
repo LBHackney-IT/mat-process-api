@@ -18,7 +18,7 @@ namespace mat_process_api.V1.Infrastructure
         public IMongoCollection<BsonDocument> matProcessCollection { get; set; }
         public MatDbContext(IOptions<ConnectionSettings> appSettings)
         {
-            string pathToCAFile = "/tmp/rds-combined-ca-bundle.pem";
+            string pathToCAFile = "/ssl/rds-combined-ca-bundle.pem";
 
             // ADD CA certificate to local trust store
             // DO this once - Maybe when your service starts
