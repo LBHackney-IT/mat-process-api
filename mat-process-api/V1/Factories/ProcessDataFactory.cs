@@ -37,7 +37,7 @@ namespace mat_process_api.V1.Factories
                 DateCompleted = DateTime.MinValue,
                 ProcessDataAvailable = false,
                 ProcessDataSchemaVersion = requestObject.processDataSchemaVersion,
-                ProcessStage = "0",
+                ProcessStage = "Not completed",
                 LinkedProcessId = null,
                 PreProcessData = new { },
                 ProcessData = new { },

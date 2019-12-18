@@ -32,10 +32,27 @@ namespace mat_process_api.V1.Gateways
         }
         public string PostInitialProcessDocument(MatProcessData processDoc)
         {
-            string jsonObject = JsonConvert.SerializeObject(processDoc);
-            BsonDocument bsonObject = BsonDocument.Parse(jsonObject);
-            matDbContext.getCollection().InsertOneAsync(bsonObject); //change the async once you get to the error handling
-            return processDoc.Id;
+            try
+            {
+                BsonDocument bsonObject = BsonDocument.Parse(JsonConvert.SerializeObject(processDoc));
+                matDbContext.getCollection().InsertOneAsync(bsonObject).Wait(); 
+                return processDoc.Id;
+            }
+            catch(MongoWriteException ex)
+            {
+                if (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
+                {
+                    throw new ConflictException();
+                }
+                throw ex;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+
         }
     }
+
+    public class ConflictException : System.Exception { }
 }

@@ -149,6 +149,16 @@ namespace UnitTests.V1.Gateways
             Assert.AreEqual(domainObject.Id, response_Id);
         }
 
+        public void given_the_double_insert_of_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_conflict_exception_is_thrown()
+        {
+            //arrange
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+
+            //act
+            string response_Id = processDataGateway.PostInitialProcessDocument(domainObject);
+
+            Assert.Throws<ConflictException>(() => processDataGateway.PostInitialProcessDocument(domainObject));
+        }
         #endregion
     }
 }

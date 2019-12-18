@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Gateways;
 using mat_process_api.V1.UseCase;
+using mat_process_api.V1.Validators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,11 +21,13 @@ namespace mat_process_api.V1.Controllers
     {
         private IProcessData _processDataUsecase;
         private ILogger<ProcessDataController> _logger;
+        private PostInitialProcessDocumentRequestValidator _postValidator;
 
         public ProcessDataController(IProcessData processDataUsecase, ILogger<ProcessDataController> logger)
         {
             _processDataUsecase = processDataUsecase;
             _logger = logger;
+            _postValidator = new PostInitialProcessDocumentRequestValidator();
         }
 
         /// <summary>
@@ -71,9 +75,27 @@ namespace mat_process_api.V1.Controllers
         [ProducesResponseType(typeof(PostInitialProcessDocumentResponse), 201)]
         public IActionResult PostInitialProcessDocument([FromBody] PostInitialProcessDocumentRequest request)
         {
-            PostInitialProcessDocumentResponse usecaseResponse = _processDataUsecase.ExecutePost(request);
-
-            return StatusCode(201, usecaseResponse);
+            //validate request
+            var isRequestValid = _postValidator.Validate(request);
+            if (isRequestValid.IsValid)
+            {
+                try
+                {
+                    PostInitialProcessDocumentResponse usecaseResponse = _processDataUsecase.ExecutePost(request);
+                    return StatusCode(201, usecaseResponse);
+                }
+                catch(ConflictException ex)
+                {
+                    return Conflict("An error inserting an object with duplicate key has occured - " +
+                        ex.InnerException);
+                }
+                catch(Exception ex)
+                {
+                    return StatusCode(500, "An error has occurred - " + ex.InnerException);
+                }
+            }
+           
+            return BadRequest(isRequestValid.Errors);         
         }
     }
 }
