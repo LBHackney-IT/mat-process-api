@@ -10,5 +10,6 @@ namespace mat_process_api.V1.UseCase
     public interface IProcessData
     {
         GetProcessDataResponse ExecuteGet(GetProcessDataRequest request);
+        UpdateProcessDataResponse ExecuteUpdate(UpdateProcessDataRequest request);
     }
 }

@@ -29,5 +29,12 @@ namespace mat_process_api.V1.Gateways
 
             return ProcessDataFactory.CreateProcessDataObject(result);
         }
+
+        public MatProcessData UpdateProcessData(MatProcessData processDataToUpdate)
+        {
+            //insert query
+            var result = new MatProcessData();
+            return result;
+        }
     }
 }

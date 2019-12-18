@@ -82,5 +82,33 @@ namespace UnitTests.V1.Gateways
             Assert.AreEqual(result.ProcessDataSchemaVersion, 0);
             Assert.IsInstanceOf<MatProcessData>(result);
         }
+
+        #region Update Process
+        public void test_that_object_can_be_successfully_updated()
+        {
+            //arrange
+            MatProcessData processData = MatProcessDataHelper.CreateProcessDataObject();
+            var bsonObject = BsonDocument.Parse(JsonConvert.SerializeObject(processData));
+            collection.InsertOne(bsonObject);
+            //object to update
+            var objectToUpdate = processData;
+            objectToUpdate.DateLastModified = DateTime.Now;
+            objectToUpdate.ProcessData = new
+            {
+                firstField = _faker.Random.Word(),
+                anyField = _faker.Random.Words(),
+                numberField = _faker.Random.Number()
+            };
+            //act
+            var result = processDataGateway.UpdateProcessData(objectToUpdate);
+            //assert
+            Assert.AreEqual(objectToUpdate.Id, result.Id);
+            Assert.AreEqual(objectToUpdate.ProcessData, result.ProcessData);
+            Assert.AreEqual(objectToUpdate.DateLastModified, result.DateLastModified);
+            Assert.IsInstanceOf<MatProcessData>(result);
+        }
+
+
+        #endregion
     }
 }

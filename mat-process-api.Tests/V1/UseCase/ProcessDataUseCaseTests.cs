@@ -59,7 +59,7 @@ namespace mat_process_api.Tests.V1.UseCase
         [TestCase("123")]
         [TestCase("acb5")]
         [TestCase("aa-bb-123")]
-        public void verif_gateway_calls_database_with_parameters(string processRef)
+        public void get_process_data_verify_gateway_calls_database_with_parameters(string processRef)
         {
             //arrange            
             var request = new GetProcessDataRequest { processRef = processRef };
@@ -82,6 +82,35 @@ namespace mat_process_api.Tests.V1.UseCase
             //assert
             Assert.AreEqual(response, result.ProcessData);
         }
+
+        #region Update Process Data
+        public void update_process_data_verify_gateway_calls_database_with_parameters()
+        {
+            //arrange            
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatProcessData() };
+            //act
+            var result = processDataUseCase.ExecuteUpdate(request);
+            //assert
+            mockMatGateway.Verify(v => v.UpdateProcessData(request.processDataToUpdate), Times.Once);
+        }
+
+        public void update_process_data_gateway_call_returns_updateprocsesdataresponse_object()
+        {
+            //arrange
+            var updateData = new MatProcessData();
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
+            //act
+            mockMatGateway.Setup(x => x.UpdateProcessData(updateData)).Returns(updateData);
+            var result = processDataUseCase.ExecuteUpdate(request);
+            //assert
+            Assert.IsInstanceOf<MatProcessData>(result.ProcessData);
+            Assert.AreEqual(updateData, result.ProcessData);
+        }
+        #endregion
+        //TODO
+        //Check which fields of the object have been supplied
+        //mapping of object in request
+        //add additional tests to cover that
 
     }
 }

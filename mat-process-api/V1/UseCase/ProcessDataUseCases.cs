@@ -21,5 +21,10 @@ namespace mat_process_api.V1.UseCase
 
             return new GetProcessDataResponse(request, gatewayResult,DateTime.Now);
         }
+
+        public UpdateProcessDataResponse ExecuteUpdate(UpdateProcessDataRequest request)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
