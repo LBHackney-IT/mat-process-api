@@ -39,6 +39,10 @@ namespace mat_process_api
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            services.AddCors(option =>
+            {
+                option.AddPolicy("AllowAny", policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
             services.AddSingleton<IApiVersionDescriptionProvider, DefaultApiVersionDescriptionProvider>();
             ConfigureApiVersioningAndSwagger(services);
             ConfigureDbContext(services);
@@ -163,6 +167,7 @@ namespace mat_process_api
             });
 
             app.UseSwagger();
+            app.UseCors(builder => { builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); });
 
             app.UseMvc(routes =>
             {
