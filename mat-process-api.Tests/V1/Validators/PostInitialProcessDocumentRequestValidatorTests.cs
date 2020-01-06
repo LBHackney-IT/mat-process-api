@@ -90,13 +90,6 @@ namespace mat_process_api.Tests.V1.Validators
             _postInitProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processRef, request);
         }
 
-        //official website - basic setup of validator with an example of how to use it  https://fluentvalidation.net/start#creating-your-first-validator
-        //the validator class is already setup in main project Validators folder - it doesn't implement any interface yet as it didn't need one.
-        //this is how we did tests on Addresses API: https://github.com/LBHackney-IT/HackneyAddressesAPI/blob/master/LBHAddressesAPITest/Validation/SearchAddressValidatorTests.cs
-        //this is our implementation of fluent validor class: https://github.com/LBHackney-IT/HackneyAddressesAPI/blob/master/HackneyAddressesAPI/Validation/SearchAddressValidator.cs
-        //you might need to do something bit custom for the GUID validity check - it's been poorly documented on the official site when we did it, so
-        //the example from our implementation would be the Lines: 28,29 and 31. Where it uses Must to call a custom validation method defined bellow.
-
         #endregion
     }
 }

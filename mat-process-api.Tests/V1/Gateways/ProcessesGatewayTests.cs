@@ -118,8 +118,8 @@ namespace UnitTests.V1.Gateways
             var unclearedDocumentCount = collection.CountDocuments(Builders<BsonDocument>.Filter.Empty); //did some testing around this, seems like the database doesn't get cleared after every test. Depending on the ordering, it might not actually be empty at the start of this test. When this is unaccounted for, it makes this test fail.
 
             //pre-insert between 0 and 7 documents into database, so that it wouldn't be necessarily empty (triangulation)
-            int toBeInsertedDocumentCount = _faker.Random.Int(0, 7);
-            for (int i = toBeInsertedDocumentCount; i > 0; i--)
+            int preInsertedDocumentCount = _faker.Random.Int(0, 7);
+            for (int i = preInsertedDocumentCount; i > 0; i--)
             {
                 MatProcessData preInsertedDomainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
                 collection.InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(preInsertedDomainObject)));
@@ -132,12 +132,12 @@ namespace UnitTests.V1.Gateways
             processDataGateway.PostInitialProcessDocument(toBeInsertedDomainObject);
 
             //assert
-            var startingDocumentCount = unclearedDocumentCount + toBeInsertedDocumentCount;
+            var startingDocumentCount = unclearedDocumentCount + preInsertedDocumentCount;
             Assert.AreEqual(startingDocumentCount + 1, collection.CountDocuments(Builders<BsonDocument>.Filter.Empty));
         }
 
         [Test]
-        public void given_the_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_it_returns_id_of_the_inserted_document() //test that checks whether the db doesn't get cleared or overwritten somehow upon insertion
+        public void given_the_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_it_returns_id_of_the_inserted_document()
         {
             //arrange
             MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
@@ -156,9 +156,9 @@ namespace UnitTests.V1.Gateways
             MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
 
             //act
-            string response_Id = processDataGateway.PostInitialProcessDocument(domainObject);
+            string response_Id = processDataGateway.PostInitialProcessDocument(domainObject); //first insert.
 
-            Assert.Throws<ConflictException>(() => processDataGateway.PostInitialProcessDocument(domainObject));
+            Assert.Throws<ConflictException>(() => processDataGateway.PostInitialProcessDocument(domainObject)); //the second document insertion happends, while asserting.
         }
         #endregion
     }

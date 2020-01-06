@@ -8,14 +8,14 @@ namespace mat_process_api.V1.Boundary
 {
     public class PostInitialProcessDocumentRequest
     {
-        [Required] public string processRef { get; set; }
-        [Required] public ProcessType processType { get; set; }
-        [Required] public int processDataSchemaVersion { get; set; }
+        public string processRef { get; set; }
+        public ProcessType processType { get; set; }
+        public int processDataSchemaVersion { get; set; }
     }
 
     public class ProcessType
     {
-        [Required] public int value { get; set; }
-        [Required] public string name { get; set; }
+        public int value { get; set; }
+        public string name { get; set; }
     }
 }

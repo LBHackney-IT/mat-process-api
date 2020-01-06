@@ -86,7 +86,7 @@ namespace mat_process_api.Tests.V1.Controllers
         #region Post Initial Process Document
 
         [Test]
-        public void when_postinitialprocessdocument__controller_method_is_called_then_it_returns_a_response_that_resource_was_created() //temporary test until actual implementation will be worked on.
+        public void when_postinitialprocessdocument_controller_method_is_called_then_it_returns_a_response_that_resource_was_created() //temporary test until actual implementation will be worked on.
         {
             //arrange
             int expectedStatusCode = 201;
