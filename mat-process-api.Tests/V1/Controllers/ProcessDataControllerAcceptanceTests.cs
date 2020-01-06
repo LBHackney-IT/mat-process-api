@@ -11,6 +11,7 @@ using mat_process_api.V1.Factories;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
 using mat_process_api.V1.UseCase;
+using mat_process_api.V1.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,7 @@ using MongoDB.Driver;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using FluentValidation.Results;
 
 namespace mat_process_api.Tests.V1.Controllers
 {
@@ -81,7 +83,7 @@ namespace mat_process_api.Tests.V1.Controllers
         #region controller Post Initial Process Document endpoint
 
         [Test]
-        public void postInitialProcessDocument_controller_method_end_to_end_test_with_a_valid_request()
+        public void postInitialProcessDocument_controller_method_end_to_end_test_with_a_valid_request() //testing regular response
         {
             //arrange
             PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
@@ -115,9 +117,69 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(201, result.StatusCode);
         }
 
-        //invalid request - needs validation setup first
+        [Test]
+        public void postInitialProcessDocument_controller_method_end_to_end_test_with_a_invalid_request() //testing, when validation fails
+        {
+            //arrange
+            PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            string nonsenseGuid = _faker.Random.Word().ToString(); // invalid Guid (not even a guid) - this should trip the validation.
+            requestObject.processRef = nonsenseGuid;
 
-        //duplicate request - needs error handling in the gateway setup
+            var postValidator = new PostInitialProcessDocumentRequestValidator();
+            var isRequestValid = postValidator.Validate(requestObject);
+            var errors = isRequestValid.Errors;
+
+            var expectedResponse = new BadRequestObjectResult(errors);
+
+            //act
+            var controllerResponse = _processDataController.PostInitialProcessDocument(requestObject);
+            var actualResult = (ObjectResult)controllerResponse;
+            var actualContents = (IList<ValidationFailure>)actualResult.Value;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.IsInstanceOf<BadRequestObjectResult>(actualResult); // should be bad request, since validation fails.
+            Assert.NotNull(actualResult);
+            Assert.IsInstanceOf<IList<ValidationFailure>>(actualContents);
+            Assert.NotNull(actualContents);
+
+            Assert.AreEqual(1, actualContents.Count); // there should be 1 validation failure coming from the invalid guid
+            Assert.AreEqual(400, actualResult.StatusCode); // expecting bad request result
+
+            //the following simply proves that validation errors get wraped up properly.
+            Assert.AreEqual(((IList<ValidationFailure>)expectedResponse.Value)[0].ErrorMessage, actualContents[0].ErrorMessage);
+        }
+
+        [Test]
+        public void postInitialProcessDocument_controller_method_end_to_end_test_with_a_conflict_exception_in_the_gateway() //testing exception handling. in this case testing how our custom exception bubbles up from gateway. chose conflict exception to test 2 things at once - exception handling + custom exception wrapping.
+        {
+            //arrange
+            string conflictGuid = _faker.Random.Guid().ToString(); //This is the conflicting Guid, that will be repeated accross 2 request objects.
+
+            PostInitialProcessDocumentRequest requestObject1 = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            requestObject1.processRef = conflictGuid; // set conflict Guid.
+            _processDataController.PostInitialProcessDocument(requestObject1); //The process document with conflict Guid identifier has been inserted into the database.
+
+            PostInitialProcessDocumentRequest requestObject2 = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            requestObject2.processRef = conflictGuid; // set conflict Guid.
+
+            //act
+            var controllerResponse = _processDataController.PostInitialProcessDocument(requestObject2); //The attempt to insert another document into the database with the already existing identifier (conflict guid). Conflict happens.
+            var actualResult = (ObjectResult)controllerResponse;
+            var errorMessage = (string)actualResult.Value;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.IsInstanceOf<ConflictObjectResult>(actualResult);
+            Assert.NotNull(actualResult);
+            Assert.IsInstanceOf<string>(errorMessage);
+            Assert.NotNull(errorMessage);
+            Assert.IsNotEmpty(errorMessage);
+
+            Assert.AreEqual(409, actualResult.StatusCode);
+            Assert.AreNotEqual("An error inserting an object with duplicate key has occured - ", errorMessage); //If they're equal, then it means that empty exception has been appended to this sentense.
+            //There is no good way to check the error message, since it would require to cause the exception manually through writing error handling implementation in the test.
+        }
 
         #endregion
     }
