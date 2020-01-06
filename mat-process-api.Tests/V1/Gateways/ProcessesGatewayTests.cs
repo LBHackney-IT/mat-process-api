@@ -149,6 +149,7 @@ namespace UnitTests.V1.Gateways
             Assert.AreEqual(domainObject.Id, response_Id);
         }
 
+        [Test]
         public void given_the_double_insert_of_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_conflict_exception_is_thrown()
         {
             //arrange

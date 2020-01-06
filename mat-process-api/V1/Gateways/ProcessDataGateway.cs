@@ -38,12 +38,16 @@ namespace mat_process_api.V1.Gateways
                 matDbContext.getCollection().InsertOneAsync(bsonObject).Wait(); 
                 return processDoc.Id;
             }
-            catch(MongoWriteException ex)
+            catch(AggregateException ex)
             {
-                if (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
+                ex.Handle((x) =>
                 {
-                    throw new ConflictException();
-                }
+                    if (x is MongoWriteException) 
+                    {
+                        throw new ConflictException();
+                    }
+                    throw ex;
+                });
                 throw ex;
             }
             catch(Exception ex)
