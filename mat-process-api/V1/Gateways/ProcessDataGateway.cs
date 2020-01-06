@@ -44,7 +44,7 @@ namespace mat_process_api.V1.Gateways
                 {
                     if (x is MongoWriteException) 
                     {
-                        throw new ConflictException();
+                        throw new ConflictException(ex.Message, ex.InnerException);
                     }
                     throw ex;
                 });
@@ -58,5 +58,8 @@ namespace mat_process_api.V1.Gateways
         }
     }
 
-    public class ConflictException : System.Exception { }
+    public class ConflictException : System.Exception
+    {
+        public ConflictException(String message, Exception inner) : base(message, inner) { }
+    }
 }
