@@ -98,11 +98,15 @@ namespace mat_process_api.Tests.V1.UseCase
             processDataUseCase.ExecutePost(requestObject);
 
             //assert
-            mockMatGateway.Verify(g => g.PostInitialProcessDocument(It.IsAny<MatProcessData>()), Times.Once);
-
-            // I need to include into assertion just enough object properties so that it would be demonstrated that all the data from the request is in a mapped-to object (probably 1 would be enough).
-            // and at least one of the properties that factory method generated in order to show that the mapping was done through factory.
-            // I don't need to include all the object properties since that's what the Factory method test is for - to test if everything gets mapped and generated as per spec.
+            mockMatGateway.Verify(g => g.PostInitialProcessDocument(It.Is<MatProcessData>(d =>
+                d.ProcessType.name == requestObject.processType.name && //checking whether properties that have to be transfered from request object to domain object are present
+                d.Id == requestObject.processRef &&
+                d.ProcessType.value == requestObject.processType.value &&
+                d.ProcessDataSchemaVersion == requestObject.processDataSchemaVersion &&
+                d.DateCompleted == DateTime.MinValue && //checking whether some of the properties that factory has to generate itself are present.
+                d.ProcessStage == "Not completed"
+                )), Times.Once);
+            // This checks whether the usecase calls the gateway with the output of the factory method.
         }
 
         [Test]
