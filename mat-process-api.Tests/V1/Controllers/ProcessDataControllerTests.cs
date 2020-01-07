@@ -126,7 +126,25 @@ namespace mat_process_api.Tests.V1.Controllers
                 ), Times.Once);
         }
 
-        //Controlled calls validation test...
+        [Test]
+        public void given_a_request_when_postInitialProcessDocument_controller_method_is_called_then_it_calls_the_validator_with_that_request()
+        {
+            //arrange
+            PostInitialProcessDocumentRequest request = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
+            _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>()));
+
+            //act
+            _processDataController.PostInitialProcessDocument(request);
+
+            //assert
+            _mockValidator.Verify(v => v.Validate(It.Is<PostInitialProcessDocumentRequest>(i =>
+                i.processRef == request.processRef &&
+                i.processType.name == request.processType.name &&
+                i.processType.value == request.processType.value &&
+                i.processDataSchemaVersion == request.processDataSchemaVersion
+                )), Times.Once);
+        }
 
         [Test]
         public void given_a_valid_postInitialProcessDocumentRequest_when_postInitialProcessDocument_controller_method_is_called_then_the_controller_returns_correct_json_response()
