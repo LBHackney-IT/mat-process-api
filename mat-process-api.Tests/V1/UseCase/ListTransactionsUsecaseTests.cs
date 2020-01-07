@@ -13,8 +13,8 @@ namespace UnitTests.V1.UseCase
     [TestFixture]
     public class ListTransactionsUsecaseTests
     {
-        private ListTransactionsUsecase _classUnderTest;
-        private Mock<ITransactionsGateway> _transactionsGateway;
+       // private ListTransactionsUsecase _classUnderTest;
+        //private Mock<ITransactionsGateway> _transactionsGateway;
 
 //        [SetUp]
 //        public void Setup()

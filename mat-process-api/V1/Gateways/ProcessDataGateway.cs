@@ -26,15 +26,27 @@ namespace mat_process_api.V1.Gateways
             var filter = Builders<BsonDocument>.Filter.Eq("_id", processRef);
             //we will never expect more than one JSON documents matching an ID so we always choose the first/default result
             var result = matDbContext.getCollection().FindAsync(filter).Result.FirstOrDefault();
-
+            
             return ProcessDataFactory.CreateProcessDataObject(result);
         }
 
-        public MatProcessData UpdateProcessData(MatProcessData processDataToUpdate)
+        public MatProcessData UpdateProcessData(UpdateDefinition<BsonDocument> updateDefinition, string id)
         {
-            //insert query
-            var result = new MatProcessData();
-            return result;
+            //return updated document
+            var options = new FindOneAndUpdateOptions<BsonDocument>();
+            options.ReturnDocument = ReturnDocument.After;
+            //query by
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", id);
+            //find and update
+            var result = matDbContext.getCollection().FindOneAndUpdate(filter, updateDefinition, options);
+            //if empty result, the document to be updated was not found
+            if(result == null)
+            {
+                throw new DocumentNotFound();
+            }
+            return ProcessDataFactory.CreateProcessDataObject(result);
         }
     }
+
+    public class DocumentNotFound : Exception {}
 }

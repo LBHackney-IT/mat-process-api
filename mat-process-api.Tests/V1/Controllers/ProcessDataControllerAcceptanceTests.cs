@@ -67,6 +67,34 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.IsInstanceOf<MatProcessData>(getProcessDataResponse.ProcessData);
             Assert.AreEqual(processRef,getProcessDataResponse.ProcessData.Id);
         }
+        [TestCase("00000000-0000-0000-0000-000000000000")]
+        [TestCase("00000000-dd23-0000-abcd-000000000000")]
+        [TestCase("00000000-pnhm-0000-1234-00000bb00000")]
+        public void update_process_controller_end_to_end_test(string processRef)
+        {
+            //arrange
+            var dataToInsert = MatProcessDataHelper.CreateProcessDataObject();
+            dataToInsert.Id = processRef;
+            _dbcontext.getCollection().InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(dataToInsert)));
+            //fields to update
+            dataToInsert.DateLastModified = DateTime.Now;
+            dataToInsert.PreProcessData = new
+            {
+                randomField = "abc"
+            };
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = dataToInsert };
+            //act
+            var response = _processDataController.UpdateExistingProcessDocument(request);
+            var okResult = (OkObjectResult)response;
+            var updateProcessDataResponse = okResult.Value as UpdateProcessDataResponse;
+            //assert
+            Assert.IsInstanceOf<MatProcessData>(updateProcessDataResponse.ProcessData);
+            Assert.AreEqual(processRef, updateProcessDataResponse.ProcessData.Id);
+            Assert.AreEqual(dataToInsert.DateLastModified.ToShortDateString(),
+                updateProcessDataResponse.ProcessData.DateLastModified.ToShortDateString());
+            Assert.AreEqual(JsonConvert.SerializeObject(dataToInsert.PreProcessData),
+                JsonConvert.SerializeObject(updateProcessDataResponse.ProcessData.PreProcessData));
+        }
 
         [OneTimeTearDown]
         public void RunAfterAnyTests()

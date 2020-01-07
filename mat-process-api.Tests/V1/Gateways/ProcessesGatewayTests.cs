@@ -14,6 +14,7 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
+using mat_process_api.V1.Factories;
 
 namespace UnitTests.V1.Gateways
 {
@@ -84,6 +85,7 @@ namespace UnitTests.V1.Gateways
         }
 
         #region Update Process
+        [Test]
         public void test_that_object_can_be_successfully_updated()
         {
             //arrange
@@ -92,23 +94,45 @@ namespace UnitTests.V1.Gateways
             collection.InsertOne(bsonObject);
             //object to update
             var objectToUpdate = processData;
-            objectToUpdate.DateLastModified = DateTime.Now;
+            objectToUpdate.DateLastModified = _faker.Date.Recent();
             objectToUpdate.ProcessData = new
             {
                 firstField = _faker.Random.Word(),
                 anyField = _faker.Random.Words(),
                 numberField = _faker.Random.Number()
             };
+            //get update definition
+            var updateDefinition = ProcessDataFactory.PrepareFieldsToBeUpdated(objectToUpdate);
+
             //act
-            var result = processDataGateway.UpdateProcessData(objectToUpdate);
+            var result = processDataGateway.UpdateProcessData(updateDefinition,objectToUpdate.Id);
             //assert
             Assert.AreEqual(objectToUpdate.Id, result.Id);
-            Assert.AreEqual(objectToUpdate.ProcessData, result.ProcessData);
-            Assert.AreEqual(objectToUpdate.DateLastModified, result.DateLastModified);
+            Assert.AreEqual(JsonConvert.SerializeObject(objectToUpdate.ProcessData), JsonConvert.SerializeObject(result.ProcessData));
+            Assert.AreEqual(objectToUpdate.DateLastModified.ToShortDateString(), result.DateLastModified.ToShortDateString());
             Assert.IsInstanceOf<MatProcessData>(result);
         }
-
-
+        [Test]
+        public void test_if_object_to_be_updated_is_not_found_exception_is_thrown()
+        {
+            //arrange
+            MatProcessData processData = MatProcessDataHelper.CreateProcessDataObject();
+            var bsonObject = BsonDocument.Parse(JsonConvert.SerializeObject(processData));
+         //   collection.InsertOne(bsonObject);
+            //object to update
+            var objectToUpdate = processData;
+            objectToUpdate.DateLastModified = _faker.Date.Recent();
+            objectToUpdate.ProcessData = new
+            {
+                firstField = _faker.Random.Word(),
+                anyField = _faker.Random.Words(),
+                numberField = _faker.Random.Number()
+            };
+            //get update definition
+            var updateDefinition = ProcessDataFactory.PrepareFieldsToBeUpdated(objectToUpdate);
+            //assert
+            Assert.Throws<DocumentNotFound>(() => processDataGateway.UpdateProcessData(updateDefinition, objectToUpdate.Id));
+        }
         #endregion
     }
 }
