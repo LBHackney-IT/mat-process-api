@@ -45,19 +45,22 @@ namespace mat_process_api.Tests.V1.Infrastructure
             //act
             var context = new MatDbContext(mockOptions.Object);
             var filter = Builders<BsonDocument>.Filter.Eq("_id", processData.Id);
-            var result = context.getCollection().FindAsync(filter).Result.FirstOrDefault(); ;
+            var result = context.getCollection().FindAsync(filter).Result.FirstOrDefault();
             var resultDesirialzie = BsonSerializer.Deserialize<MatProcessData>(result);
             //assert
             Assert.AreEqual(processData.Id, resultDesirialzie.Id);
-            Assert.AreEqual(processData.DateCompleted, resultDesirialzie.DateCompleted);
+            Assert.AreEqual(processData.ProcessType.value, resultDesirialzie.ProcessType.value);
+            Assert.AreEqual(processData.ProcessType.name, resultDesirialzie.ProcessType.name);
             Assert.AreEqual(processData.DateCreated, resultDesirialzie.DateCreated);
             Assert.AreEqual(processData.DateLastModified, resultDesirialzie.DateLastModified);
-            Assert.AreEqual(processData.PostProcessData, resultDesirialzie.PostProcessData);
+            Assert.AreEqual(processData.DateCompleted, resultDesirialzie.DateCompleted);
+            Assert.AreEqual(processData.ProcessDataAvailable, resultDesirialzie.ProcessDataAvailable);
+            Assert.AreEqual(processData.ProcessDataSchemaVersion, resultDesirialzie.ProcessDataSchemaVersion);
+            Assert.AreEqual(processData.ProcessStage, resultDesirialzie.ProcessStage);
+            Assert.AreEqual(processData.LinkedProcessId, resultDesirialzie.LinkedProcessId);
             Assert.AreEqual(processData.PreProcessData, resultDesirialzie.PreProcessData);
             Assert.AreEqual(processData.ProcessData, resultDesirialzie.ProcessData);
-            Assert.AreEqual(processData.ProcessStage, resultDesirialzie.ProcessStage);
-            Assert.AreEqual(processData.ProcessType, resultDesirialzie.ProcessType);
-            Assert.AreEqual(processData.ProcessDataSchemaVersion, resultDesirialzie.ProcessDataSchemaVersion);
+            Assert.AreEqual(processData.PostProcessData, resultDesirialzie.PostProcessData);
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using mat_process_api.V1.Boundary;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
@@ -17,7 +18,7 @@ namespace mat_process_api.V1.Domain
         public string Id { get; set; }
         [JsonProperty("processType")]
         [BsonElement("processType")]
-        public string ProcessType { get; set; }
+        public ProcessType ProcessType { get; set; }
         [JsonProperty("dateCreated")]
         [BsonElement("dateCreated")]
         public DateTime DateCreated { get; set; }
@@ -27,12 +28,18 @@ namespace mat_process_api.V1.Domain
         [JsonProperty("dateCompleted")]
         [BsonElement("dateCompleted")]
         public DateTime DateCompleted { get; set; }
+        [JsonProperty("processDataAvailable")]
+        [BsonElement("processDataAvailable")]
+        public bool ProcessDataAvailable { get; set; }
         [JsonProperty("dataSchemaVersion")]
         [BsonElement("dataSchemaVersion")]
         public int ProcessDataSchemaVersion { get; set; }
         [JsonProperty("processStage")]
         [BsonElement("processStage")]
         public string ProcessStage { get; set; }
+        [JsonProperty("linkedProcessId")]
+        [BsonElement("linkedProcessId")]
+        public string LinkedProcessId { get; set; }
         [JsonProperty("preProcessData")]
         [BsonElement("preProcessData")]
         public object PreProcessData { get; set; }

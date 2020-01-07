@@ -14,6 +14,9 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
+using mat_process_api.V1.Factories;
+using mat_process_api.V1.Boundary;
+using MongoDB.Bson.Serialization;
 
 namespace UnitTests.V1.Gateways
 {
@@ -48,16 +51,19 @@ namespace UnitTests.V1.Gateways
             //act
             var result = processDataGateway.GetProcessData(processData.Id);
             //assert
-            Assert.AreEqual(result.Id, processData.Id);
-            Assert.AreEqual(result.DateLastModified, processData.DateLastModified);
-            Assert.AreEqual(result.ProcessType, processData.ProcessType);
-            Assert.AreEqual(result.ProcessStage, processData.ProcessStage);
-            Assert.AreEqual(result.PreProcessData, processData.PreProcessData);
-            Assert.AreEqual(result.ProcessData, processData.ProcessData);
-            Assert.AreEqual(result.PostProcessData, processData.PostProcessData);
-            Assert.AreEqual(result.DateCreated, processData.DateCreated);
-            Assert.AreEqual(result.DateCompleted, processData.DateCompleted);
-            Assert.AreEqual(result.ProcessDataSchemaVersion,processData.ProcessDataSchemaVersion);
+            Assert.AreEqual(processData.Id, result.Id);
+            Assert.AreEqual(processData.ProcessType.value, result.ProcessType.value);
+            Assert.AreEqual(processData.ProcessType.name, result.ProcessType.name);
+            Assert.AreEqual(processData.DateCreated, result.DateCreated);
+            Assert.AreEqual(processData.DateLastModified, result.DateLastModified);
+            Assert.AreEqual(processData.DateCompleted, result.DateCompleted);
+            Assert.AreEqual(processData.ProcessDataAvailable, result.ProcessDataAvailable);
+            Assert.AreEqual(processData.ProcessDataSchemaVersion, result.ProcessDataSchemaVersion);
+            Assert.AreEqual(processData.ProcessStage, result.ProcessStage);
+            Assert.AreEqual(processData.LinkedProcessId, result.LinkedProcessId);
+            Assert.AreEqual(processData.PreProcessData, result.PreProcessData);
+            Assert.AreEqual(processData.ProcessData, result.ProcessData);
+            Assert.AreEqual(processData.PostProcessData, result.PostProcessData);
             Assert.IsInstanceOf<MatProcessData>(result);
         }
 
@@ -66,21 +72,94 @@ namespace UnitTests.V1.Gateways
         public void test_that_gateway_return_mat_process_object_if_no_match_is_found()
         {
             //arrange
-            var id = _faker.Random.Word();
+            string id = _faker.Random.Guid().ToString();
             //act
             var result = processDataGateway.GetProcessData(id);
             //assert
-            Assert.AreEqual(result.Id, null);
-            Assert.AreEqual(result.DateLastModified, DateTime.MinValue);
-            Assert.AreEqual(result.ProcessType, null);
-            Assert.AreEqual(result.ProcessStage, null);
-            Assert.AreEqual(result.PreProcessData,null);
-            Assert.AreEqual(result.ProcessData, null);
-            Assert.AreEqual(result.PostProcessData, null);
-            Assert.AreEqual(result.DateCreated, DateTime.MinValue);
-            Assert.AreEqual(result.DateCompleted, DateTime.MinValue);
-            Assert.AreEqual(result.ProcessDataSchemaVersion, 0);
+            Assert.Null(result.Id);
+            Assert.Null(result.ProcessType);
+            Assert.AreEqual(DateTime.MinValue, result.DateCreated);
+            Assert.AreEqual(DateTime.MinValue, result.DateLastModified);
+            Assert.AreEqual(DateTime.MinValue, result.DateCompleted);
+            Assert.False(result.ProcessDataAvailable);
+            Assert.Zero(result.ProcessDataSchemaVersion);
+            Assert.Null(result.ProcessStage);
+            Assert.Null(result.LinkedProcessId);
+            Assert.Null(result.PreProcessData);
+            Assert.Null(result.ProcessData);
+            Assert.Null(result.PostProcessData);
             Assert.IsInstanceOf<MatProcessData>(result);
         }
+
+        #region Post Initial Process Document
+
+        [Test]
+        public void given_the_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_the_parsed_object_gets_added_into_the_database()
+        {
+            //arrange
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+
+            //act
+            processDataGateway.PostInitialProcessDocument(domainObject);
+
+            //assert
+            var documentFromDB = BsonSerializer.Deserialize<MatProcessData>(collection.FindAsync(Builders<BsonDocument>.Filter.Eq("_id", domainObject.Id)).Result.FirstOrDefault());
+
+            Assert.AreEqual(domainObject.Id, documentFromDB.Id);
+            Assert.AreEqual(domainObject.ProcessType.value, documentFromDB.ProcessType.value);
+            Assert.AreEqual(domainObject.ProcessType.name, documentFromDB.ProcessType.name);
+            Assert.AreEqual(domainObject.ProcessDataSchemaVersion, documentFromDB.ProcessDataSchemaVersion);
+        }
+
+        [Test]
+        public void given_the_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_the_number_of_documents_in_the_database_increases_by_one() //test that checks whether the db doesn't get cleared or overwritten somehow upon insertion
+        {
+            //arrange
+            var unclearedDocumentCount = collection.CountDocuments(Builders<BsonDocument>.Filter.Empty); //did some testing around this, seems like the database doesn't get cleared after every test. Depending on the ordering, it might not actually be empty at the start of this test. When this is unaccounted for, it makes this test fail.
+
+            //pre-insert between 0 and 7 documents into database, so that it wouldn't be necessarily empty (triangulation)
+            int preInsertedDocumentCount = _faker.Random.Int(0, 7);
+            for (int i = preInsertedDocumentCount; i > 0; i--)
+            {
+                MatProcessData preInsertedDomainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+                collection.InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(preInsertedDomainObject)));
+            }
+
+            //a new object that will be inserted upon gateway call
+            MatProcessData toBeInsertedDomainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+
+            //act
+            processDataGateway.PostInitialProcessDocument(toBeInsertedDomainObject);
+
+            //assert
+            var startingDocumentCount = unclearedDocumentCount + preInsertedDocumentCount;
+            Assert.AreEqual(startingDocumentCount + 1, collection.CountDocuments(Builders<BsonDocument>.Filter.Empty));
+        }
+
+        [Test]
+        public void given_the_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_it_returns_id_of_the_inserted_document()
+        {
+            //arrange
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+
+            //act
+            string response_Id = processDataGateway.PostInitialProcessDocument(domainObject);
+
+            //assert
+            Assert.AreEqual(domainObject.Id, response_Id);
+        }
+
+        [Test]
+        public void given_the_double_insert_of_matProcessData_domain_object_when_postInitialProcessDocument_gateway_method_is_called_then_conflict_exception_is_thrown()
+        {
+            //arrange
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject());
+
+            //act
+            string response_Id = processDataGateway.PostInitialProcessDocument(domainObject); //first insert.
+
+            Assert.Throws<ConflictException>(() => processDataGateway.PostInitialProcessDocument(domainObject)); //the second document insertion happends, while asserting.
+        }
+        #endregion
     }
 }
