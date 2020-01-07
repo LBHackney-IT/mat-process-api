@@ -7,7 +7,7 @@ using mat_process_api.V1.Boundary;
 
 namespace mat_process_api.V1.Validators
 {
-    public class PostInitialProcessDocumentRequestValidator : AbstractValidator<PostInitialProcessDocumentRequest>
+    public class PostInitialProcessDocumentRequestValidator : AbstractValidator<PostInitialProcessDocumentRequest>, IPostInitialProcessDocumentRequestValidator
     {
         public PostInitialProcessDocumentRequestValidator()
         {

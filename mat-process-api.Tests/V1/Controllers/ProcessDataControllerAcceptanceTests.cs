@@ -51,9 +51,10 @@ namespace mat_process_api.Tests.V1.Controllers
             _dbcontext = new MatDbContext(mockOptions.Object);
             var processDataGateway = new ProcessDataGateway(_dbcontext);
             var processDataUsecase = new ProcessDataUseCase(processDataGateway);
+            var postInitDocValidator = new PostInitialProcessDocumentRequestValidator();
             Mock<ILogger<ProcessDataController>> logger = new Mock<ILogger<ProcessDataController>>();
 
-            _processDataController = new ProcessDataController(processDataUsecase, logger.Object);
+            _processDataController = new ProcessDataController(processDataUsecase, logger.Object, postInitDocValidator);
         }
 
         [Test]

@@ -21,13 +21,13 @@ namespace mat_process_api.V1.Controllers
     {
         private IProcessData _processDataUsecase;
         private ILogger<ProcessDataController> _logger;
-        private PostInitialProcessDocumentRequestValidator _postValidator;
+        private IPostInitialProcessDocumentRequestValidator _postValidator;
 
-        public ProcessDataController(IProcessData processDataUsecase, ILogger<ProcessDataController> logger)
+        public ProcessDataController(IProcessData processDataUsecase, ILogger<ProcessDataController> logger, IPostInitialProcessDocumentRequestValidator postInitDocValidator)
         {
             _processDataUsecase = processDataUsecase;
             _logger = logger;
-            _postValidator = new PostInitialProcessDocumentRequestValidator();
+            _postValidator = postInitDocValidator;
         }
 
         /// <summary>

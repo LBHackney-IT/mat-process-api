@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
+using FluentValidation.Results;
+using FV = FluentValidation.Results; //give alias to namespace - shortens the 'ValidationResult' reference.
 using mat_process_api.Tests.V1.Helper;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Controllers;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.UseCase;
+using mat_process_api.V1.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson.IO;
@@ -26,13 +29,15 @@ namespace mat_process_api.Tests.V1.Controllers
         private Mock<IProcessData> _mockUsecase;
         private Faker faker = new Faker();
         private Mock<ILogger<ProcessDataController>> _mockLogger;
+        private Mock<IPostInitialProcessDocumentRequestValidator> _mockValidator;
 
         [SetUp]
         public void set_up()
         {
             _mockUsecase = new Mock<IProcessData>();
             _mockLogger = new Mock<ILogger<ProcessDataController>>();
-            _processDataController = new ProcessDataController(_mockUsecase.Object, _mockLogger.Object);
+            _mockValidator = new Mock<IPostInitialProcessDocumentRequestValidator>();
+            _processDataController = new ProcessDataController(_mockUsecase.Object, _mockLogger.Object, _mockValidator.Object);
         }
 
         public void given_a_processRef_when_getprocessdata_method_is_called_the_controller_returns_correct_json_response()
@@ -92,6 +97,8 @@ namespace mat_process_api.Tests.V1.Controllers
             int expectedStatusCode = 201;
 
             PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
+
             //act
             IActionResult controllerResponse = _processDataController.PostInitialProcessDocument(requestObject);
             var result = (ObjectResult)controllerResponse;
@@ -108,6 +115,7 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arrange
             PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
             _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>()));
 
             //act
@@ -126,6 +134,8 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arange
             PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
+
             var expectedResponse = new PostInitialProcessDocumentResponse(requestObject, requestObject.processRef, DateTime.Now);
             _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(expectedResponse);
 
