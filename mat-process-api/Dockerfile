@@ -7,6 +7,7 @@ COPY *.csproj ./
 RUN dotnet restore
 
 # Copy everything else and build
+
 COPY . ./
 RUN dotnet publish -c Release -o out
 
@@ -24,6 +25,9 @@ NEW_RELIC_APP_NAME="${NEW_RELIC_APP_NAME}"
 # Copy over the compiled application from the build image
 WORKDIR /app
 COPY --from=builder /app/out .
+COPY ./rds-ca-2019-root.pem /ssl/rds-ca-2019-root.pem
+
+
 
 EXPOSE ${PORT:-3000}
 CMD ASPNETCORE_URLS=http://+:${PORT:-3000} dotnet ./mat-process-api.dll

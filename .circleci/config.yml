@@ -3,11 +3,48 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@3.0.0
   aws-cli: circleci/aws-cli@0.1.9
+  aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
 
+executors:
+  docker-python:
+      docker:
+        - image: circleci/python:3.7
+
+commands:
+  deploy-env:
+    description: "Sets ecs-deploy to update a service with a target docker image"
+    parameters:
+      cluster-name:
+        type: string
+      service-name:
+        type: string
+      image-tag:
+        type: string
+    steps:
+      - checkout #because of .aws/config file
+      - aws_assume_role/assume_role:
+          account: $AWS_ACCOUNT
+          profile_name: default
+          role: 'LBH_Circle_CI_Deployment_Role'
+      - run:
+          name: Install ecs deploy
+          command: |
+            sudo pip install ecs-deploy
+      - run:
+          name: Premote target image
+          command: |
+            ecs deploy \
+            --no-deregister \
+            --profile default \
+            --timeout 1800 \
+            << parameters.cluster-name >> \
+            << parameters.service-name >> \
+            -t << parameters.image-tag >>
+          no_output_timeout: 30m  
+  
 jobs:
   build-and-test:
-    docker:
-      - image: circleci/python:3.7
+    executor: docker-python
     steps:
       - checkout
       - setup_remote_docker
@@ -17,8 +54,135 @@ jobs:
       - run:
           name: Run tests
           command: docker-compose run mat-process-api-test
-
+  deploy-to-development:
+    executor: docker-python
+    steps:
+      - deploy-env:
+          cluster-name: $AWS_CLUSTER_DEV 
+          service-name: $AWS_SERVICE_DEV 
+          image-tag: "$CIRCLE_SHA1"
+  deploy-to-staging:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - deploy-env:
+          cluster-name: $AWS_CLUSTER_STAGING
+          service-name: $AWS_SERVICE_STAGING
+          image-tag: "$CIRCLE_SHA1"
+  deploy-to-production:
+    executor: docker-python
+    steps:
+      - deploy-env:
+          cluster-name: $AWS_SERVICE_PROD
+          service-name: $AWS_SERVICE_PROD
+          image-tag: "$CIRCLE_SHA1"
+  build_and_push_image:
+    executor: aws-ecr/default
+    parameters:
+      account-url:
+        default: AWS_ECR_ACCOUNT_URL
+        type: env_var_name
+      region:
+        default: AWS_REGION
+        type: env_var_name
+      dockerfile:
+        default: Dockerfile
+        type: string
+      path:
+        default: .
+        type: string
+      repo:
+        type: string
+      tag:
+        default: latest
+        type: string
+    steps:
+      - checkout
+      - aws_assume_role/assume_role:
+          account: $AWS_ACCOUNT
+          profile_name: default
+          role: 'LBH_Circle_CI_Deployment_Role'
+      #- aws-ecr/ecr-login:
+      #    region: <<parameters.region>>
+      - run:
+          name: docker exists check
+          command: docker ps
+      - run:
+          name: authorize docker to access aws ecr
+          command: |
+            # aws ecr get-login returns a login command w/ a temp token
+            LOGIN_COMMAND=$(aws ecr get-login --no-include-email --region \
+            $<<parameters.region>> --profile default) # default default default default default default default 
+            # save it to an env var & use that env var to login
+            $LOGIN_COMMAND
+      - run:
+          name: docker exists check
+          command: docker ps
+      - aws-ecr/build-image:
+          account-url: <<parameters.account-url>>
+          dockerfile: <<parameters.dockerfile>>
+          path: <<parameters.path>>
+          repo: <<parameters.repo>>
+          tag: <<parameters.tag>>
+      - aws-ecr/push-image:
+          account-url: <<parameters.account-url>>
+          repo: <<parameters.repo>>
+          tag: <<parameters.tag>>
+          
 workflows:
   check-and-deploy:
       jobs:
       - build-and-test
+      - build_and_push_image:
+          dockerfile: ./mat-process-api/Dockerfile
+          path: $PROJECT_PATH 
+          account-url: AWS_ECR_HOST
+          repo: $AWS_ECR_PATH_DEV
+          region: AWS_REGION
+          tag: "${CIRCLE_SHA1}"
+          context: mat-assume-role-context
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only: development
+      - deploy-to-development:
+          context: mat-assume-role-context
+          requires:
+            - build_and_push_image
+          filters:
+            branches:
+              only: development
+  check-and-deploy-staging-and-production:
+      jobs:
+      - build-and-test:
+          filters:
+            branches:
+              only: master   
+      - permit-staging-release:
+          type: approval
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only: master
+      - build_and_push_image:
+          dockerfile: ./mat-process-api/Dockerfile
+          path: $PROJECT_PATH 
+          account-url: AWS_ECR_HOST
+          repo: $AWS_ECR_PATH_STAGING
+          region: AWS_REGION
+          tag: "${CIRCLE_SHA1}"
+          context: mat-assume-role-context
+          requires:
+            - permit-staging-release
+          filters:
+            branches:
+              only: master
+      - deploy-to-staging:
+          context: mat-assume-role-context
+          requires:
+            - build_and_push_image
+          filters:
+            branches:
+              only: master

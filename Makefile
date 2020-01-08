@@ -1,10 +1,6 @@
-.PHONY: setup
-setup:
-	docker-compose build
-
 .PHONY: build
 build:
-	docker-compose run mat-process-api dotnet build
+	docker-compose build mat-process-api
 
 .PHONY: serve
 serve:

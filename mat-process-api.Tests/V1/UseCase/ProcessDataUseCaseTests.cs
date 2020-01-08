@@ -7,6 +7,8 @@ using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.UseCase;
+using mat_process_api.V1.Factories;
+using mat_process_api.Tests.V1.Helper;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -33,7 +35,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void get_process_data_by_processref_returns_getprocessdataresponse_object()
         {
             //arrange
-            var processRef = faker.Random.Guid().ToString();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new MatProcessData();
             //act        
@@ -52,7 +54,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void test_gateway_is_called()
         {
             //arrange
-            var processRef = faker.Random.Guid().ToString();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest{processRef = processRef};
             //act
             processDataUseCase.ExecuteGet(request);
@@ -64,7 +66,8 @@ namespace mat_process_api.Tests.V1.UseCase
         [TestCase("aa-bb-123")]
         public void get_process_data_verify_gateway_calls_database_with_parameters(string processRef)
         {
-            //arrange            
+            //arrange
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             //act
             var result = processDataUseCase.ExecuteGet(request);
@@ -76,7 +79,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void check_gateway_returns_expected_response()
         {
             //arrange
-            var processRef = faker.Random.Guid().ToString();
+            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new MatProcessData();
             //act
@@ -143,6 +146,57 @@ namespace mat_process_api.Tests.V1.UseCase
             var result = processDataUseCase.ExecuteUpdate(request);
             //assert
             mockMatGateway.Verify(v => v.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.Is<string>(i => i == processRef)), Times.Once);
+        }
+
+        #endregion
+        #region Post Initial Process Document
+
+        //Ideally would have a test for whether the usecase calls factory method, unfortunatelly, there's no way to test that due to factory being a 'static' method, which can't be mocked.
+
+        [Test]
+        public void given_the_requestObject_when_executePost_usecase_method_is_called_then_the_gateway_is_called_with_factory_output() // this should be 2 tests really, one to see if factory gets called, and the other to see if gateway is called, but due to using static factory method this becomes impossible to separate.
+        {
+            //arrange
+            PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(requestObject);
+            mockMatGateway.Setup(g => g.PostInitialProcessDocument(It.IsAny<MatProcessData>())).Returns((MatProcessData dobj) => dobj.Id);
+            //act
+            processDataUseCase.ExecutePost(requestObject);
+
+            //assert
+            mockMatGateway.Verify(g => g.PostInitialProcessDocument(It.Is<MatProcessData>(d =>
+                d.ProcessType.name == requestObject.processType.name && //checking whether properties that have to be transfered from request object to domain object are present
+                d.Id == requestObject.processRef &&
+                d.ProcessType.value == requestObject.processType.value &&
+                d.ProcessDataSchemaVersion == requestObject.processDataSchemaVersion &&
+                d.DateCompleted == DateTime.MinValue && //checking whether some of the properties that factory has to generate itself are present.
+                d.ProcessStage == "Not completed"
+                )), Times.Once);
+            // This checks whether the usecase calls the gateway with the output of the factory method.
+        }
+
+        [Test]
+        public void given_the_requestObject_when_executePost_usecase_method_is_called_then_it_wraps_gateway_output_into_postInitialDocumentResponse_object()
+        {
+            //arrange
+            PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
+            MatProcessData domainObject = ProcessDataFactory.CreateProcessDataObject(requestObject);
+            mockMatGateway.Setup(g => g.PostInitialProcessDocument(It.IsAny<MatProcessData>())).Returns((MatProcessData dobj) => dobj.Id);
+
+            //act
+            var usecaseResponse = processDataUseCase.ExecutePost(requestObject);
+
+            //assert
+            Assert.IsInstanceOf<PostInitialProcessDocumentResponse>(usecaseResponse);
+
+            Assert.IsInstanceOf<PostInitialProcessDocumentRequest>(usecaseResponse.Request);
+            Assert.IsInstanceOf<string>(usecaseResponse.ProcessRef);
+            Assert.IsInstanceOf<DateTime>(usecaseResponse.GeneratedAt);
+
+            Assert.AreEqual(requestObject.processRef, usecaseResponse.Request.processRef);
+            Assert.AreEqual(requestObject.processRef, usecaseResponse.ProcessRef);
+            Assert.NotNull(usecaseResponse.GeneratedAt);
+            Assert.AreNotEqual(DateTime.MinValue, usecaseResponse.GeneratedAt);
         }
 
         #endregion

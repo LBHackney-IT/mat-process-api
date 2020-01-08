@@ -11,5 +11,6 @@ namespace mat_process_api.V1.UseCase
     {
         GetProcessDataResponse ExecuteGet(GetProcessDataRequest request);
         UpdateProcessDataResponse ExecuteUpdate(UpdateProcessDataRequest request);
+        PostInitialProcessDocumentResponse ExecutePost(PostInitialProcessDocumentRequest request);
     }
 }

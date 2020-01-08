@@ -12,5 +12,6 @@ namespace mat_process_api.V1.Gateways
     {
         MatProcessData GetProcessData(string processRef);
         MatProcessData UpdateProcessData(UpdateDefinition<BsonDocument> updateDefinition, string id);
+        string PostInitialProcessDocument(MatProcessData processDoc);
     }
 }

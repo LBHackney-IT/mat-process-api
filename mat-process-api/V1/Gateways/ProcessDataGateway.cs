@@ -9,6 +9,7 @@ using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 
 namespace mat_process_api.V1.Gateways
 {
@@ -46,6 +47,37 @@ namespace mat_process_api.V1.Gateways
             }
             return ProcessDataFactory.CreateProcessDataObject(result);
         }
+        public string PostInitialProcessDocument(MatProcessData processDoc)
+        {
+            try
+            {
+                BsonDocument bsonObject = BsonDocument.Parse(JsonConvert.SerializeObject(processDoc));
+                matDbContext.getCollection().InsertOneAsync(bsonObject).Wait(); 
+                return processDoc.Id;
+            }
+            catch(AggregateException ex) //AggregateException - it can wraps up other exceptions while async action is happening. In this case it wraps up the MongoWriteException, which we need to catch. However due to it being wrapped, we can't really catch it...unless you handle the aggregate exception, and extract the Mongo exception. That's what's happening here.
+            {
+                ex.Handle((x) =>
+                {
+                    if (x is MongoWriteException) 
+                    {
+                        throw new ConflictException(ex.Message, ex.InnerException); //throw our custom exception, with the information we need wrapped up.
+                    }
+                    throw ex;
+                });
+                throw ex;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+    }
+
+    public class ConflictException : System.Exception
+    {
+        public ConflictException(String message, Exception inner) : base(message, inner) { }
     }
 
     public class DocumentNotFound : Exception {}

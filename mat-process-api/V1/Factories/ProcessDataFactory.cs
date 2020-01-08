@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Boundary;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -68,6 +69,27 @@ namespace mat_process_api.V1.Factories
             }
 
             return Builders<BsonDocument>.Update.Combine(listOfUpdates);
+        }
+
+        public static MatProcessData CreateProcessDataObject(PostInitialProcessDocumentRequest requestObject) //Maps PostInitialDocumentRequest object to ProcessData domain object
+        {
+            DateTime dateOfCreation = DateTime.UtcNow; // need this here because DateCreated and DateLastModified have to be equal
+
+            return new MatProcessData()
+            {
+                Id = requestObject.processRef,
+                ProcessType = requestObject.processType,
+                DateCreated = dateOfCreation,
+                DateLastModified = dateOfCreation,
+                DateCompleted = DateTime.MinValue,
+                ProcessDataAvailable = false,
+                ProcessDataSchemaVersion = requestObject.processDataSchemaVersion,
+                ProcessStage = "Not completed",
+                LinkedProcessId = null,
+                PreProcessData = new { },
+                ProcessData = new { },
+                PostProcessData = new { }
+            };
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
+using mat_process_api.V1.Factories;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Factories;
 using mat_process_api.V1.Gateways;
@@ -29,6 +30,13 @@ namespace mat_process_api.V1.UseCase
             var gatewayResult = _processDataGateway.UpdateProcessData(updateDefinition,request.processDataToUpdate.Id);
 
             return new UpdateProcessDataResponse(request, gatewayResult, DateTime.Now);
+        }
+        public PostInitialProcessDocumentResponse ExecutePost(PostInitialProcessDocumentRequest request)
+        {
+            MatProcessData mappedRequest = ProcessDataFactory.CreateProcessDataObject(request); //mapping request into to be inserted domain object
+            string gatewayResponse = _processDataGateway.PostInitialProcessDocument(mappedRequest);
+
+            return new PostInitialProcessDocumentResponse(request, gatewayResponse, DateTime.Now);
         }
     }
 }

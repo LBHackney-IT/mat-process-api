@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Boundary;
 using Newtonsoft.Json.Linq;
 
 namespace mat_process_api.Tests.V1.Helper
@@ -17,17 +18,38 @@ namespace mat_process_api.Tests.V1.Helper
 
             return new MatProcessData
             {
+                Id = faker.Random.Guid().ToString(),
+                ProcessType = new ProcessType()
+                {
+                    value = faker.Random.Int(),
+                    name = faker.Random.Word()
+                },
                 DateCreated = faker.Date.Recent(),
                 DateLastModified = faker.Date.Recent(),
-                ProcessData = {},
-                ProcessDataSchemaVersion = faker.Random.Int(0,10),
                 DateCompleted = faker.Date.Recent(),
-                Id = faker.Random.Word(),
-                PostProcessData = {},
+                ProcessDataAvailable = false,
+                ProcessDataSchemaVersion = faker.Random.Int(1,10),
+                ProcessStage = "Not completed",
+                LinkedProcessId = null,
                 PreProcessData = {},
-                ProcessStage = faker.Random.Word(),
-                ProcessType = faker.Random.Word()
+                ProcessData = {},
+                PostProcessData = {},
             };
+        }
+
+        public static PostInitialProcessDocumentRequest CreatePostInitialProcessDocumentRequestObject()
+        {
+            Faker faker = new Faker();
+
+            string processRef = faker.Random.Guid().ToString();
+            ProcessType processType = new ProcessType()
+            {
+                value = faker.Random.Int(),
+                name = faker.Random.Word()
+            };
+            int processDataSchemaVersion = faker.Random.Int();
+
+            return new PostInitialProcessDocumentRequest() { processRef = processRef, processType = processType, processDataSchemaVersion = processDataSchemaVersion };
         }
     }
 }
