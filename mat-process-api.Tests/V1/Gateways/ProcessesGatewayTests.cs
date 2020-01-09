@@ -119,7 +119,6 @@ namespace UnitTests.V1.Gateways
             Assert.AreEqual(objectToUpdate.DateLastModified.ToShortDateString(), result.DateLastModified.ToShortDateString());
             Assert.IsInstanceOf<MatProcessData>(result);
         }
-        #endregion
         [Test]
         public void test_if_object_to_be_updated_is_not_found_exception_is_thrown()
         {
@@ -141,7 +140,7 @@ namespace UnitTests.V1.Gateways
             //assert
             Assert.Throws<DocumentNotFound>(() => processDataGateway.UpdateProcessData(updateDefinition, objectToUpdate.Id));
         }
-#endregion
+        #endregion
         #region Post Initial Process Document
 
         [Test]

@@ -22,12 +22,15 @@ namespace mat_process_api.V1.Controllers
         private IProcessData _processDataUsecase;
         private ILogger<ProcessDataController> _logger;
         private IPostInitialProcessDocumentRequestValidator _postValidator;
+        private IUpdateProcessDocumentRequestValidator _updateValidator;
 
-        public ProcessDataController(IProcessData processDataUsecase, ILogger<ProcessDataController> logger, IPostInitialProcessDocumentRequestValidator postInitDocValidator)
+        public ProcessDataController(IProcessData processDataUsecase, ILogger<ProcessDataController> logger,
+            IPostInitialProcessDocumentRequestValidator postInitDocValidator, IUpdateProcessDocumentRequestValidator updateValidator)
         {
             _processDataUsecase = processDataUsecase;
             _logger = logger;
             _postValidator = postInitDocValidator;
+            _updateValidator = updateValidator;
         }
 
         /// <summary>
@@ -61,21 +64,27 @@ namespace mat_process_api.V1.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult UpdateExistingProcessDocument([FromBody]UpdateProcessDataRequest updateRequest)
         {
-            try
+            var isRequestValid = _updateValidator.Validate(updateRequest);
+            if (isRequestValid.IsValid)
             {
-                _logger.LogInformation($"Update ProcessData request for process ID {updateRequest.processDataToUpdate.Id}");
-                var result = _processDataUsecase.ExecuteUpdate(updateRequest);
-                return Ok(result);
+
+                try
+                {
+                    _logger.LogInformation($"Update ProcessData request for process ID {updateRequest.processDataToUpdate.Id}");
+                    var result = _processDataUsecase.ExecuteUpdate(updateRequest);
+                    return Ok(result);
+                }
+                catch (DocumentNotFound ex)
+                {
+                    return StatusCode(200, $"Document with reference {updateRequest.processDataToUpdate.Id} was not found in the database." +
+                        $" An update is not possible on non-existent documents.");
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, "An error has occured while processing the request - " + ex.Message + " " + ex.InnerException);
+                }
             }
-            catch(DocumentNotFound ex)
-            {
-                return StatusCode(200, $"Document with reference {updateRequest.processDataToUpdate.Id} was not found in the database." +
-                    $" An update is not possible on non-existent documents.");
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, "An error has occured while processing the request - " + ex.Message + " " + ex.InnerException);
-            }
+            return BadRequest(isRequestValid.Errors);
         }
 
         /// <summary>

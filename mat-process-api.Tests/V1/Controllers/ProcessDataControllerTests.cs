@@ -11,7 +11,6 @@ using mat_process_api.V1.Controllers;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.UseCase;
-using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -33,15 +32,17 @@ namespace mat_process_api.Tests.V1.Controllers
         private Mock<IProcessData> _mockUsecase;
         private Faker faker = new Faker();
         private Mock<ILogger<ProcessDataController>> _mockLogger;
-        private Mock<IPostInitialProcessDocumentRequestValidator> _mockValidator;
+        private Mock<IPostInitialProcessDocumentRequestValidator> _mockValidatorPost;
+        private Mock<IUpdateProcessDocumentRequestValidator> _mockValidatorUpdate;
 
         [SetUp]
         public void set_up()
         {
             _mockUsecase = new Mock<IProcessData>();
             _mockLogger = new Mock<ILogger<ProcessDataController>>();
-            _mockValidator = new Mock<IPostInitialProcessDocumentRequestValidator>();
-            _processDataController = new ProcessDataController(_mockUsecase.Object, _mockLogger.Object, _mockValidator.Object);
+            _mockValidatorPost = new Mock<IPostInitialProcessDocumentRequestValidator>();
+            _mockValidatorUpdate = new Mock<IUpdateProcessDocumentRequestValidator>();
+            _processDataController = new ProcessDataController(_mockUsecase.Object, _mockLogger.Object, _mockValidatorPost.Object,_mockValidatorUpdate.Object);
         }
 
         public void given_a_processRef_when_getprocessdata_method_is_called_the_controller_returns_correct_json_response()
@@ -77,22 +78,6 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockUsecase.Verify(x => x.ExecuteGet((It.Is<GetProcessDataRequest>(i => i.processRef == processRef))));
         }
 
-  
-        [Test]
-        public void when_postinitialprocessdocument_method_is_called_then_it_returns_a_response_that_resource_was_created() //temporary test until actual implementation will be worked on.
-        {
-            //arrange
-            int expectedStatusCode = 200;
-            //act
-            IActionResult controllerResponse = _processDataController.PostInitialProcessDocument();
-            OkResult okResult = (OkResult)controllerResponse;
-            int actualStatusCode = okResult.StatusCode;
-            //assert
-            Assert.NotNull(controllerResponse);
-            Assert.NotNull(okResult);
-            Assert.AreEqual(expectedStatusCode, actualStatusCode);
-        }
-
         #region Update Process data
 
         [Test]
@@ -100,8 +85,12 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arrange
             int expectedStatusCode = 200;
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatProcessData() };
+            var response = new UpdateProcessDataResponse(request, new MatProcessData(), DateTime.Now);
+            _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
+            _mockUsecase.Setup(x => x.ExecuteUpdate(request)).Returns(response);
             //act
-            var controllerResponse = _processDataController.UpdateExistingProcessDocument(new UpdateProcessDataRequest { processDataToUpdate = new MatProcessData() });
+            var controllerResponse = _processDataController.UpdateExistingProcessDocument(request);
             var okResult = (OkObjectResult)controllerResponse;
             var actualStatusCode = okResult.StatusCode;
             //assert
@@ -123,6 +112,7 @@ namespace mat_process_api.Tests.V1.Controllers
             //set up Guid to filder by
             matProcessData.Id = faker.Random.Guid().ToString();
             var request = new UpdateProcessDataRequest() { processDataToUpdate = matProcessData };
+            _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             var actualResponse = _processDataController.UpdateExistingProcessDocument(request);
             //verify usecase is called with an update process request object
             _mockUsecase.Verify(x => x.ExecuteUpdate((It.Is<UpdateProcessDataRequest>(i => i == request))));
@@ -145,6 +135,7 @@ namespace mat_process_api.Tests.V1.Controllers
 
             var request = new UpdateProcessDataRequest() { processDataToUpdate = matProcessData };
             var response = new UpdateProcessDataResponse(request, new MatProcessData(), DateTime.Now);
+            _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             _mockUsecase.Setup(x => x.ExecuteUpdate(request)).Returns(response);
             //act
             var actualResponse = _processDataController.UpdateExistingProcessDocument(request);
@@ -158,21 +149,25 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(JsonConvert.SerializeObject(response), JsonConvert.SerializeObject(resultContent));
             Assert.AreEqual(200, okResult.StatusCode);
         }
-        //TODO FINISH OFF WHEN VALIDATOR IS ADDED
+
         [Test]
         public void given_an_invalid_request_object_controller_should_return_bad_request()
         {
             var requestObject = new MatProcessData();
             var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatProcessData() };
+            var validationErrorList = new List<ValidationFailure>(); 
+            validationErrorList.Add(new ValidationFailure(faker.Random.Word(), faker.Random.Word())); 
+            var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
 
+            _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(fakeValidationResult);
             var response = _processDataController.UpdateExistingProcessDocument(request);
-            var okResult = (OkObjectResult)response;
-            var resultContent = (UpdateProcessDataResponse)okResult.Value;
+            var okResult = (ObjectResult)response;
+            var resultContent = okResult.Value;
 
             Assert.NotNull(response);
             Assert.NotNull(okResult);
             Assert.NotNull(resultContent);
-            Assert.AreEqual(JsonConvert.SerializeObject(response), JsonConvert.SerializeObject(resultContent));
+            Assert.AreEqual(JsonConvert.SerializeObject(response), JsonConvert.SerializeObject(okResult));
             Assert.AreEqual(400, okResult.StatusCode);
         }
 
@@ -194,6 +189,7 @@ namespace mat_process_api.Tests.V1.Controllers
                     $" An update is not possible on non-existent documents.";
             var request = new UpdateProcessDataRequest() { processDataToUpdate = matProcessData };
             _mockUsecase.Setup(x => x.ExecuteUpdate(request)).Throws<DocumentNotFound>();
+            _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             //act
             var actualResponse = _processDataController.UpdateExistingProcessDocument(request);
             var result = (ObjectResult)actualResponse;
@@ -206,7 +202,7 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(200, result.StatusCode);
         }
         [Test]
-        public void test_that_controller_returns_correct_500_status_code_when_an_error_has_occured()
+        public void test_that_update_controller_returns_correct_500_status_code_when_an_error_has_occured()
         {
             //arange
             var matProcessData = new MatProcessData();
@@ -219,10 +215,9 @@ namespace mat_process_api.Tests.V1.Controllers
             };
             //set up Guid to filder by
             matProcessData.Id = faker.Random.Guid().ToString();
-            var errorResponse = $"Document with reference {matProcessData.Id} was not found in the database." +
-                    $" An update is not possible on non-existent documents.";
             var request = new UpdateProcessDataRequest() { processDataToUpdate = matProcessData };
             _mockUsecase.Setup(x => x.ExecuteUpdate(request)).Throws<AggregateException>();
+            _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             //act
             var actualResponse = _processDataController.UpdateExistingProcessDocument(request);
             var result = (ObjectResult)actualResponse;
@@ -242,7 +237,7 @@ namespace mat_process_api.Tests.V1.Controllers
             //arrange
             int expectedStatusCode = 201;
             PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
-            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
+            _mockValidatorPost.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
 
             //act
             IActionResult controllerResponse = _processDataController.PostInitialProcessDocument(requestObject);
@@ -263,7 +258,7 @@ namespace mat_process_api.Tests.V1.Controllers
             for (int i = errorCount; i > 0; i--) { validationErrorList.Add(new ValidationFailure(faker.Random.Word(), faker.Random.Word())); } //generate from 1 to 10 fake validation errors. Single line for-loop so that it wouldn't distract from what's key in this test.
 
             var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
-            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(fakeValidationResult);
+            _mockValidatorPost.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(fakeValidationResult);
 
             //act
             var controllerResponse = _processDataController.PostInitialProcessDocument(new PostInitialProcessDocumentRequest());
@@ -286,7 +281,7 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arrange
             //setup mocks:
-            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
+            _mockValidatorPost.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
             _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(() => throw new ConflictException(faker.Random.Word(), new Exception(faker.Random.Word())));
 
             //setup double insert:
@@ -322,7 +317,7 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arrange
             PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
-            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
+            _mockValidatorPost.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
             _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>()));
 
             //act
@@ -339,14 +334,14 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arrange
             PostInitialProcessDocumentRequest request = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
-            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
+            _mockValidatorPost.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
             _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>()));
 
             //act
             _processDataController.PostInitialProcessDocument(request);
 
             //assert
-            _mockValidator.Verify(v => v.Validate(It.Is<PostInitialProcessDocumentRequest>(i =>
+            _mockValidatorPost.Verify(v => v.Validate(It.Is<PostInitialProcessDocumentRequest>(i =>
                 i.processRef == request.processRef &&
                 i.processType.name == request.processType.name &&
                 i.processType.value == request.processType.value &&
@@ -359,7 +354,7 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arange
             PostInitialProcessDocumentRequest requestObject = MatProcessDataHelper.CreatePostInitialProcessDocumentRequestObject();
-            _mockValidator.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
+            _mockValidatorPost.Setup(v => v.Validate(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(new FV.ValidationResult()); //set up mock validation to return Validation with no errors.
 
             var expectedResponse = new PostInitialProcessDocumentResponse(requestObject, requestObject.processRef, DateTime.Now);
             _mockUsecase.Setup(g => g.ExecutePost(It.IsAny<PostInitialProcessDocumentRequest>())).Returns(expectedResponse);

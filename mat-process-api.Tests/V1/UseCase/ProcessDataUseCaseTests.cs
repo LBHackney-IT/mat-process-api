@@ -67,7 +67,6 @@ namespace mat_process_api.Tests.V1.UseCase
         public void get_process_data_verify_gateway_calls_database_with_parameters(string processRef)
         {
             //arrange
-            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             //act
             var result = processDataUseCase.ExecuteGet(request);

@@ -62,7 +62,7 @@ namespace mat_process_api.V1.Factories
                 var processStage = Builders<BsonDocument>.Update.Set("processStage", matProcessData.ProcessStage);
                 listOfUpdates.Add(processStage);
             }
-            if (!string.IsNullOrWhiteSpace(matProcessData.ProcessType))
+            if (matProcessData.ProcessType != null)
             {
                 var processType = Builders<BsonDocument>.Update.Set("processType", matProcessData.ProcessType);
                 listOfUpdates.Add(processType);

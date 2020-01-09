@@ -7,7 +7,6 @@ using mat_process_api.Tests.V1.Helper;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Controllers;
 using mat_process_api.V1.Domain;
-using mat_process_api.V1.Factories;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
 using mat_process_api.V1.UseCase;
@@ -52,9 +51,10 @@ namespace mat_process_api.Tests.V1.Controllers
             var processDataGateway = new ProcessDataGateway(_dbcontext);
             var processDataUsecase = new ProcessDataUseCase(processDataGateway);
             var postInitDocValidator = new PostInitialProcessDocumentRequestValidator();
+            var updateDocValidator = new UpdateProcessDocumentRequestValidator();
             Mock<ILogger<ProcessDataController>> logger = new Mock<ILogger<ProcessDataController>>();
 
-            _processDataController = new ProcessDataController(processDataUsecase, logger.Object, postInitDocValidator);
+            _processDataController = new ProcessDataController(processDataUsecase, logger.Object, postInitDocValidator, updateDocValidator);
         }
 
         [Test]
@@ -75,7 +75,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
         [TestCase("00000000-0000-0000-0000-000000000000")]
         [TestCase("00000000-dd23-0000-abcd-000000000000")]
-        [TestCase("00000000-pnhm-0000-1234-00000bb00000")]
+        [TestCase("2539ca27-12c0-e811-a96c-002248072cb4")]
         public void update_process_controller_end_to_end_test(string processRef)
         {
             //arrange
