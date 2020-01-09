@@ -84,26 +84,59 @@ namespace mat_process_api.Tests.V1.Controllers
             _dbcontext.getCollection().InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(dataToInsert)));
             //fields to update
             var dataToUpdate = new MatUpdateProcessData();
-            dataToUpdate.Id = dataToInsert.Id;
             dataToUpdate.DateLastModified = DateTime.Now;
             dataToUpdate.PreProcessData = new
             {
                 randomField = "abc"
             };
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = dataToUpdate };
+            var request = new UpdateProcessDataRequest() { processRef = processRef, processDataToUpdate = dataToUpdate };
             //act
             var response = _processDataController.UpdateExistingProcessDocument(request);
             var okResult = (OkObjectResult)response;
             var updateProcessDataResponse = okResult.Value as UpdateProcessDataResponse;
             //assert
-            Assert.IsInstanceOf<MatProcessData>(updateProcessDataResponse.ProcessData);
-            Assert.AreEqual(processRef, updateProcessDataResponse.ProcessData.Id);
+            Assert.IsInstanceOf<MatProcessData>(updateProcessDataResponse.UpdatedProcessData);
+            Assert.AreEqual(processRef, updateProcessDataResponse.UpdatedProcessData.Id);
             Assert.AreEqual(dataToUpdate.DateLastModified.ToShortDateString(),
-                updateProcessDataResponse.ProcessData.DateLastModified.ToShortDateString());
+                updateProcessDataResponse.UpdatedProcessData.DateLastModified.ToShortDateString());
             Assert.AreEqual(JsonConvert.SerializeObject(dataToUpdate.PreProcessData),
-                JsonConvert.SerializeObject(updateProcessDataResponse.ProcessData.PreProcessData));
+                JsonConvert.SerializeObject(updateProcessDataResponse.UpdatedProcessData.PreProcessData));
         }
+        [Test]
+        public void update_process_controller_end_to_end_testing_for_bad_request_given_invalid_request()
+        {
+            //arrange
+            var dataToUpdate = new MatUpdateProcessData();
+            var processRef = _faker.Random.Word();
+   
+            var request = new UpdateProcessDataRequest() { processRef = processRef,processDataToUpdate = dataToUpdate };
+            //act
+            var response = _processDataController.UpdateExistingProcessDocument(request);
+            var okResult = (ObjectResult)response;
+            //assert
+            Assert.AreEqual(400, okResult.StatusCode); //check if it was a bad request
+        }
+        [Test]
+        public void update_process_controller_end_to_end_testing_error_message_when_document_is_not_found()
+        {
+            //arrange
+            var dataToUpdate = new MatUpdateProcessData();
+            var processRef = _faker.Random.Guid().ToString();
+            dataToUpdate.PreProcessData = new
+            {
+                randomField = "abc"
+            };
 
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = dataToUpdate, processRef = processRef };
+            //act
+            var response = _processDataController.UpdateExistingProcessDocument(request);
+            var okResult = (ObjectResult)response;
+            var error = okResult.Value;
+            //assert
+            Assert.AreEqual(200, okResult.StatusCode);
+            Assert.AreEqual($"Document with reference { processRef} was not found in the database." +
+                        $" An update is not possible on non-existent documents.", error);
+        }
         [OneTimeTearDown]
         public void RunAfterAnyTests()
         {

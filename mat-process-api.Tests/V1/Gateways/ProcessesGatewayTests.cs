@@ -4,7 +4,6 @@ using Bogus;
 using mat_process_api.Tests.V1.Helper;
 using NUnit.Framework;
 using mat_process_api.V1.Domain;
-using UnitTests.V1.Helper;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
 using MongoDB.Bson;
@@ -18,6 +17,7 @@ using mat_process_api.V1.Factories;
 using mat_process_api.V1.Boundary;
 using MongoDB.Bson.Serialization;
 using mat_process_api.V1.Exceptions;
+using mat_process_api.V1.Helpers;
 
 namespace UnitTests.V1.Gateways
 {
@@ -102,7 +102,7 @@ namespace UnitTests.V1.Gateways
             collection.InsertOne(bsonObject);
             //object to update
             var objectToUpdate = new MatUpdateProcessData();
-            objectToUpdate.Id = processData.Id;
+            var processRef = processData.Id;
             objectToUpdate.DateLastModified = _faker.Date.Recent();
             objectToUpdate.ProcessData = new
             {
@@ -111,12 +111,12 @@ namespace UnitTests.V1.Gateways
                 numberField = _faker.Random.Number()
             };
             //get update definition
-            var updateDefinition = ProcessDataFactory.PrepareFieldsToBeUpdated(objectToUpdate);
+            var updateDefinition = UpdateProcessDocumentHelper.PrepareFieldsToBeUpdated(objectToUpdate);
 
             //act
-            var result = processDataGateway.UpdateProcessData(updateDefinition,objectToUpdate.Id);
+            var result = processDataGateway.UpdateProcessData(updateDefinition,processRef);
             //assert
-            Assert.AreEqual(objectToUpdate.Id, result.Id);
+            Assert.AreEqual(processRef, result.Id);
             Assert.AreEqual(JsonConvert.SerializeObject(objectToUpdate.ProcessData), JsonConvert.SerializeObject(result.ProcessData));
             Assert.AreEqual(objectToUpdate.DateLastModified.ToShortDateString(), result.DateLastModified.ToShortDateString());
             Assert.IsInstanceOf<MatProcessData>(result);
@@ -134,10 +134,11 @@ namespace UnitTests.V1.Gateways
                 anyField = _faker.Random.Words(),
                 numberField = _faker.Random.Number()
             };
+            var processRef = _faker.Random.Guid().ToString();
             //get update definition
-            var updateDefinition = ProcessDataFactory.PrepareFieldsToBeUpdated(objectToUpdate);
+            var updateDefinition = UpdateProcessDocumentHelper.PrepareFieldsToBeUpdated(objectToUpdate);
             //assert
-            Assert.Throws<DocumentNotFound>(() => processDataGateway.UpdateProcessData(updateDefinition, objectToUpdate.Id));
+            Assert.Throws<DocumentNotFound>(() => processDataGateway.UpdateProcessData(updateDefinition, processRef));
         }
         #endregion
         #region Post Initial Process Document

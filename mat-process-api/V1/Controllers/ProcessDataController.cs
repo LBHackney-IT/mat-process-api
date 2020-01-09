@@ -60,7 +60,8 @@ namespace mat_process_api.V1.Controllers
         /// </summary>
         /// <param name="updateRequest"></param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPatch]
+        [Route("{processRef}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult UpdateExistingProcessDocument([FromBody]UpdateProcessDataRequest updateRequest)
@@ -71,13 +72,13 @@ namespace mat_process_api.V1.Controllers
 
                 try
                 {
-                    _logger.LogInformation($"Update ProcessData request for process ID {updateRequest.processDataToUpdate.Id}");
+                    _logger.LogInformation($"Update ProcessData request for process ID {updateRequest.processRef}");
                     var result = _processDataUsecase.ExecuteUpdate(updateRequest);
                     return Ok(result);
                 }
                 catch (DocumentNotFound ex)
                 {
-                    return StatusCode(200, $"Document with reference {updateRequest.processDataToUpdate.Id} was not found in the database." +
+                    return StatusCode(200, $"Document with reference {updateRequest.processRef} was not found in the database." +
                         $" An update is not possible on non-existent documents.");
                 }
                 catch (Exception ex)

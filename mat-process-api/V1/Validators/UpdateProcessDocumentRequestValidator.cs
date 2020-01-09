@@ -15,7 +15,7 @@ namespace mat_process_api.V1.Validators
         {
             ValidatorOptions.CascadeMode = CascadeMode.StopOnFirstFailure; // Stops the validator from going into DependentRules or deeper into any single rule in general. This is needed because for e.g. the 1st check of the Rule is whether the 'ProcessType' object is set, then the validation on the contents of that object follows within DependentRules. If this object is null, then it makes no sense to check it's properties, since they don't exist. In fact, you'd get a runtime error doing that.
 
-            RuleFor(updateRequest => updateRequest.processDataToUpdate.Id).NotNull().WithMessage("Process reference must be provided.").NotEmpty()
+            RuleFor(updateRequest => updateRequest.processRef).NotNull().WithMessage("Process reference must be provided.").NotEmpty()
                .WithMessage("Process reference must be provided.").Must(ValidateGuid)
                .WithMessage("You need to provide a valid process reference.");
             RuleFor(updateRequest => updateRequest.processDataToUpdate).NotNull().WithMessage("Request object is missing.")

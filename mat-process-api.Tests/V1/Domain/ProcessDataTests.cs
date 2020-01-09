@@ -90,12 +90,6 @@ namespace matprocess_api.Tests.V1.Domain
         }
 
         [Test]
-        public void process_data_has_id()
-        {
-            Assert.Null(processData.Id);
-        }
-
-        [Test]
         public void process_data_has_date_last_modified()
         {
             DateTime date = DateTime.Now;

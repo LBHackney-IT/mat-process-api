@@ -9,14 +9,14 @@ namespace mat_process_api.V1.Boundary
     public class UpdateProcessDataResponse
     {
         public UpdateProcessDataRequest Request { get; set; }
-        public MatProcessData ProcessData { get; set; }
+        public MatProcessData UpdatedProcessData { get; set; }
         public DateTime GeneratedAt { get; set; }
 
         public UpdateProcessDataResponse(UpdateProcessDataRequest request, MatProcessData processData, DateTime generatedAt)
         {
             Request = request;
             GeneratedAt = generatedAt;
-            ProcessData = processData;
+            UpdatedProcessData = processData;
         }
     }
 }

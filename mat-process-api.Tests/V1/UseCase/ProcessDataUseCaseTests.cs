@@ -110,7 +110,7 @@ namespace mat_process_api.Tests.V1.UseCase
             mockMatGateway.Setup(x => x.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.IsAny<string>())).Returns(new MatProcessData());
             var result = processDataUseCase.ExecuteUpdate(request);
             //assert
-            Assert.IsInstanceOf<MatProcessData>(result.ProcessData);
+            Assert.IsInstanceOf<MatProcessData>(result.UpdatedProcessData);
             Assert.IsInstanceOf<UpdateProcessDataResponse>(result);
         }
 
@@ -127,8 +127,8 @@ namespace mat_process_api.Tests.V1.UseCase
             //assert
             Assert.IsInstanceOf<UpdateProcessDataResponse>(result);
             Assert.IsInstanceOf<UpdateProcessDataRequest>(result.Request);
-            Assert.IsInstanceOf<MatProcessData>(result.ProcessData);
-            Assert.AreEqual(JsonConvert.SerializeObject(new MatProcessData()), JsonConvert.SerializeObject(result.ProcessData));
+            Assert.IsInstanceOf<MatProcessData>(result.UpdatedProcessData);
+            Assert.AreEqual(JsonConvert.SerializeObject(new MatProcessData()), JsonConvert.SerializeObject(result.UpdatedProcessData));
             Assert.NotNull(result.GeneratedAt);
             Assert.IsInstanceOf<DateTime>(result.GeneratedAt);
         }
@@ -139,8 +139,7 @@ namespace mat_process_api.Tests.V1.UseCase
         {
             //arrange
             var dataToUpdate = new MatUpdateProcessData();
-            dataToUpdate.Id = processRef;
-            var request = new UpdateProcessDataRequest { processDataToUpdate = dataToUpdate };
+            var request = new UpdateProcessDataRequest { processRef = processRef, processDataToUpdate = dataToUpdate };
             //act
             var result = processDataUseCase.ExecuteUpdate(request);
             //assert

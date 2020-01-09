@@ -130,14 +130,12 @@ namespace mat_process_api
 
         private static void RegisterGateWays(IServiceCollection services)
         {
-            services.AddSingleton<ITransactionsGateway, TransactionsGateway>();
             services.AddSingleton<IProcessDataGateway, ProcessDataGateway>();
 
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
-            services.AddSingleton<IListTransactions, ListTransactionsUsecase>();
             services.AddSingleton<IProcessData, ProcessDataUseCase>();
         }
 

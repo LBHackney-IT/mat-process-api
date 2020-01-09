@@ -111,8 +111,8 @@ namespace mat_process_api.Tests.V1.Controllers
                 firstField = faker.Random.Word()
             };
             //set up Guid to filder by
-            matProcessData.Id = faker.Random.Guid().ToString();
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = matProcessData };
+            var processRef = faker.Random.Guid().ToString();
+            var request = new UpdateProcessDataRequest() { processRef = processRef, processDataToUpdate = matProcessData };
             _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             var actualResponse = _processDataController.UpdateExistingProcessDocument(request);
             //verify usecase is called with an update process request object
@@ -132,9 +132,9 @@ namespace mat_process_api.Tests.V1.Controllers
                 numberField = faker.Random.Number()
             };
             //set up Guid to filder by
-            matProcessData.Id = faker.Random.Guid().ToString();
+            var processRef = faker.Random.Guid().ToString();
 
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = matProcessData };
+            var request = new UpdateProcessDataRequest() { processRef = processRef, processDataToUpdate = matProcessData };
             var response = new UpdateProcessDataResponse(request, new MatProcessData(), DateTime.Now);
             _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             _mockUsecase.Setup(x => x.ExecuteUpdate(request)).Returns(response);
@@ -168,7 +168,6 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.NotNull(response);
             Assert.NotNull(okResult);
             Assert.NotNull(resultContent);
-            Assert.AreEqual(JsonConvert.SerializeObject(response), JsonConvert.SerializeObject(okResult));
             Assert.AreEqual(400, okResult.StatusCode);
         }
 
@@ -185,10 +184,10 @@ namespace mat_process_api.Tests.V1.Controllers
                 numberField = faker.Random.Number()
             };
             //set up Guid to filder by
-            matProcessData.Id = faker.Random.Guid().ToString();
-            var errorResponse = $"Document with reference {matProcessData.Id} was not found in the database." +
+            var processRef = faker.Random.Guid().ToString();
+            var errorResponse = $"Document with reference {processRef} was not found in the database." +
                     $" An update is not possible on non-existent documents.";
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = matProcessData };
+            var request = new UpdateProcessDataRequest() {processRef = processRef, processDataToUpdate = matProcessData };
             _mockUsecase.Setup(x => x.ExecuteUpdate(request)).Throws<DocumentNotFound>();
             _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             //act
@@ -215,8 +214,8 @@ namespace mat_process_api.Tests.V1.Controllers
                 numberField = faker.Random.Number()
             };
             //set up Guid to filder by
-            matProcessData.Id = faker.Random.Guid().ToString();
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = matProcessData };
+            var processRef = faker.Random.Guid().ToString();
+            var request = new UpdateProcessDataRequest() { processRef = processRef, processDataToUpdate = matProcessData };
             _mockUsecase.Setup(x => x.ExecuteUpdate(request)).Throws<AggregateException>();
             _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             //act

@@ -31,25 +31,25 @@ namespace mat_process_api.Tests.V1.Validators
         public void given_an_empty_process_ref_validator_returns_correct_error_message(string processReference)
         {
             var updateData = new MatUpdateProcessData();
-            updateData.Id = processReference;
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
-            _updateProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processDataToUpdate.Id, request).WithErrorMessage("Process reference must be provided.");
+            var processRef = processReference;
+            var request = new UpdateProcessDataRequest() { processRef = processRef, processDataToUpdate = updateData };
+            _updateProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processRef, request).WithErrorMessage("Process reference must be provided.");
         }
         [TestCase("abv")]
         [TestCase("123-bca-45-65657-aaa")]
         public void given_an_invalid_process_ref_validator_returns_correct_error_message(string processReference)
         {
             var updateData = new MatUpdateProcessData();
-            updateData.Id = processReference;
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
-            _updateProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processDataToUpdate.Id, request).WithErrorMessage("You need to provide a valid process reference.");
+            var processRef = processReference;
+            var request = new UpdateProcessDataRequest() { processRef = processRef, processDataToUpdate = updateData };
+            _updateProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processRef, request).WithErrorMessage("You need to provide a valid process reference.");
         }
 
         [Test]
         public void given_missing_fields_to_update_in_request_object_validator_returns_correct_error_message()
         {
             var updateData = new MatUpdateProcessData();
-            updateData.Id = randomGuid;
+            var processRef = randomGuid;
             var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
             _updateProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processDataToUpdate,request.processDataToUpdate).WithErrorMessage("At least one object must be providef for an update.");
         }
@@ -58,9 +58,9 @@ namespace mat_process_api.Tests.V1.Validators
         public void given_a_valid_request_validator_should_return_no_errors()
         {
             var updateData = new MatUpdateProcessData();
-            updateData.Id = randomGuid;
+            var processRef = randomGuid;
             updateData.DateCompleted = _faker.Date.Recent();
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
+            var request = new UpdateProcessDataRequest() { processRef = processRef, processDataToUpdate = updateData };
             _updateProcessDocValidator.ShouldNotHaveValidationErrorFor(r => r.processDataToUpdate, request.processDataToUpdate);
         }
 

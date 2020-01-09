@@ -54,9 +54,6 @@ namespace mat_process_api.V1.Domain
     [BsonIgnoreExtraElements]
     public class MatUpdateProcessData
     {
-        [JsonProperty("_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
         [JsonProperty("dateCompleted")]
         [BsonElement("dateCompleted")]
         public DateTime DateCompleted { get; set; }
