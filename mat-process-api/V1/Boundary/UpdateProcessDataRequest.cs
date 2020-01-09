@@ -8,6 +8,6 @@ namespace mat_process_api.V1.Boundary
 {
     public class UpdateProcessDataRequest
     {
-        public MatProcessData processDataToUpdate { get; set; }
+        public MatUpdateProcessData processDataToUpdate { get; set; }
     }
 }

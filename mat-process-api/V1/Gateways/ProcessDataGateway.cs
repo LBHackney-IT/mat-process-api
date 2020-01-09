@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.Factories;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
@@ -75,10 +76,5 @@ namespace mat_process_api.V1.Gateways
         }
     }
 
-    public class ConflictException : System.Exception
-    {
-        public ConflictException(String message, Exception inner) : base(message, inner) { }
-    }
-
-    public class DocumentNotFound : Exception {}
+ 
 }

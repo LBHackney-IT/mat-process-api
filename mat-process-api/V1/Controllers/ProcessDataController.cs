@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.UseCase;
 using mat_process_api.V1.Validators;

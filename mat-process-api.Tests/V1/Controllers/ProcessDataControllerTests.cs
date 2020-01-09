@@ -21,6 +21,7 @@ using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
+using mat_process_api.V1.Exceptions;
 
 namespace mat_process_api.Tests.V1.Controllers
 {
@@ -85,7 +86,7 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arrange
             int expectedStatusCode = 200;
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatProcessData() };
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatUpdateProcessData() };
             var response = new UpdateProcessDataResponse(request, new MatProcessData(), DateTime.Now);
             _mockValidatorUpdate.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
             _mockUsecase.Setup(x => x.ExecuteUpdate(request)).Returns(response);
@@ -103,7 +104,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void ensure_update_controller_calls_use_case_with_request_object()
         {
             //arrange
-            var matProcessData = new MatProcessData();
+            var matProcessData = new MatUpdateProcessData();
             //add fields to be updated
             matProcessData.ProcessData = new
             {
@@ -122,7 +123,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void given_an_update_object_when_update_process_data_method_is_called_the_controller_returns_correct_json_response()
         {
             //arange
-            var matProcessData = new MatProcessData();
+            var matProcessData = new MatUpdateProcessData();
             //add fields to be updated
             matProcessData.ProcessData = new
             {
@@ -154,7 +155,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void given_an_invalid_request_object_controller_should_return_bad_request()
         {
             var requestObject = new MatProcessData();
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatProcessData() };
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatUpdateProcessData() };
             var validationErrorList = new List<ValidationFailure>(); 
             validationErrorList.Add(new ValidationFailure(faker.Random.Word(), faker.Random.Word())); 
             var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
@@ -175,7 +176,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void test_that_controller_returns_correct_message_and_status_code_when_no_document_was_found_for_update()
         {
             //arange
-            var matProcessData = new MatProcessData();
+            var matProcessData = new MatUpdateProcessData();
             //add fields to be updated
             matProcessData.ProcessData = new
             {
@@ -205,7 +206,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void test_that_update_controller_returns_correct_500_status_code_when_an_error_has_occured()
         {
             //arange
-            var matProcessData = new MatProcessData();
+            var matProcessData = new MatUpdateProcessData();
             //add fields to be updated
             matProcessData.ProcessData = new
             {

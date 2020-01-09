@@ -17,6 +17,7 @@ using JsonConvert = Newtonsoft.Json.JsonConvert;
 using mat_process_api.V1.Factories;
 using mat_process_api.V1.Boundary;
 using MongoDB.Bson.Serialization;
+using mat_process_api.V1.Exceptions;
 
 namespace UnitTests.V1.Gateways
 {
@@ -100,7 +101,8 @@ namespace UnitTests.V1.Gateways
             var bsonObject = BsonDocument.Parse(JsonConvert.SerializeObject(processData));
             collection.InsertOne(bsonObject);
             //object to update
-            var objectToUpdate = processData;
+            var objectToUpdate = new MatUpdateProcessData();
+            objectToUpdate.Id = processData.Id;
             objectToUpdate.DateLastModified = _faker.Date.Recent();
             objectToUpdate.ProcessData = new
             {
@@ -123,11 +125,8 @@ namespace UnitTests.V1.Gateways
         public void test_if_object_to_be_updated_is_not_found_exception_is_thrown()
         {
             //arrange
-            MatProcessData processData = MatProcessDataHelper.CreateProcessDataObject();
-            var bsonObject = BsonDocument.Parse(JsonConvert.SerializeObject(processData));
-            //   collection.InsertOne(bsonObject);
             //object to update
-            var objectToUpdate = processData;
+            var objectToUpdate = new MatUpdateProcessData();
             objectToUpdate.DateLastModified = _faker.Date.Recent();
             objectToUpdate.ProcessData = new
             {

@@ -31,7 +31,7 @@ namespace mat_process_api.V1.Validators
             return Guid.TryParse(guid, out var result);
         }
 
-        private bool ValidateAnUpdateIsProvided(MatProcessData request)
+        private bool ValidateAnUpdateIsProvided(MatUpdateProcessData request)
         { //user must provide at least one object to update
             if (request.PostProcessData != null)
             {

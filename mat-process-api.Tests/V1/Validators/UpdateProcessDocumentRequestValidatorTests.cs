@@ -30,7 +30,7 @@ namespace mat_process_api.Tests.V1.Validators
         [TestCase(null)]
         public void given_an_empty_process_ref_validator_returns_correct_error_message(string processReference)
         {
-            var updateData = new MatProcessData();
+            var updateData = new MatUpdateProcessData();
             updateData.Id = processReference;
             var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
             _updateProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processDataToUpdate.Id, request).WithErrorMessage("Process reference must be provided.");
@@ -39,7 +39,7 @@ namespace mat_process_api.Tests.V1.Validators
         [TestCase("123-bca-45-65657-aaa")]
         public void given_an_invalid_process_ref_validator_returns_correct_error_message(string processReference)
         {
-            var updateData = new MatProcessData();
+            var updateData = new MatUpdateProcessData();
             updateData.Id = processReference;
             var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
             _updateProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processDataToUpdate.Id, request).WithErrorMessage("You need to provide a valid process reference.");
@@ -48,7 +48,7 @@ namespace mat_process_api.Tests.V1.Validators
         [Test]
         public void given_missing_fields_to_update_in_request_object_validator_returns_correct_error_message()
         {
-            var updateData = new MatProcessData();
+            var updateData = new MatUpdateProcessData();
             updateData.Id = randomGuid;
             var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
             _updateProcessDocValidator.ShouldHaveValidationErrorFor(r => r.processDataToUpdate,request.processDataToUpdate).WithErrorMessage("At least one object must be providef for an update.");
@@ -57,7 +57,7 @@ namespace mat_process_api.Tests.V1.Validators
         [Test]
         public void given_a_valid_request_validator_should_return_no_errors()
         {
-            var updateData = new MatProcessData();
+            var updateData = new MatUpdateProcessData();
             updateData.Id = randomGuid;
             updateData.DateCompleted = _faker.Date.Recent();
             var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };

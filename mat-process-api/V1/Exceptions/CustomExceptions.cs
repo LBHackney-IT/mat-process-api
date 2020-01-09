@@ -1,0 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace mat_process_api.V1.Exceptions
+{
+     public class ConflictException : System.Exception
+    {
+    public ConflictException(String message, Exception inner) : base(message, inner) { }
+    }
+
+    public class DocumentNotFound : Exception { }
+}

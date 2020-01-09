@@ -93,7 +93,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void update_process_data_verify_gateway_calls_database_with_parameters()
         {
             //arrange            
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatProcessData() };
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatUpdateProcessData() };
             //act
             var result = processDataUseCase.ExecuteUpdate(request);
             //assert
@@ -103,15 +103,15 @@ namespace mat_process_api.Tests.V1.UseCase
         public void update_process_data_gateway_call_returns_updateprocsesdataresponse_object()
         {
             //arrange
-            var updateData = new MatProcessData();
+            var updateData = new MatUpdateProcessData();
             var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
 
             //act
-            mockMatGateway.Setup(x => x.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.IsAny<string>())).Returns(updateData);
+            mockMatGateway.Setup(x => x.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.IsAny<string>())).Returns(new MatProcessData());
             var result = processDataUseCase.ExecuteUpdate(request);
             //assert
             Assert.IsInstanceOf<MatProcessData>(result.ProcessData);
-            Assert.AreEqual(updateData, result.ProcessData);
+            Assert.IsInstanceOf<UpdateProcessDataResponse>(result);
         }
 
         [Test]
@@ -119,7 +119,7 @@ namespace mat_process_api.Tests.V1.UseCase
         {
             //arrange
             var processRef = faker.Random.Guid().ToString();
-            var request = new UpdateProcessDataRequest { processDataToUpdate = new MatProcessData() };
+            var request = new UpdateProcessDataRequest { processDataToUpdate = new MatUpdateProcessData() };
             var response = new MatProcessData();
             //act        
             mockMatGateway.Setup(x => x.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.IsAny<string>())).Returns(response);
@@ -138,7 +138,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void update_process_data_verify_gateway_calls_database_with_parameters(string processRef)
         {
             //arrange
-            var dataToUpdate = new MatProcessData();
+            var dataToUpdate = new MatUpdateProcessData();
             dataToUpdate.Id = processRef;
             var request = new UpdateProcessDataRequest { processDataToUpdate = dataToUpdate };
             //act

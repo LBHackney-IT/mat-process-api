@@ -83,12 +83,14 @@ namespace mat_process_api.Tests.V1.Controllers
             dataToInsert.Id = processRef;
             _dbcontext.getCollection().InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(dataToInsert)));
             //fields to update
-            dataToInsert.DateLastModified = DateTime.Now;
-            dataToInsert.PreProcessData = new
+            var dataToUpdate = new MatUpdateProcessData();
+            dataToUpdate.Id = dataToInsert.Id;
+            dataToUpdate.DateLastModified = DateTime.Now;
+            dataToUpdate.PreProcessData = new
             {
                 randomField = "abc"
             };
-            var request = new UpdateProcessDataRequest() { processDataToUpdate = dataToInsert };
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = dataToUpdate };
             //act
             var response = _processDataController.UpdateExistingProcessDocument(request);
             var okResult = (OkObjectResult)response;
@@ -96,9 +98,9 @@ namespace mat_process_api.Tests.V1.Controllers
             //assert
             Assert.IsInstanceOf<MatProcessData>(updateProcessDataResponse.ProcessData);
             Assert.AreEqual(processRef, updateProcessDataResponse.ProcessData.Id);
-            Assert.AreEqual(dataToInsert.DateLastModified.ToShortDateString(),
+            Assert.AreEqual(dataToUpdate.DateLastModified.ToShortDateString(),
                 updateProcessDataResponse.ProcessData.DateLastModified.ToShortDateString());
-            Assert.AreEqual(JsonConvert.SerializeObject(dataToInsert.PreProcessData),
+            Assert.AreEqual(JsonConvert.SerializeObject(dataToUpdate.PreProcessData),
                 JsonConvert.SerializeObject(updateProcessDataResponse.ProcessData.PreProcessData));
         }
 
