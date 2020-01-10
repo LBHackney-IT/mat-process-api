@@ -130,20 +130,19 @@ namespace mat_process_api
 
         private static void RegisterGateWays(IServiceCollection services)
         {
-            services.AddSingleton<ITransactionsGateway, TransactionsGateway>();
             services.AddSingleton<IProcessDataGateway, ProcessDataGateway>();
 
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
-            services.AddSingleton<IListTransactions, ListTransactionsUsecase>();
             services.AddSingleton<IProcessData, ProcessDataUseCase>();
         }
 
         private static void RegisterValidators(IServiceCollection services)
         {
             services.AddSingleton<IPostInitialProcessDocumentRequestValidator, PostInitialProcessDocumentRequestValidator>();
+            services.AddSingleton<IUpdateProcessDocumentRequestValidator, UpdateProcessDocumentRequestValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

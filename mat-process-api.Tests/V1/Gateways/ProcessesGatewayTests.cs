@@ -4,7 +4,6 @@ using Bogus;
 using mat_process_api.Tests.V1.Helper;
 using NUnit.Framework;
 using mat_process_api.V1.Domain;
-using UnitTests.V1.Helper;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
 using MongoDB.Bson;
@@ -17,6 +16,8 @@ using JsonConvert = Newtonsoft.Json.JsonConvert;
 using mat_process_api.V1.Factories;
 using mat_process_api.V1.Boundary;
 using MongoDB.Bson.Serialization;
+using mat_process_api.V1.Exceptions;
+using mat_process_api.V1.Helpers;
 
 namespace UnitTests.V1.Gateways
 {
@@ -91,6 +92,55 @@ namespace UnitTests.V1.Gateways
             Assert.IsInstanceOf<MatProcessData>(result);
         }
 
+        #region Update Process
+        [Test]
+        public void test_that_object_can_be_successfully_updated()
+        {
+            //arrange
+            MatProcessData processData = MatProcessDataHelper.CreateProcessDataObject();
+            var bsonObject = BsonDocument.Parse(JsonConvert.SerializeObject(processData));
+            collection.InsertOne(bsonObject);
+            //object to update
+            var objectToUpdate = new MatUpdateProcessData();
+            var processRef = processData.Id;
+            objectToUpdate.DateLastModified = _faker.Date.Recent();
+            objectToUpdate.ProcessData = new
+            {
+                firstField = _faker.Random.Word(),
+                anyField = _faker.Random.Words(),
+                numberField = _faker.Random.Number()
+            };
+            //get update definition
+            var updateDefinition = UpdateProcessDocumentHelper.PrepareFieldsToBeUpdated(objectToUpdate);
+
+            //act
+            var result = processDataGateway.UpdateProcessData(updateDefinition,processRef);
+            //assert
+            Assert.AreEqual(processRef, result.Id);
+            Assert.AreEqual(JsonConvert.SerializeObject(objectToUpdate.ProcessData), JsonConvert.SerializeObject(result.ProcessData));
+            Assert.AreEqual(objectToUpdate.DateLastModified.ToShortDateString(), result.DateLastModified.ToShortDateString());
+            Assert.IsInstanceOf<MatProcessData>(result);
+        }
+        [Test]
+        public void test_if_object_to_be_updated_is_not_found_exception_is_thrown()
+        {
+            //arrange
+            //object to update
+            var objectToUpdate = new MatUpdateProcessData();
+            objectToUpdate.DateLastModified = _faker.Date.Recent();
+            objectToUpdate.ProcessData = new
+            {
+                firstField = _faker.Random.Word(),
+                anyField = _faker.Random.Words(),
+                numberField = _faker.Random.Number()
+            };
+            var processRef = _faker.Random.Guid().ToString();
+            //get update definition
+            var updateDefinition = UpdateProcessDocumentHelper.PrepareFieldsToBeUpdated(objectToUpdate);
+            //assert
+            Assert.Throws<DocumentNotFound>(() => processDataGateway.UpdateProcessData(updateDefinition, processRef));
+        }
+        #endregion
         #region Post Initial Process Document
 
         [Test]
@@ -161,5 +211,6 @@ namespace UnitTests.V1.Gateways
             Assert.Throws<ConflictException>(() => processDataGateway.PostInitialProcessDocument(domainObject)); //the second document insertion happends, while asserting.
         }
         #endregion
+
     }
 }

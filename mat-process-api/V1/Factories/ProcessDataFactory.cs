@@ -6,6 +6,8 @@ using mat_process_api.V1.Domain;
 using mat_process_api.V1.Boundary;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
+using Newtonsoft.Json;
 
 namespace mat_process_api.V1.Factories
 {
@@ -26,7 +28,7 @@ namespace mat_process_api.V1.Factories
 
         public static MatProcessData CreateProcessDataObject(PostInitialProcessDocumentRequest requestObject) //Maps PostInitialDocumentRequest object to ProcessData domain object
         {
-            DateTime dateOfCreation = DateTime.UtcNow; // need this here because DateCreated and DateLastModified have to be equal
+            DateTime dateOfCreation = DateTime.Now; // need this here because DateCreated and DateLastModified have to be equal
 
             return new MatProcessData()
             {

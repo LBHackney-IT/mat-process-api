@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Factories;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Factories;
 using mat_process_api.V1.Gateways;
+using mat_process_api.V1.Helpers;
 
 namespace mat_process_api.V1.UseCase
 {
@@ -21,6 +23,14 @@ namespace mat_process_api.V1.UseCase
             var gatewayResult = _processDataGateway.GetProcessData(request.processRef);
 
             return new GetProcessDataResponse(request, gatewayResult,DateTime.Now);
+        }
+
+        public UpdateProcessDataResponse ExecuteUpdate(UpdateProcessDataRequest request)
+        {
+            var updateDefinition = UpdateProcessDocumentHelper.PrepareFieldsToBeUpdated(request.processDataToUpdate);
+            var gatewayResult = _processDataGateway.UpdateProcessData(updateDefinition,request.processRef);
+
+            return new UpdateProcessDataResponse(request, gatewayResult, DateTime.Now);
         }
         public PostInitialProcessDocumentResponse ExecutePost(PostInitialProcessDocumentRequest request)
         {

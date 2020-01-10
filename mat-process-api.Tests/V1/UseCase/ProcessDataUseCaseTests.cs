@@ -10,7 +10,10 @@ using mat_process_api.V1.UseCase;
 using mat_process_api.V1.Factories;
 using mat_process_api.Tests.V1.Helper;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using Moq;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace mat_process_api.Tests.V1.UseCase
@@ -58,10 +61,12 @@ namespace mat_process_api.Tests.V1.UseCase
             mockMatGateway.Verify(x => x.GetProcessData(processRef));
         }
 
-        public void verif_gateway_calls_database_with_parameters()
+        [TestCase("123")]
+        [TestCase("acb5")]
+        [TestCase("aa-bb-123")]
+        public void get_process_data_verify_gateway_calls_database_with_parameters(string processRef)
         {
             //arrange
-            string processRef = faker.Random.Guid().ToString();
             var request = new GetProcessDataRequest { processRef = processRef };
             //act
             var result = processDataUseCase.ExecuteGet(request);
@@ -83,6 +88,65 @@ namespace mat_process_api.Tests.V1.UseCase
             Assert.AreEqual(response, result.ProcessData);
         }
 
+        #region Update Process Data
+        [Test]
+        public void update_process_data_verify_gateway_calls_database_with_parameters()
+        {
+            //arrange            
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = new MatUpdateProcessData() };
+            //act
+            var result = processDataUseCase.ExecuteUpdate(request);
+            //assert
+            mockMatGateway.Verify(v => v.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.IsAny<string>()), Times.Once);
+        }
+        [Test]
+        public void update_process_data_gateway_call_returns_updateprocsesdataresponse_object()
+        {
+            //arrange
+            var updateData = new MatUpdateProcessData();
+            var request = new UpdateProcessDataRequest() { processDataToUpdate = updateData };
+
+            //act
+            mockMatGateway.Setup(x => x.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.IsAny<string>())).Returns(new MatProcessData());
+            var result = processDataUseCase.ExecuteUpdate(request);
+            //assert
+            Assert.IsInstanceOf<MatProcessData>(result.UpdatedProcessData);
+            Assert.IsInstanceOf<UpdateProcessDataResponse>(result);
+        }
+
+        [Test]
+        public void update_process_data_returns_updateprocessdataresponse_object()
+        {
+            //arrange
+            var processRef = faker.Random.Guid().ToString();
+            var request = new UpdateProcessDataRequest { processDataToUpdate = new MatUpdateProcessData() };
+            var response = new MatProcessData();
+            //act        
+            mockMatGateway.Setup(x => x.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.IsAny<string>())).Returns(response);
+            var result = processDataUseCase.ExecuteUpdate(request);
+            //assert
+            Assert.IsInstanceOf<UpdateProcessDataResponse>(result);
+            Assert.IsInstanceOf<UpdateProcessDataRequest>(result.Request);
+            Assert.IsInstanceOf<MatProcessData>(result.UpdatedProcessData);
+            Assert.AreEqual(JsonConvert.SerializeObject(new MatProcessData()), JsonConvert.SerializeObject(result.UpdatedProcessData));
+            Assert.NotNull(result.GeneratedAt);
+            Assert.IsInstanceOf<DateTime>(result.GeneratedAt);
+        }
+        [TestCase("123-456-789-000")]
+        [TestCase("acb5-abc-abc-abc")]
+        [TestCase("00000000-0000-0000-0000-000000000000")]
+        public void update_process_data_verify_gateway_calls_database_with_parameters(string processRef)
+        {
+            //arrange
+            var dataToUpdate = new MatUpdateProcessData();
+            var request = new UpdateProcessDataRequest { processRef = processRef, processDataToUpdate = dataToUpdate };
+            //act
+            var result = processDataUseCase.ExecuteUpdate(request);
+            //assert
+            mockMatGateway.Verify(v => v.UpdateProcessData(It.IsAny<UpdateDefinition<BsonDocument>>(),It.Is<string>(i => i == processRef)), Times.Once);
+        }
+
+        #endregion
         #region Post Initial Process Document
 
         //Ideally would have a test for whether the usecase calls factory method, unfortunatelly, there's no way to test that due to factory being a 'static' method, which can't be mocked.

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.UseCase;
 using mat_process_api.V1.Validators;
@@ -22,12 +23,15 @@ namespace mat_process_api.V1.Controllers
         private IProcessData _processDataUsecase;
         private ILogger<ProcessDataController> _logger;
         private IPostInitialProcessDocumentRequestValidator _postValidator;
+        private IUpdateProcessDocumentRequestValidator _updateValidator;
 
-        public ProcessDataController(IProcessData processDataUsecase, ILogger<ProcessDataController> logger, IPostInitialProcessDocumentRequestValidator postInitDocValidator)
+        public ProcessDataController(IProcessData processDataUsecase, ILogger<ProcessDataController> logger,
+            IPostInitialProcessDocumentRequestValidator postInitDocValidator, IUpdateProcessDocumentRequestValidator updateValidator)
         {
             _processDataUsecase = processDataUsecase;
             _logger = logger;
             _postValidator = postInitDocValidator;
+            _updateValidator = updateValidator;
         }
 
         /// <summary>
@@ -54,21 +58,41 @@ namespace mat_process_api.V1.Controllers
         /// If processData needs to be update, it's instead replaced with a full new one.
         /// Returning flat out 200 on successful update
         /// </summary>
-        /// <param name="processDataJSON"></param>
+        /// <param name="updateRequest"></param>
         /// <returns></returns>
         [HttpPatch]
+        [Route("{processRef}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult UpdateExistingProcessDocument()
+        public IActionResult UpdateExistingProcessDocument([FromBody]UpdateProcessDataRequest updateRequest)
         {
-            return Ok();
+            var isRequestValid = _updateValidator.Validate(updateRequest);
+            if (isRequestValid.IsValid)
+            {
+
+                try
+                {
+                    _logger.LogInformation($"Update ProcessData request for process ID {updateRequest.processRef}");
+                    var result = _processDataUsecase.ExecuteUpdate(updateRequest);
+                    return Ok(result);
+                }
+                catch (DocumentNotFound ex)
+                {
+                    return StatusCode(200, $"Document with reference {updateRequest.processRef} was not found in the database." +
+                        $" An update is not possible on non-existent documents.");
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, "An error has occured while processing the request - " + ex.Message + " " + ex.InnerException);
+                }
+            }
+            return BadRequest(isRequestValid.Errors);
         }
 
         /// <summary>
         /// Creates an intial process JSON document in the database.
         /// Upon creating a resource returns 200 Ok
         /// </summary>
-        /// <param name="processObject"></param>
         /// <returns></returns>
         [HttpPost]
         [Produces("application/json")]

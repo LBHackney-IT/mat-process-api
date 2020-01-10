@@ -77,4 +77,55 @@ namespace matprocess_api.Tests.V1.Domain
             Assert.Null(processData.ProcessData);
         }
     }
+
+    [TestFixture]
+    public class UpdateProcessDataTests
+    {
+        private MatUpdateProcessData processData;
+
+        [SetUp]
+        public void set_up()
+        {
+            processData = new MatUpdateProcessData();
+        }
+
+        [Test]
+        public void process_data_has_date_last_modified()
+        {
+            DateTime date = DateTime.Now;
+            processData.DateLastModified = date;
+            Assert.AreEqual(date, processData.DateLastModified);
+        }
+        [Test]
+        public void process_data_has_date_completed()
+        {
+            DateTime date = new DateTime(2019, 11, 21);
+            processData.DateCompleted = date;
+            Assert.AreEqual(date, processData.DateCompleted);
+        }
+
+        [Test]
+        public void process_data_has_data_schema_version()
+        {
+            Assert.Zero(processData.ProcessDataSchemaVersion);
+        }
+
+        [Test]
+        public void process_data_has_process_stage()
+        {
+            Assert.Null(processData.ProcessStage);
+        }
+
+        [Test]
+        public void process_data_has_pre_process_data()
+        {
+            Assert.Null(processData.PreProcessData);
+        }
+
+        [Test]
+        public void process_data_has_process_data_object()
+        {
+            Assert.Null(processData.ProcessData);
+        }
+    }
 }

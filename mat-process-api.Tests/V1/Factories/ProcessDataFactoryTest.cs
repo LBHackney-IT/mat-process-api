@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Bogus;
 using System.Reflection;
 using mat_process_api.Tests.V1.Helper;
 using mat_process_api.V1.Domain;
@@ -10,15 +11,22 @@ using mat_process_api.V1.Boundary;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using NUnit.Framework;
 using JsonConvert = Newtonsoft.Json.JsonConvert;
-
+using mat_process_api.V1.Helpers;
 
 namespace mat_process_api.Tests.V1.Factories
 {
     [TestFixture]
     public class ProcessDataFactoryTest
     {
+        private Faker _faker;
+        [SetUp]
+        public void setup()
+        {
+            _faker = new Faker();
+        }
         [Test]
         public void can_create_mat_process_data_object_from_empty_object()
         {
@@ -93,5 +101,6 @@ namespace mat_process_api.Tests.V1.Factories
             Assert.AreEqual(0, domainObject.ProcessData.GetType().GetProperties().Count());
             Assert.AreEqual(0, domainObject.PostProcessData.GetType().GetProperties().Count());
         }
+
     }
 }
