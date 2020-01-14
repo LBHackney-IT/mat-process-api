@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using mat_process_api.V1.UseCase;
 using Bogus;
 using Microsoft.AspNetCore.Mvc;
+using mat_process_api.V1.Validators;
 
 namespace mat_process_api.Tests.V1.Controllers
 {
@@ -17,13 +18,15 @@ namespace mat_process_api.Tests.V1.Controllers
     {
         private ProcessImageController _processImageController;
         private Mock<IProcessImageUseCase> _mockUsecase;
+        private Mock<IPostProcessImageRequestValidator> _mockPostValidator;
         private Faker _faker = new Faker();
 
         [SetUp]
         public void SetUp()
         {
             _mockUsecase = new Mock<IProcessImageUseCase>();
-            _processImageController = new ProcessImageController(_mockUsecase.Object);
+            _mockPostValidator = new Mock<IPostProcessImageRequestValidator>();
+            _processImageController = new ProcessImageController(_mockUsecase.Object, _mockPostValidator.Object);
         }
 
         [Test]
@@ -75,6 +78,19 @@ namespace mat_process_api.Tests.V1.Controllers
             //assert
             Assert.IsInstanceOf<NoContentResult>(result);
             Assert.AreEqual(expectedStatusCode, result.StatusCode);
+        }
+
+        [Test]
+        public void given_any_request_when_postProcessImage_controller_method_is_called_then_it_calls_the_validator_with_that_request_object()
+        {
+            //arrange
+            var request = new PostProcessImageRequest();
+
+            //act
+            _processImageController.PostProcessImage(request);
+
+            //assert
+            _mockPostValidator.Verify(v => v.Validate(It.Is<PostProcessImageRequest>(obj => obj == request)), Times.Once);
         }
     }
 }

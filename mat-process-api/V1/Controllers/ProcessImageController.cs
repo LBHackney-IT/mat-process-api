@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.UseCase;
+using mat_process_api.V1.Validators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,10 +17,12 @@ namespace mat_process_api.V1.Controllers
     public class ProcessImageController : Controller
     {
         private IProcessImageUseCase _processImageUseCase;
+        private IPostProcessImageRequestValidator _postValidator;
 
-        public ProcessImageController(IProcessImageUseCase usecase)
+        public ProcessImageController(IProcessImageUseCase usecase, IPostProcessImageRequestValidator postValidator)
         {
             _processImageUseCase = usecase;
+            _postValidator = postValidator;
         }
 
         /// <summary>
@@ -31,8 +34,10 @@ namespace mat_process_api.V1.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult PostProcessImage([FromBody] PostProcessImageRequest imageData)
         {
-            _processImageUseCase.ExecutePost(imageData);
+            _postValidator.Validate(imageData);
 
+            _processImageUseCase.ExecutePost(imageData);
+            
             return NoContent();
         }
     }
