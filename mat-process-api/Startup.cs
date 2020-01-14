@@ -50,6 +50,7 @@ namespace mat_process_api
             RegisterGateWays(services);
             RegisterUseCases(services);
             RegisterValidators(services);
+            RegisterAwsServices(services);
         }
 
         private static void ConfigureApiVersioningAndSwagger(IServiceCollection services)
@@ -131,14 +132,16 @@ namespace mat_process_api
         private static void RegisterGateWays(IServiceCollection services)
         {
             services.AddSingleton<IProcessDataGateway, ProcessDataGateway>();
-
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
             services.AddSingleton<IProcessData, ProcessDataUseCase>();
         }
-
+        private static void RegisterAwsServices(IServiceCollection services)
+        {
+            services.AddSingleton<IAmazonSTSClient, AmazonSTSClient>();
+        }
         private static void RegisterValidators(IServiceCollection services)
         {
             services.AddSingleton<IPostInitialProcessDocumentRequestValidator, PostInitialProcessDocumentRequestValidator>();
