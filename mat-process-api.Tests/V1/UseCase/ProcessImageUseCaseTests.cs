@@ -8,6 +8,7 @@ using Bogus;
 using mat_process_api.V1.Domain;
 using System.Linq;
 using mat_process_api.V1.Helpers;
+using mat_process_api.Tests.V1.Helper;
 
 namespace mat_process_api.Tests.V1.UseCase
 {
@@ -31,7 +32,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void when_ProcessImageUseCase_ExecutePost_method_is_called_then_it_calls_the_gateway()
         {
             //arrange
-            var request = new PostProcessImageRequest();
+            var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
 
             //act
             _processImageUseCase.ExecutePost(request);
@@ -44,12 +45,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void given_a_request_when_ProcessImageUseCase_ExecutePost_method_is_called_then_it_calls_the_ProcessImageDecoder_with_imageString_from_request()
         {
             //arrange
-            var request = new PostProcessImageRequest()
-            {
-                processRef = _faker.Random.Guid().ToString(),
-                imageId = _faker.Random.Guid().ToString(),
-                base64Image = _faker.Random.Hash()
-            };
+            var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
 
             //act
             _processImageUseCase.ExecutePost(request);
@@ -62,12 +58,7 @@ namespace mat_process_api.Tests.V1.UseCase
         public void given_a_request_object_when_ProcessImageUseCase_ExecutePost_method_is_called_then_it_calls_the_gateway_with_correct_data()
         {
             //arrange
-            var request = new PostProcessImageRequest()
-            {
-                processRef = _faker.Random.Guid().ToString(),
-                imageId = _faker.Random.Guid().ToString(),
-                base64Image = _faker.Random.Hash()
-            };
+            var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
 
             byte[] expectedImageBytes = Convert.FromBase64String(request.base64Image);
 

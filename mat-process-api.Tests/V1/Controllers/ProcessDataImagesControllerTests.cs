@@ -10,6 +10,7 @@ using mat_process_api.V1.UseCase;
 using Bogus;
 using Microsoft.AspNetCore.Mvc;
 using mat_process_api.V1.Validators;
+using mat_process_api.Tests.V1.Helper;
 
 namespace mat_process_api.Tests.V1.Controllers
 {
@@ -46,12 +47,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void given_valid_request_when_postProcessImage_controller_method_is_called_then_usecase_is_called_with_correct_data()
         {
             //arange
-            var request = new PostProcessImageRequest()
-            {
-                processRef = _faker.Random.Guid().ToString(),
-                imageId = _faker.Random.Guid().ToString(),
-                base64Image = _faker.Random.Guid().ToString()
-            };
+            var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
 
             //act
             _processImageController.PostProcessImage(request);
