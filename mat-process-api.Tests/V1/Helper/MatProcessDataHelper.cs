@@ -56,7 +56,7 @@ namespace mat_process_api.Tests.V1.Helper
             {
                 processRef = faker.Random.Guid().ToString(),
                 imageId = faker.Random.Guid().ToString(),
-                base64Image = faker.Random.Hash()
+                base64Image = "data:image/" + faker.System.FileExt() + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512))
             };
         }
     }
