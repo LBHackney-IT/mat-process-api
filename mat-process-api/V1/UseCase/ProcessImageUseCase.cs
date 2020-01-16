@@ -20,8 +20,8 @@ namespace mat_process_api.V1.UseCase
 
         public void ExecutePost(PostProcessImageRequest request)
         {
-            byte[] imageBytes = _processImageDecoder.DecodeBase64ImageString(request.base64Image);
-            ProcessImageData imageData = ImageDataFactory.CreateImageDataObject(request, imageBytes);
+            Base64DecodedData base64Decoded = _processImageDecoder.DecodeBase64ImageString(request.base64Image);
+            ProcessImageData imageData = ImageDataFactory.CreateImageDataObject(request, base64Decoded);
 
             _processImageGateway.PostProcessImage(imageData);
         }
