@@ -59,5 +59,17 @@ namespace mat_process_api.Tests.V1.Helper
                 base64Image = "data:image/" + faker.System.FileExt() + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512))
             };
         }
+
+        public static Base64DecodedData CreateBase64DecodedDataObject()
+        {
+            var fileExt = faker.System.FileExt();
+
+            return new Base64DecodedData()
+            {
+                imageBytes = faker.Random.Bytes(512),
+                imageType = faker.System.FileType() + "/" + fileExt,
+                imageExtension = fileExt
+            };
+        }
     }
 }
