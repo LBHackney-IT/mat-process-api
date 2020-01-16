@@ -45,5 +45,13 @@ namespace mat_process_api.V1.Controllers
 
             return BadRequest(validationResult.Errors);
         }
+
+        [HttpGet]
+        [Produces("application/json")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetProcessImage([FromBody] GetProcessImageRequest imageData)
+        {
+            return Ok();
+        }
     }
 }

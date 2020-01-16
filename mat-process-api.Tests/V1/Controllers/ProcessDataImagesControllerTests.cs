@@ -157,5 +157,27 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         #endregion
+
+        #region Get Process Image
+
+        [Test]
+        public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_returns_a_200_Ok_response()
+        {
+            //arrange
+            var request = new GetProcessImageRequest();
+            var expectedStatusCode = 200;
+
+            //act
+            var controllerResponse = _processImageController.GetProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
+            Assert.AreEqual(expectedStatusCode, result.StatusCode);
+        }
+
+        #endregion
     }
 }
