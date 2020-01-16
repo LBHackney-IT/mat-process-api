@@ -61,8 +61,15 @@ namespace mat_process_api.V1.Controllers
 
             if (validationResult.IsValid)
             {
+                try
+                {
                     var usecaseResponse = _processImageUseCase.ExecuteGet(requestData);
                     return Ok(usecaseResponse);
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, "An error has occured while processing the request - " + ex.Message + " " + ex.InnerException);
+                }
             }
 
             return BadRequest(validationResult.Errors);

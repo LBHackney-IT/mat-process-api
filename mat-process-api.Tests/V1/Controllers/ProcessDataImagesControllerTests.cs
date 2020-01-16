@@ -266,6 +266,74 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
+        public void given_an_unexpected_error_would_be_thrown_when_GetProcessImage_controller_method_is_called_then_it_returns_500_status_code()
+        {
+            //arrange
+            var request = new GetProcessImageRequest();
+            _mockGetValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //validation successful
+
+            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>())).Throws<AggregateException>();
+
+            //act
+            var controllerResponse = _processImageController.GetProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.AreEqual(500, result.StatusCode);
+        }
+
+        [Test]
+        public void given_an_unexpected_error_would_be_thrown_when_GetProcessImage_controller_method_is_called_then_it_returns_a_correct_error_message()
+        {
+            //arrange
+            string expectedErrorMessage = "An error has occured while processing the request - ";
+
+            void GenerateRandomError(int errorNumber)
+            {
+                switch (errorNumber)
+                {
+                    case 0: throw new OutOfMemoryException();
+                    case 1: throw new IndexOutOfRangeException();
+                    case 2: throw new ArgumentNullException();
+                    default: throw new AggregateException();
+                }
+            }
+
+            var randomErrorNo = _faker.Random.Int(0, 3); //triangulating unexpected exceptions
+
+            try // throw random error
+            {
+                GenerateRandomError(randomErrorNo);
+            }
+            catch (Exception ex) //catch the expected error message
+            {
+                expectedErrorMessage += (ex.Message + " " + ex.InnerException);
+            }
+
+            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>()))
+                .Returns(() => {
+                    GenerateRandomError(randomErrorNo); // throw that same random test error
+                    return new GetProcessImageResponse(null, DateTime.MinValue, null); //dummy return that will never happen due to error being thrown prior to it. It's only needed to keep compiler happy.
+                });
+
+            var request = new GetProcessImageRequest();
+            _mockGetValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //validation successful
+
+            //act
+            var controllerResponse = _processImageController.GetProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+            var resultContent = result.Value as string; //unwrap the error message from controller response.
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.NotNull(resultContent);
+            Assert.AreEqual(expectedErrorMessage, result.Value); //assert if the error message matches what controller wrapped up
+        }
+
+        [Test]
         public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_calls_usecase()
         {
             //arrange
