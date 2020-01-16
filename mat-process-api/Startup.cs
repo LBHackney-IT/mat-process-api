@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using mat_process_api.V1.Validators;
+using mat_process_api.V1.Helpers;
 
 namespace mat_process_api
 {
@@ -50,6 +51,7 @@ namespace mat_process_api
             RegisterGateWays(services);
             RegisterUseCases(services);
             RegisterValidators(services);
+            RegisterHelpers(services);
         }
 
         private static void ConfigureApiVersioningAndSwagger(IServiceCollection services)
@@ -137,12 +139,19 @@ namespace mat_process_api
         private static void RegisterUseCases(IServiceCollection services)
         {
             services.AddSingleton<IProcessData, ProcessDataUseCase>();
+            services.AddSingleton<IProcessImageUseCase, ProcessImageUseCase>();
         }
 
         private static void RegisterValidators(IServiceCollection services)
         {
             services.AddSingleton<IPostInitialProcessDocumentRequestValidator, PostInitialProcessDocumentRequestValidator>();
             services.AddSingleton<IUpdateProcessDocumentRequestValidator, UpdateProcessDocumentRequestValidator>();
+            services.AddSingleton<IPostProcessImageRequestValidator, PostProcessImageRequestValidator>();
+        }
+
+        private static void RegisterHelpers(IServiceCollection services)
+        {
+            services.AddSingleton<IProcessImageDecoder, ProcessImageDecoder>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
