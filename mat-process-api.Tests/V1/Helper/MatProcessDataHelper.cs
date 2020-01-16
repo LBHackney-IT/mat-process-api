@@ -12,10 +12,10 @@ namespace mat_process_api.Tests.V1.Helper
 {
     public class MatProcessDataHelper
     {
+        private static Faker faker = new Faker();
+
         public static MatProcessData CreateProcessDataObject()
         {
-            Faker faker = new Faker();
-
             return new MatProcessData
             {
                 Id = faker.Random.Guid().ToString(),
@@ -39,8 +39,6 @@ namespace mat_process_api.Tests.V1.Helper
 
         public static PostInitialProcessDocumentRequest CreatePostInitialProcessDocumentRequestObject()
         {
-            Faker faker = new Faker();
-
             string processRef = faker.Random.Guid().ToString();
             ProcessType processType = new ProcessType()
             {
@@ -50,6 +48,28 @@ namespace mat_process_api.Tests.V1.Helper
             int processDataSchemaVersion = faker.Random.Int();
 
             return new PostInitialProcessDocumentRequest() { processRef = processRef, processType = processType, processDataSchemaVersion = processDataSchemaVersion };
+        }
+
+        public static PostProcessImageRequest CreatePostProcessImageRequestObject()
+        {
+            return new PostProcessImageRequest()
+            {
+                processRef = faker.Random.Guid().ToString(),
+                imageId = faker.Random.Guid().ToString(),
+                base64Image = "data:image/" + faker.System.FileExt() + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512))
+            };
+        }
+
+        public static Base64DecodedData CreateBase64DecodedDataObject()
+        {
+            var fileExt = faker.System.FileExt();
+
+            return new Base64DecodedData()
+            {
+                imageBytes = faker.Random.Bytes(512),
+                imageType = faker.System.FileType() + "/" + fileExt,
+                imageExtension = fileExt
+            };
         }
     }
 }
