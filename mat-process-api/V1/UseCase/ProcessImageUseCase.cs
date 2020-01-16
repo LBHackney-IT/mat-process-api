@@ -25,5 +25,10 @@ namespace mat_process_api.V1.UseCase
 
             _processImageGateway.PostProcessImage(imageData);
         }
+
+        public GetProcessImageResponse ExecuteGet(GetProcessImageRequest request)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

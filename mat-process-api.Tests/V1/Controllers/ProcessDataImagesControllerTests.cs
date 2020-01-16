@@ -178,6 +178,63 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(expectedStatusCode, result.StatusCode);
         }
 
+        [Test]
+        public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_returns_an_Ok_result_with_correct_data()
+        {
+            //arrange
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var expectedResponse = new GetProcessImageResponse(_faker.Random.Hash().ToString(), DateTime.Now, request);
+            _mockUsecase.Setup(u => u.ExecuteGet(It.Is<GetProcessImageRequest>(obj => obj == request))).Returns(expectedResponse);
+
+            //act
+            var controllerResponse = _processImageController.GetProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+            var resultContents = result.Value as GetProcessImageResponse;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.IsInstanceOf<OkObjectResult>(result);
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<GetProcessImageResponse>(resultContents);
+            Assert.NotNull(resultContents);
+
+            Assert.AreEqual(expectedResponse.Base64Image, resultContents.Base64Image);
+            Assert.AreEqual(expectedResponse.GeneratedAt, resultContents.GeneratedAt);
+            Assert.AreEqual(expectedResponse.Request.processRef, resultContents.Request.processRef);
+            Assert.AreEqual(expectedResponse.Request.imageId, resultContents.Request.imageId);
+        }
+
+        [Test]
+        public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_calls_usecase()
+        {
+            //arrange
+            var request = new GetProcessImageRequest();
+            _mockGetValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
+
+            //act
+            _processImageController.GetProcessImage(request);
+
+            //assert
+            _mockUsecase.Verify(u => u.ExecuteGet(It.IsAny<GetProcessImageRequest>()), Times.Once);
+        }
+
+        [Test]
+        public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_calls_usecase_with_correct_data()
+        {
+            //arrange
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            _mockGetValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
+
+            //act
+            _processImageController.GetProcessImage(request);
+
+            //assert
+            _mockUsecase.Verify(u => u.ExecuteGet(It.Is<GetProcessImageRequest>(obj =>
+                obj.processRef == request.processRef &&
+                obj.imageId == request.imageId
+                )), Times.Once);
+        }
+
         #endregion
     }
 }

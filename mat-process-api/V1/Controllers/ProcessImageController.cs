@@ -46,12 +46,17 @@ namespace mat_process_api.V1.Controllers
             return BadRequest(validationResult.Errors);
         }
 
+        /// <summary>
+        /// TODO: Add description
+        /// </summary>
+        /// <param name="requestData"></param>
         [HttpGet]
         [Produces("application/json")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetProcessImage([FromBody] GetProcessImageRequest imageData)
+        [ProducesResponseType(typeof(GetProcessImageResponse), 200)]
+        public IActionResult GetProcessImage([FromBody] GetProcessImageRequest requestData)
         {
-            return Ok();
+                    var usecaseResponse = _processImageUseCase.ExecuteGet(requestData);
+                    return Ok(usecaseResponse);
         }
     }
 }
