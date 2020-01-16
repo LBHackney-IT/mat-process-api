@@ -18,11 +18,13 @@ namespace mat_process_api.V1.Controllers
     {
         private IProcessImageUseCase _processImageUseCase;
         private IPostProcessImageRequestValidator _postValidator;
+        private IGetProcessImageRequestValidator _getValidator;
 
-        public ProcessImageController(IProcessImageUseCase usecase, IPostProcessImageRequestValidator postValidator)
+        public ProcessImageController(IProcessImageUseCase usecase, IPostProcessImageRequestValidator postValidator, IGetProcessImageRequestValidator getValidator)
         {
             _processImageUseCase = usecase;
             _postValidator = postValidator;
+            _getValidator = getValidator;
         }
 
         /// <summary>
@@ -55,8 +57,15 @@ namespace mat_process_api.V1.Controllers
         [ProducesResponseType(typeof(GetProcessImageResponse), 200)]
         public IActionResult GetProcessImage([FromBody] GetProcessImageRequest requestData)
         {
+            var validationResult = _getValidator.Validate(requestData);
+
+            if (validationResult.IsValid)
+            {
                     var usecaseResponse = _processImageUseCase.ExecuteGet(requestData);
                     return Ok(usecaseResponse);
+            }
+
+            return BadRequest(validationResult.Errors);
         }
     }
 }

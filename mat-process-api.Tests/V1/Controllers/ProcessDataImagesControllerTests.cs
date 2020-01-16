@@ -24,6 +24,7 @@ namespace mat_process_api.Tests.V1.Controllers
         private ProcessImageController _processImageController;
         private Mock<IProcessImageUseCase> _mockUsecase;
         private Mock<IPostProcessImageRequestValidator> _mockPostValidator;
+        private Mock<IGetProcessImageRequestValidator> _mockGetValidator;
         private Faker _faker = new Faker();
 
         [SetUp]
@@ -31,7 +32,8 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             _mockUsecase = new Mock<IProcessImageUseCase>();
             _mockPostValidator = new Mock<IPostProcessImageRequestValidator>();
-            _processImageController = new ProcessImageController(_mockUsecase.Object, _mockPostValidator.Object);
+            _mockGetValidator = new Mock<IGetProcessImageRequestValidator>();
+            _processImageController = new ProcessImageController(_mockUsecase.Object, _mockPostValidator.Object, _mockGetValidator.Object);
         }
 
         #region Post Process Image
@@ -166,6 +168,7 @@ namespace mat_process_api.Tests.V1.Controllers
             //arrange
             var request = new GetProcessImageRequest();
             var expectedStatusCode = 200;
+            _mockGetValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
             var controllerResponse = _processImageController.GetProcessImage(request);
@@ -185,6 +188,7 @@ namespace mat_process_api.Tests.V1.Controllers
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
             var expectedResponse = new GetProcessImageResponse(_faker.Random.Hash().ToString(), DateTime.Now, request);
             _mockUsecase.Setup(u => u.ExecuteGet(It.Is<GetProcessImageRequest>(obj => obj == request))).Returns(expectedResponse);
+            _mockGetValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
             var controllerResponse = _processImageController.GetProcessImage(request);
@@ -202,6 +206,63 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(expectedResponse.GeneratedAt, resultContents.GeneratedAt);
             Assert.AreEqual(expectedResponse.Request.processRef, resultContents.Request.processRef);
             Assert.AreEqual(expectedResponse.Request.imageId, resultContents.Request.imageId);
+        }
+
+        [Test]
+        public void given_an_invalid_request_when_GetProcessImage_controller_method_is_called_then_it_returns_400_BadRequest_result()
+        {
+            //arrange
+            var expectedStatusCode = 400;
+            var request = new GetProcessImageRequest(); //an empty request will be invalid
+
+            int errorCount = _faker.Random.Int(1, 10); //simulate from 1 to 10 validation errors (triangulation).
+            var validationErrorList = new List<ValidationFailure>(); //this list will be used as constructor argument for 'ValidationResult'.
+            for (int i = errorCount; i > 0; i--) { validationErrorList.Add(new ValidationFailure(_faker.Random.Word(), _faker.Random.Word())); } //generate from 1 to 10 fake validation errors. Single line for-loop so that it wouldn't distract from what's key in this test.
+
+            var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
+            _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
+
+            //act
+            var controllerResponse = _processImageController.GetProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            Assert.AreEqual(expectedStatusCode, result.StatusCode);
+        }
+
+        [Test]
+        public void given_an_invalid_request_when_GetProcessImage_controller_method_is_called_then_the_response_BadRequest_result_contains_correct_error_messages()
+        {
+            //arrange
+            var expectedStatusCode = 400;
+            var request = new GetProcessImageRequest(); //an empty request will be invalid
+
+            int errorCount = _faker.Random.Int(1, 10); //simulate from 1 to 10 validation errors (triangulation).
+            var validationErrorList = new List<ValidationFailure>(); //this list will be used as constructor argument for 'ValidationResult'.
+            for (int i = errorCount; i > 0; i--) { validationErrorList.Add(new ValidationFailure(_faker.Random.Word(), _faker.Random.Word())); } //generate from 1 to 10 fake validation errors. Single line for-loop so that it wouldn't distract from what's key in this test.
+
+            var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
+            _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
+
+            var expectedControllerResponse = new BadRequestObjectResult(validationErrorList); // build up expected controller response to check if the contents of the errors match - that's probably the easiest way to check that.
+
+            //act
+            var controllerResponse = _processImageController.GetProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+            var resultContents = (IList<ValidationFailure>)result.Value;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+
+            Assert.IsInstanceOf<IList<ValidationFailure>>(resultContents);
+            Assert.NotNull(resultContents);
+            Assert.AreEqual(errorCount, resultContents.Count); // there should be 1 validation failure coming from the invalid guid
+            Assert.AreEqual(JsonConvert.SerializeObject(expectedControllerResponse), JsonConvert.SerializeObject(controllerResponse)); //expectedControllerResponse
         }
 
         [Test]
@@ -233,6 +294,20 @@ namespace mat_process_api.Tests.V1.Controllers
                 obj.processRef == request.processRef &&
                 obj.imageId == request.imageId
                 )), Times.Once);
+        }
+
+        [Test]
+        public void given_a_request_when_GetProcessImage_controller_method_is_called_then_it_calls_the_validator_with_that_request_object()
+        {
+            //arrange
+            var request = new GetProcessImageRequest();
+            _mockGetValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
+
+            //act
+            _processImageController.GetProcessImage(request);
+
+            //assert
+            _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj == request)), Times.Once);
         }
 
         #endregion
