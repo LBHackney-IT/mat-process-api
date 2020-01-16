@@ -34,11 +34,16 @@ namespace mat_process_api.V1.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult PostProcessImage([FromBody] PostProcessImageRequest imageData)
         {
-            _postValidator.Validate(imageData);
+            var validationResult = _postValidator.Validate(imageData);
 
-            _processImageUseCase.ExecutePost(imageData);
-            
-            return NoContent();
+            if (validationResult.IsValid)
+            {
+                _processImageUseCase.ExecutePost(imageData);
+
+                return NoContent();
+            }
+
+            return BadRequest(validationResult.Errors);
         }
     }
 }
