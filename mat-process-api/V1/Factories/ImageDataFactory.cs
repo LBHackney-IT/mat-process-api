@@ -6,13 +6,13 @@ namespace mat_process_api.V1.Factories
 {
     public static class ImageDataFactory
     {
-        public static ProcessImageData CreateImageDataObject(PostProcessImageRequest request, byte[] imageBytes)
+        public static ProcessImageData CreateImageDataObject(PostProcessImageRequest request, Base64DecodedData decodedStringData)
         {
             return new ProcessImageData()
             {
                 processRef = request.processRef,
                 imageId = request.imageId,
-                imageBytes = imageBytes
+                imageData = decodedStringData
             };
         }
     }
