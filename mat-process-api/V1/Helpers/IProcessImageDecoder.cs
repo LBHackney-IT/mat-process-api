@@ -1,8 +1,9 @@
+using mat_process_api.V1.Domain;
 using System;
 namespace mat_process_api.V1.Helpers
 {
     public interface IProcessImageDecoder
     {
-        byte[] DecodeBase64ImageString(string imageString);
+        Base64DecodedData DecodeBase64ImageString(string imageString);
     }
 }
