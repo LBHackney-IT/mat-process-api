@@ -71,5 +71,18 @@ namespace mat_process_api.Tests.V1.Helper
                 imageExtension = fileExt
             };
         }
+
+        #region Get Process Image 
+
+        public static GetProcessImageRequest CreateGetProcessImageRequestObject()
+        {
+            return new GetProcessImageRequest()
+            {
+                processRef = faker.Random.Guid().ToString(),
+                imageId = faker.Random.Guid().ToString(),
+            };
+        }
+
+        #endregion
     }
 }
