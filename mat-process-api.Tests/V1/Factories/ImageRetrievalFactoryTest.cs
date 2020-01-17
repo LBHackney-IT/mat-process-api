@@ -45,8 +45,7 @@ namespace mat_process_api.Tests.V1.Factories
             //act
             var result = ImageRetrievalFactory.EncodeStreamToBase64(testResponse);
             //assert
-            Assert.IsNotEmpty(result);
-            Assert.True(IsBase64String(result));
+            Assert.IsEmpty(result);
         }
     }
 }

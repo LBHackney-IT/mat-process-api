@@ -28,7 +28,6 @@ namespace mat_process_api.Tests.V1.Domain
         {
             //arrange
             string expectedDefaultValue = null;
-
             //assert
             Assert.AreEqual(expectedDefaultValue, _processImageData.processRef);
         }
@@ -42,7 +41,15 @@ namespace mat_process_api.Tests.V1.Domain
             //assert
             Assert.AreEqual(expectedDefaultValue, _processImageData.imageId);
         }
+        [Test]
+        public void when_a_new_ProcessImageData_domain_object_is_created_its_key_property_value_defaults_to_null()
+        {
+            //arrange
+            string expectedDefaultValue = null;
 
+            //assert
+            Assert.AreEqual(expectedDefaultValue, _processImageData.key);
+        }
         [Test]
         public void when_a_new_ProcessImageData_domain_object_is_created_its_imageData_child_object_property_value_defaults_to_null()
         {
@@ -64,7 +71,7 @@ namespace mat_process_api.Tests.V1.Domain
             string expectedDefaultValue = null;
 
             //assert
-            Assert.AreEqual(expectedDefaultValue, _base64DecodedData.imageBytes);
+            Assert.AreEqual(expectedDefaultValue, _base64DecodedData.imagebase64String);
         }
 
         [Test]

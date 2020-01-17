@@ -13,7 +13,7 @@ namespace mat_process_api.V1.Infrastructure
     public class AwsS3Client : IAmazonS3Client
     {
       
-        public PutObjectResponse insertImage(AWSCredentials credentials, string base64, string key)
+        public PutObjectResponse insertImage(AWSCredentials credentials, string base64, string key,string contentType)
         {
           
             try
@@ -28,7 +28,7 @@ namespace mat_process_api.V1.Infrastructure
                         BucketName = Environment.GetEnvironmentVariable("bucket-name"),
                         Key = key, //file path in S3 to be included here
                         InputStream = stream,
-                        ContentType = "image/jpg"
+                        ContentType = contentType
                     };
                     PutObjectResponse response = s3Client.PutObjectAsync(putRequest1).Result;
                     return response;
