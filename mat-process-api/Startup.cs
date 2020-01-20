@@ -13,11 +13,14 @@ using mat_process_api.UseCase.V1;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Gateways;
 using mat_process_api.V1.Infrastructure;
+using mat_process_api.V1.UseCase;
 using mat_process_api.Versioning;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using mat_process_api.V1.Validators;
+using mat_process_api.V1.Helpers;
 
 namespace mat_process_api
 {
@@ -31,34 +34,55 @@ namespace mat_process_api
         public IConfiguration Configuration { get; }
         private static List<ApiVersionDescription> _apiVersions { get; set; }
         //TODO update the below to the name of your API
-        private const string ApiName = "Your API Name";
+        private const string ApiName = "mat-process";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddCors(option =>
+            {
+                option.AddPolicy("AllowAny", policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
+            services.AddSingleton<IApiVersionDescriptionProvider, DefaultApiVersionDescriptionProvider>();
+            ConfigureApiVersioningAndSwagger(services);
+            ConfigureDbContext(services);
+            RegisterGateWays(services);
+            RegisterUseCases(services);
+            RegisterValidators(services);
+            RegisterHelpers(services);
+            RegisterAwsServices(services);
+
+        }
+
+        private static void ConfigureApiVersioningAndSwagger(IServiceCollection services)
+        {
             services.AddApiVersioning(o =>
             {
-                o.DefaultApiVersion = new ApiVersion(1, 0);
+                o.DefaultApiVersion = new ApiVersion(1,0);
                 o.AssumeDefaultVersionWhenUnspecified = true; // assume that the caller wants the default version if they don't specify
                 o.ApiVersionReader = new UrlSegmentApiVersionReader(); // read the version number from the url segment header)
             });
-            services.AddSingleton<IApiVersionDescriptionProvider, DefaultApiVersionDescriptionProvider>();
 
             services.AddSwaggerGen(c =>
             {
-                c.AddSecurityDefinition("Token",
-                    new ApiKeyScheme
-                    {
-                        In = "header",
-                        Description = "Your Hackney API Key",
-                        Name = "X-Api-Key",
-                        Type = "apiKey"
-                    });
-                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>>
+                var security = new Dictionary<string, IEnumerable<string>>
                 {
-                    {"Token", Enumerable.Empty<string>()}
-                });
+                    { "Token", Enumerable.Empty<string>() }
+                };
+
+                c.AddSecurityDefinition("Token",
+                  new ApiKeyScheme
+                  {
+                      In = "header",
+                      Description = "Your Hackney API Key",
+                      Name = "X-Api-Key",
+                      Type = "apiKey"
+                  }
+                );
+
+                c.AddSecurityRequirement(security);
 
                 //Looks at the APIVersionAttribute [ApiVersion("x")] on controllers and decides whether or not
                 //to include it in that version of the swagger document
@@ -79,12 +103,11 @@ namespace mat_process_api
                     var version = $"v{apiVersion.ApiVersion.ToString()}";
                     c.SwaggerDoc(version, new Info
                     {
-                        Title = $"{ApiName}-api {version}",
+                        Title = $"mat-process-api {version}",
                         Version = version,
-                        Description = $"{ApiName} version {version}. Please check older versions for depreceted endpoints."
+                        Description = "This is the Hackney Property API which allows client applications to securely retrieve property information for a given property reference."
                     });
                 }
-
                 c.CustomSchemaIds(x => x.FullName);
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -92,32 +115,52 @@ namespace mat_process_api
                 if (File.Exists(xmlPath))
                     c.IncludeXmlComments(xmlPath);
             });
-            ConfigureDbContext(services);
-            RegisterGateWays(services);
-            RegisterUseCases(services);
         }
 
         private static void ConfigureDbContext(IServiceCollection services)
         {
-            var connectionString = Environment.GetEnvironmentVariable("UH_URL");
+            services.Configure<ConnectionSettings>(options =>
+            {
+                options.ConnectionString
+                    = Environment.GetEnvironmentVariable("DocumentDbConnString");
+                options.Database
+                    = Environment.GetEnvironmentVariable("DatabaseName");
+                options.CollectionName
+                    = Environment.GetEnvironmentVariable("CollectionName");
+            });
 
-            DbContextOptionsBuilder builder = new DbContextOptionsBuilder()
-                .UseSqlServer(connectionString);
-
-            services.AddSingleton<IUHContext>(s => new UhContext(builder.Options));
+            services.AddSingleton<IMatDbContext,MatDbContext>();
         }
 
         private static void RegisterGateWays(IServiceCollection services)
         {
-            services.AddSingleton<ITransactionsGateway, TransactionsGateway>();
+            services.AddSingleton<IProcessDataGateway, ProcessDataGateway>();
+            services.AddSingleton<IImagePersistingGateway, ImagePersistingGateway>();
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
-            services.AddSingleton<IListTransactions, ListTransactionsUsecase>();
+            services.AddSingleton<IProcessData, ProcessDataUseCase>();
+            services.AddSingleton<IProcessImageUseCase, ProcessImageUseCase>();
+        }
+        private static void RegisterAwsServices(IServiceCollection services)
+        {
+            services.AddSingleton<IAmazonSTSClient, AmazonSTSClient>();
+            services.AddSingleton<IAmazonS3Client, AwsS3Client>();
+
+        }
+        private static void RegisterValidators(IServiceCollection services)
+        {
+            services.AddSingleton<IPostInitialProcessDocumentRequestValidator, PostInitialProcessDocumentRequestValidator>();
+            services.AddSingleton<IUpdateProcessDocumentRequestValidator, UpdateProcessDocumentRequestValidator>();
+            services.AddSingleton<IPostProcessImageRequestValidator, PostProcessImageRequestValidator>();
         }
 
-
+        private static void RegisterHelpers(IServiceCollection services)
+        {
+            services.AddSingleton<IProcessImageDecoder, ProcessImageDecoder>();
+            services.AddSingleton<IAwsAssumeRoleHelper, AwsAssumeRoleHelper>();
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -142,11 +185,12 @@ namespace mat_process_api
                 {
                     //Create a swagger endpoint for each swagger version
                     c.SwaggerEndpoint($"{apiVersionDescription.GetFormattedApiVersion()}/swagger.json",
-                        $"{ApiName}-api {apiVersionDescription.GetFormattedApiVersion()}");
+                        $"mat-process-api {apiVersionDescription.GetFormattedApiVersion()}");
                 }
             });
 
             app.UseSwagger();
+            app.UseCors(builder => { builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); });
 
             app.UseMvc(routes =>
             {

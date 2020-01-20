@@ -24,19 +24,13 @@ API for Manage a tenancy processes.
 
 To serve the application, run it using your IDE of choice, we use Visual Studio CE and JetBrains Rider on Mac. 
 
-The application can also be served locally using docker:
-1.  Add you security credentials to AWS CLI.
+The application can also be served locally using Docker (via make):
 ```sh
-$ aws configure
+$ make build
+$ make serve
 ```
-2. Log into AWS ECR.
-```sh
-$ aws ecr get-login --no-include-email
-```
-3. Build and serve the application. It will be available in the port 3000.
-```sh
-$ make build && make serve
-```
+It will then be available on port 3000.
+
 
 ### Release process
 

@@ -15,7 +15,7 @@ RUN dotnet restore ./mat-process-api.Tests/mat-process-api.Tests.csproj
 
 # Copy everything else and build
 COPY . .
-
+COPY ./mat-process-api/rds-ca-2019-root.pem /ssl/rds-ca-2019-root.pem
 RUN dotnet build -c debug -o out mat-process-api.Tests/mat-process-api.Tests.csproj
 
 CMD dotnet test
