@@ -27,7 +27,9 @@ namespace mat_process_api.V1.UseCase
 
         public GetProcessImageResponse ExecuteGet(GetProcessImageRequest request)
         {
-            throw new NotImplementedException();
+            var gatewayResponse = _processImageGateway.RetrieveImage(request);
+
+            return new GetProcessImageResponse(gatewayResponse, DateTime.Now, request);
         }
     }
 }

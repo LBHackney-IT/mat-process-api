@@ -7,6 +7,6 @@ namespace mat_process_api.V1.Gateways
     public interface IImagePersistingGateway
     {
         void UploadImage(ProcessImageData request);
-        string RetrieveImage();
+        string RetrieveImage(GetProcessImageRequest request);
     }
 }
