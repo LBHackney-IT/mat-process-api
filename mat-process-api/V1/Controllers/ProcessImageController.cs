@@ -7,6 +7,7 @@ using mat_process_api.V1.UseCase;
 using mat_process_api.V1.Validators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace mat_process_api.V1.Controllers
 {
@@ -19,12 +20,14 @@ namespace mat_process_api.V1.Controllers
         private IProcessImageUseCase _processImageUseCase;
         private IPostProcessImageRequestValidator _postValidator;
         private IGetProcessImageRequestValidator _getValidator;
+        private ILogger<ProcessImageController> _logger;
 
-        public ProcessImageController(IProcessImageUseCase usecase, IPostProcessImageRequestValidator postValidator, IGetProcessImageRequestValidator getValidator)
+        public ProcessImageController(IProcessImageUseCase usecase, IPostProcessImageRequestValidator postValidator, IGetProcessImageRequestValidator getValidator, ILogger<ProcessImageController> logger)
         {
             _processImageUseCase = usecase;
             _postValidator = postValidator;
             _getValidator = getValidator;
+            _logger = logger;
         }
 
         /// <summary>
@@ -57,6 +60,8 @@ namespace mat_process_api.V1.Controllers
         [ProducesResponseType(typeof(GetProcessImageResponse), 200)]
         public IActionResult GetProcessImage([FromBody] GetProcessImageRequest requestData)
         {
+            _logger.LogInformation($"Get ProcessImage request for process reference: {requestData.processRef} and image Id: {requestData.imageId}");
+
             var validationResult = _getValidator.Validate(requestData);
 
             if (validationResult.IsValid)
@@ -72,6 +77,7 @@ namespace mat_process_api.V1.Controllers
                 }
             }
 
+            _logger.LogInformation($"The Get ProcessImage request with process reference: {requestData.processRef ?? "null"} and image Id: {requestData.imageId ?? "null"} did not pass the validation:\n\n{validationResult.Errors.Select(e => $"Validation error for: '{e.PropertyName}', message: '{e.ErrorMessage}'.").Aggregate((acc, m) => acc + "\n" + m)}");
             return BadRequest(validationResult.Errors);
         }
     }

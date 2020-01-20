@@ -14,7 +14,9 @@ using mat_process_api.Tests.V1.Helper;
 using FluentValidation.Results;
 using FV = FluentValidation.Results;
 using Newtonsoft.Json;
-
+using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging.Internal;
 
 namespace mat_process_api.Tests.V1.Controllers
 {
@@ -22,6 +24,7 @@ namespace mat_process_api.Tests.V1.Controllers
     public class ProcessDataImagesControllerTests
     {
         private ProcessImageController _processImageController;
+        private Mock<ILogger<ProcessImageController>> _mockLogger;
         private Mock<IProcessImageUseCase> _mockUsecase;
         private Mock<IPostProcessImageRequestValidator> _mockPostValidator;
         private Mock<IGetProcessImageRequestValidator> _mockGetValidator;
@@ -30,10 +33,11 @@ namespace mat_process_api.Tests.V1.Controllers
         [SetUp]
         public void SetUp()
         {
+            _mockLogger = new Mock<ILogger<ProcessImageController>>();
             _mockUsecase = new Mock<IProcessImageUseCase>();
             _mockPostValidator = new Mock<IPostProcessImageRequestValidator>();
             _mockGetValidator = new Mock<IGetProcessImageRequestValidator>();
-            _processImageController = new ProcessImageController(_mockUsecase.Object, _mockPostValidator.Object, _mockGetValidator.Object);
+            _processImageController = new ProcessImageController(_mockUsecase.Object, _mockPostValidator.Object, _mockGetValidator.Object, _mockLogger.Object);
         }
 
         #region Post Process Image
@@ -374,6 +378,109 @@ namespace mat_process_api.Tests.V1.Controllers
             //assert
             _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj == request)), Times.Once);
         }
+
+        [Test]
+        public void when_GetProcessImage_controller_method_is_called_then_it_calls_the_logger()
+        {
+            //arrange
+            var request = new GetProcessImageRequest();
+            _mockGetValidator.Setup(l => l.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
+
+            //act
+            _processImageController.GetProcessImage(request);
+
+            //assert
+            _mockLogger.Verify(l => l.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.IsAny<FormattedLogValues>(),
+                        It.IsAny<Exception>(),
+                        It.IsAny<Func<object, Exception, string>>()
+                    ), Times.AtLeastOnce);
+        }
+
+        [Test]
+        public void given_any_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_that_request_happened()
+        {
+            //arrange
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            string expectedLogMessage = $"Get ProcessImage request for process reference: {request.processRef} and image Id: {request.imageId}";
+
+            _mockGetValidator.Setup(l => l.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
+
+            //act
+            _processImageController.GetProcessImage(request);
+
+            //assert
+            _mockLogger.Verify(l => l.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.Is<FormattedLogValues>(v => v.ToString().Contains(expectedLogMessage)),
+                        It.IsAny<Exception>(),
+                        It.IsAny<Func<object, Exception, string>>()
+                    ), Times.AtLeastOnce);
+        }
+
+        [Test]
+        public void given_invalid_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_correct_validation_failure_message()
+        {
+            //arrange
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject(); //doesn't matter that it's valid right now, because validation failure is built up manually anyway. This object is needs values set so that logger message could be checked.
+
+            int errorCount = _faker.Random.Int(1, 10); //simulate from 1 to 10 validation errors (triangulation).
+            var validationErrorList = new List<ValidationFailure>(); //this list will be used as constructor argument for 'ValidationResult'.
+            for (int i = errorCount; i > 0; i--) { validationErrorList.Add(new ValidationFailure(_faker.Random.Word(), _faker.Random.Word())); } //generate from 1 to 10 fake validation errors. Single line for-loop so that it wouldn't distract from what's key in this test.
+
+            var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
+            _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
+
+            string expectedValidationErrorMessages = fakeValidationResult.Errors
+                .Select(e => $"Validation error for: '{e.PropertyName}', message: '{e.ErrorMessage}'.")
+                .Aggregate((acc, m) => acc + "\n" + m);
+            string expectedLogMessage = $"The Get ProcessImage request with process reference: {request.processRef} and image Id: {request.imageId} did not pass the validation:\n\n{expectedValidationErrorMessages}";
+
+            //act
+            _processImageController.GetProcessImage(request);
+
+            //assert
+            _mockLogger.Verify(l => l.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.Is<FormattedLogValues>(v => v.ToString().Contains(expectedLogMessage)),
+                        It.IsAny<Exception>(),
+                        It.IsAny<Func<object, Exception, string>>()
+                    ), Times.Once);
+        }
+
+        [Test]
+        public void given_a_request_with_null_properties_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_display_those_null_properties_as_string_saying_null() //otherwise it would just display empty
+        {
+            //arrange
+            var request = new GetProcessImageRequest(); // both properties are 'null' now.
+
+            //need the validation failure here, because the implementation would only fire off upon validation failure.
+            var validationErrorList = new List<ValidationFailure>();
+            validationErrorList.Add(new ValidationFailure(_faker.Random.Word(), _faker.Random.Word()));
+
+            var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
+            _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
+
+            string expectedLogMessageSubstring = $"The Get ProcessImage request with process reference: {"null"} and image Id: {"null"} did not pass the validation:"; //set up only substring, because the test only cares about this first part of the full log message that would be passed in.
+
+            //act
+            _processImageController.GetProcessImage(request);
+            
+            //assert
+            _mockLogger.Verify(l => l.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.Is<FormattedLogValues>(v => v.ToString().Contains(expectedLogMessageSubstring)),
+                        It.IsAny<Exception>(),
+                        It.IsAny<Func<object, Exception, string>>()
+                    ), Times.AtLeastOnce);
+        }
+
+        //Do we need to log the exception messages with the logger in the controller? Or does our logging service pick out a message from response? If no, need another test.
 
         #endregion
     }
