@@ -26,7 +26,7 @@ namespace mat_process_api.Tests.V1.Factories
             Assert.AreEqual(request.imageId, processImageData.imageId);
             Assert.AreEqual(decodedData.imageType, processImageData.imageData.imageType);
             Assert.AreEqual(decodedData.imageExtension, processImageData.imageData.imageExtension);
-            Assert.True(decodedData.imageBytes.SequenceEqual(processImageData.imageData.imageBytes));
+            Assert.True(decodedData.imagebase64String.SequenceEqual(processImageData.imageData.imagebase64String));
         }
     }
 }

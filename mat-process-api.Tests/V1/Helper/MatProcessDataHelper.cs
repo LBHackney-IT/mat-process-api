@@ -56,7 +56,8 @@ namespace mat_process_api.Tests.V1.Helper
             {
                 processRef = faker.Random.Guid().ToString(),
                 imageId = faker.Random.Guid().ToString(),
-                base64Image = "data:image/" + faker.System.FileExt() + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512))
+                base64Image = "data:image/" + faker.System.FileExt() + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512)),
+                processType = faker.Random.Word()
             };
         }
 
@@ -66,7 +67,7 @@ namespace mat_process_api.Tests.V1.Helper
 
             return new Base64DecodedData()
             {
-                imageBytes = faker.Random.Bytes(512),
+                imagebase64String = faker.Random.Bytes(512).ToString(),
                 imageType = faker.System.FileType() + "/" + fileExt,
                 imageExtension = fileExt
             };

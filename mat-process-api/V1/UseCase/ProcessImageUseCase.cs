@@ -9,10 +9,10 @@ namespace mat_process_api.V1.UseCase
 {
     public class ProcessImageUseCase : IProcessImageUseCase
     {
-        private IProcessImageGateway _processImageGateway;
+        private IImagePersistingGateway _processImageGateway;
         private IProcessImageDecoder _processImageDecoder;
 
-        public ProcessImageUseCase(IProcessImageGateway gateway, IProcessImageDecoder imageDecoder)
+        public ProcessImageUseCase(IImagePersistingGateway gateway, IProcessImageDecoder imageDecoder)
         {
             _processImageGateway = gateway;
             _processImageDecoder = imageDecoder;
@@ -22,8 +22,7 @@ namespace mat_process_api.V1.UseCase
         {
             Base64DecodedData base64Decoded = _processImageDecoder.DecodeBase64ImageString(request.base64Image);
             ProcessImageData imageData = ImageDataFactory.CreateImageDataObject(request, base64Decoded);
-
-            _processImageGateway.PostProcessImage(imageData);
+            _processImageGateway.UploadImage(imageData);
         }
 
         public GetProcessImageResponse ExecuteGet(GetProcessImageRequest request)

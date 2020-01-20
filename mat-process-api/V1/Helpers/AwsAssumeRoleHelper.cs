@@ -10,7 +10,7 @@ using mat_process_api.V1.Infrastructure;
 
 namespace mat_process_api.V1.Helpers
 {
-    public class AwsAssumeRoleHelper
+    public class AwsAssumeRoleHelper : IAwsAssumeRoleHelper
     {
         private IAmazonSTSClient client;
         public AwsAssumeRoleHelper(IAmazonSTSClient _client)

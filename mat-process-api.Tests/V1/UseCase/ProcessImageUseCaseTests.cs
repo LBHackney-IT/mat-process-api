@@ -16,14 +16,14 @@ namespace mat_process_api.Tests.V1.UseCase
     public class ProcessImageUseCaseTests
     {
         private IProcessImageUseCase _processImageUseCase;
-        private Mock<IProcessImageGateway> _mockGateway;
+        private Mock<IImagePersistingGateway> _mockGateway;
         private Mock<IProcessImageDecoder> _mockImageDecoder;
         private Faker _faker = new Faker();
 
         [SetUp]
         public void SetUp()
         {
-            _mockGateway = new Mock<IProcessImageGateway>();
+            _mockGateway = new Mock<IImagePersistingGateway>();
             _mockImageDecoder = new Mock<IProcessImageDecoder>();
             _processImageUseCase = new ProcessImageUseCase(_mockGateway.Object, _mockImageDecoder.Object);
         }
@@ -33,12 +33,12 @@ namespace mat_process_api.Tests.V1.UseCase
         {
             //arrange
             var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
-
+            _mockImageDecoder.Setup(x => x.DecodeBase64ImageString(request.base64Image)).Returns(new Base64DecodedData() { imageExtension = _faker.Random.Word() });
             //act
             _processImageUseCase.ExecutePost(request);
 
             //assert
-            _mockGateway.Verify(g => g.PostProcessImage(It.IsAny<ProcessImageData>()), Times.Once);
+            _mockGateway.Verify(g => g.UploadImage(It.IsAny<ProcessImageData>()), Times.Once);
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace mat_process_api.Tests.V1.UseCase
         {
             //arrange
             var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
-
+            _mockImageDecoder.Setup(x => x.DecodeBase64ImageString(request.base64Image)).Returns(new Base64DecodedData() { imageExtension = _faker.Random.Word() });
             //act
             _processImageUseCase.ExecutePost(request);
 
@@ -67,12 +67,13 @@ namespace mat_process_api.Tests.V1.UseCase
             _processImageUseCase.ExecutePost(request);
 
             //assert
-            _mockGateway.Verify(g => g.PostProcessImage(It.Is<ProcessImageData>(obj =>
+            _mockGateway.Verify(g => g.UploadImage(It.Is<ProcessImageData>(obj =>
                 obj.processRef == request.processRef &&
                 obj.imageId == request.imageId &&
-                obj.imageData.imageBytes.SequenceEqual(decodedData.imageBytes) &&
+                obj.imageData.imagebase64String.SequenceEqual(decodedData.imagebase64String) &&
                 obj.imageData.imageType == decodedData.imageType &&
-                obj.imageData.imageExtension == decodedData.imageExtension
+                obj.imageData.imageExtension == decodedData.imageExtension &&
+                obj.key == $"{request.processType}/{request.processRef}/{request.imageId}.{decodedData.imageExtension}"
                 )), Times.Once);
         }
     }

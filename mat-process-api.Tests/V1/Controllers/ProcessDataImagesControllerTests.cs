@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging.Internal;
+using mat_process_api.V1.Exceptions;
 
 namespace mat_process_api.Tests.V1.Controllers
 {
@@ -162,6 +163,24 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(JsonConvert.SerializeObject(expectedControllerResponse), JsonConvert.SerializeObject(controllerResponse)); //expectedControllerResponse
         }
 
+        [Test]
+        public void given_an_exception_thrown_check_that_the_controller_throws_correct_exception_and_500_status_code()
+        {
+            var expectedStatusCode = 500;
+            var request = new PostProcessImageRequest(); //an empty request will be invalid
+
+            var fakeValidationResult = new FV.ValidationResult(); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
+            _mockPostValidator.Setup(v => v.Validate(It.IsAny<PostProcessImageRequest>())).Returns(fakeValidationResult);
+            _mockUsecase.Setup(x => x.ExecutePost(request)).Throws<ImageNotInsertedToS3>();
+            //act
+            var controllerResponse = _processImageController.PostProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.AreEqual(expectedStatusCode, result.StatusCode);
+        }
         #endregion
 
         #region Get Process Image

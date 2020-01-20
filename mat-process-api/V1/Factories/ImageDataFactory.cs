@@ -1,6 +1,7 @@
 using System;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
+using mat_process_api.V1.Helpers;
 
 namespace mat_process_api.V1.Factories
 {
@@ -12,7 +13,8 @@ namespace mat_process_api.V1.Factories
             {
                 processRef = request.processRef,
                 imageId = request.imageId,
-                imageData = decodedStringData
+                imageData = decodedStringData,
+                key = ImagePersistingHelper.generateImageKey(request.processType,request.imageId,request.processRef, decodedStringData.imageExtension)
             };
         }
     }

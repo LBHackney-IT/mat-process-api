@@ -26,15 +26,14 @@ namespace mat_process_api.Tests.V1.Helper
         {
             //arrange
             string base64ImageString = MatProcessDataHelper.CreatePostProcessImageRequestObject().base64Image;
-            byte[] decodedImageBytes = Convert.FromBase64String(base64ImageString.Split(",")[1]); //expected decoded bytes
+            var decodedImageBytes = base64ImageString.Split(",")[1]; //expected decoded bytes
 
             //act
             var base64DecodedData = _processImageDecoder.DecodeBase64ImageString(base64ImageString);
 
             //assert
             Assert.NotNull(base64DecodedData);
-            Assert.IsInstanceOf<Base64DecodedData>(base64DecodedData);
-            Assert.True(decodedImageBytes.SequenceEqual(base64DecodedData.imageBytes));
+            Assert.AreEqual(decodedImageBytes,base64DecodedData.imagebase64String);
         }
 
         [Test]
