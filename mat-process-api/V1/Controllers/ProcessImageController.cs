@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using mat_process_api.V1.Boundary;
+using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.UseCase;
 using mat_process_api.V1.Validators;
 using Microsoft.AspNetCore.Http;
@@ -26,7 +27,7 @@ namespace mat_process_api.V1.Controllers
         }
 
         /// <summary>
-        /// TODO: Add description
+        /// TODO: API endpoint to insert images in base64 format into S3
         /// </summary>
         /// <param name="imageData"></param>
         [HttpPost]
@@ -34,16 +35,23 @@ namespace mat_process_api.V1.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult PostProcessImage([FromBody] PostProcessImageRequest imageData)
         {
-            var validationResult = _postValidator.Validate(imageData);
-
-            if (validationResult.IsValid)
+            try
             {
-                _processImageUseCase.ExecutePost(imageData);
+                var validationResult = _postValidator.Validate(imageData);
 
-                return NoContent();
+                if (validationResult.IsValid)
+                {
+                    _processImageUseCase.ExecutePost(imageData);
+
+                    return NoContent();
+                }
+
+                return BadRequest(validationResult.Errors);
             }
-
-            return BadRequest(validationResult.Errors);
+            catch(ImageNotInsertedToS3 ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex);
+            }
         }
     }
 }

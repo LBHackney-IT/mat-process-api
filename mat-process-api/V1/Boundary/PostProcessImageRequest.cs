@@ -10,5 +10,6 @@ namespace mat_process_api.V1.Boundary
         public string processRef { get; set; }
         public string imageId { get; set; }
         public string base64Image { get; set; }
+        public string processType { get; set; }
     }
 }

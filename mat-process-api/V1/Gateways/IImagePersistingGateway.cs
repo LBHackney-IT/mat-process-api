@@ -4,8 +4,9 @@ using mat_process_api.V1.Domain;
 
 namespace mat_process_api.V1.Gateways
 {
-    public interface IProcessImageGateway
+    public interface IImagePersistingGateway
     {
-        void PostProcessImage(ProcessImageData request);
+        void UploadImage(ProcessImageData request);
+        string RetrieveImage();
     }
 }

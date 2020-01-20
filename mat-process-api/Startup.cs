@@ -135,6 +135,7 @@ namespace mat_process_api
         private static void RegisterGateWays(IServiceCollection services)
         {
             services.AddSingleton<IProcessDataGateway, ProcessDataGateway>();
+            services.AddSingleton<IImagePersistingGateway, ImagePersistingGateway>();
         }
 
         private static void RegisterUseCases(IServiceCollection services)
@@ -145,6 +146,8 @@ namespace mat_process_api
         private static void RegisterAwsServices(IServiceCollection services)
         {
             services.AddSingleton<IAmazonSTSClient, AmazonSTSClient>();
+            services.AddSingleton<IAmazonS3Client, AwsS3Client>();
+
         }
         private static void RegisterValidators(IServiceCollection services)
         {
@@ -156,6 +159,7 @@ namespace mat_process_api
         private static void RegisterHelpers(IServiceCollection services)
         {
             services.AddSingleton<IProcessImageDecoder, ProcessImageDecoder>();
+            services.AddSingleton<IAwsAssumeRoleHelper, AwsAssumeRoleHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
