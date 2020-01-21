@@ -194,7 +194,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId,request.fileExtension);
+            var controllerResponse = _processImageController.GetProcessImage(request);
             var result = controllerResponse as ObjectResult;
 
             //assert
@@ -214,7 +214,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            var controllerResponse = _processImageController.GetProcessImage(request);
             var result = controllerResponse as ObjectResult;
             var resultContents = result.Value as GetProcessImageResponse;
 
@@ -246,7 +246,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            var controllerResponse = _processImageController.GetProcessImage(request);
             var result = controllerResponse as ObjectResult;
 
             //assert
@@ -273,7 +273,7 @@ namespace mat_process_api.Tests.V1.Controllers
             var expectedControllerResponse = new BadRequestObjectResult(validationErrorList); // build up expected controller response to check if the contents of the errors match - that's probably the easiest way to check that.
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            var controllerResponse = _processImageController.GetProcessImage(request);
             var result = controllerResponse as ObjectResult;
             var resultContents = (IList<ValidationFailure>)result.Value;
 
@@ -305,7 +305,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //validation successful
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            var controllerResponse = _processImageController.GetProcessImage(request);
             var result = controllerResponse as ObjectResult;
 
             //assert
@@ -342,7 +342,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //validation successful
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            var controllerResponse = _processImageController.GetProcessImage(request);
             var result = controllerResponse as ObjectResult;
             var resultContent = result.Value as string; //unwrap the error message from controller response.
 
@@ -361,7 +361,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            _processImageController.GetProcessImage(request);
 
             //assert
             _mockUsecase.Verify(u => u.ExecuteGet(It.IsAny<GetProcessImageRequest>()), Times.Once);
@@ -375,7 +375,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            _processImageController.GetProcessImage(request);
 
             //assert
             _mockUsecase.Verify(u => u.ExecuteGet(It.Is<GetProcessImageRequest>(obj =>
@@ -393,13 +393,10 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            _processImageController.GetProcessImage(request);
 
             //assert
-            _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj.fileExtension == request.fileExtension)), Times.Once);
-            _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj.imageId == request.imageId)), Times.Once);
-            _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj.processRef == request.processRef)), Times.Once);
-            _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj.processType == request.processType)), Times.Once);
+            _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj == request)), Times.Once);
         }
 
         [Test]
@@ -410,7 +407,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(l => l.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            _processImageController.GetProcessImage(request);
 
             //assert
             _mockLogger.Verify(l => l.Log(
@@ -432,7 +429,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(l => l.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            _processImageController.GetProcessImage(request);
 
             //assert
             _mockLogger.Verify(l => l.Log(
@@ -463,7 +460,7 @@ namespace mat_process_api.Tests.V1.Controllers
             string expectedLogMessage = $"The Get ProcessImage request with process reference: {request.processRef} and image Id: {request.imageId} did not pass the validation:\n\n{expectedValidationErrorMessages}";
 
             //act
-            _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId, request.fileExtension);
+            _processImageController.GetProcessImage(request);
 
             //assert
             _mockLogger.Verify(l => l.Log(
@@ -491,7 +488,7 @@ namespace mat_process_api.Tests.V1.Controllers
             string expectedLogMessageSubstring = $"The Get ProcessImage request with process reference: {"null"} and image Id: {"null"} did not pass the validation:"; //set up only substring, because the test only cares about this first part of the full log message that would be passed in.
 
             //act
-            _processImageController.GetProcessImage(request.processType,request.processRef,request.imageId,request.fileExtension);
+            _processImageController.GetProcessImage(request);
             
             //assert
             _mockLogger.Verify(l => l.Log(
