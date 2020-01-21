@@ -202,6 +202,8 @@ workflows:
               only: test-circleci
       - permit-production-release:
           type: approval
+          requires:
+            - deploy-to-staging
           filters:
             branches:
               only: test-circleci
