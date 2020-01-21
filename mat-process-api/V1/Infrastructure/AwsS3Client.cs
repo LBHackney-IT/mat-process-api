@@ -8,6 +8,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 
+
 namespace mat_process_api.V1.Infrastructure
 {
     public class AwsS3Client : IAmazonS3Client
@@ -23,7 +24,7 @@ namespace mat_process_api.V1.Infrastructure
                 byte[] data = Convert.FromBase64String(base64);
                 using (var stream = new MemoryStream(data))
                 {
-                    var putRequest1 = new PutObjectRequest
+                    var putRequest1 = new Amazon.S3.Model.PutObjectRequest
                     {
                         BucketName = Environment.GetEnvironmentVariable("bucket-name"),
                         Key = key, //file path in S3 to be included here
@@ -46,7 +47,7 @@ namespace mat_process_api.V1.Infrastructure
             {
                 using (var s3Client = new AmazonS3Client(credentials, Amazon.RegionEndpoint.EUWest2))
                 {
-                    GetObjectRequest request = new GetObjectRequest
+                    Amazon.S3.Model.GetObjectRequest request = new Amazon.S3.Model.GetObjectRequest
                     {
                         BucketName = bucketName,
                         Key = key
