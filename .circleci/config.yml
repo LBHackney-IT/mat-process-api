@@ -40,44 +40,8 @@ commands:
             << parameters.cluster-name >> \
             << parameters.service-name >> \
             -t << parameters.image-tag >>
-          no_output_timeout: 30m  
-  
-jobs:
-  build-and-test:
-    executor: docker-python
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: build
-          command: docker-compose build mat-process-api-test
-      - run:
-          name: Run tests
-          command: docker-compose run mat-process-api-test
-  deploy-to-development:
-    executor: docker-python
-    steps:
-      - deploy-env:
-          cluster-name: $AWS_CLUSTER_DEV 
-          service-name: $AWS_SERVICE_DEV 
-          image-tag: "$CIRCLE_SHA1"
-  deploy-to-staging:
-    docker:
-      - image: circleci/python:3.7
-    steps:
-      - deploy-env:
-          cluster-name: $AWS_CLUSTER_STAGING
-          service-name: $AWS_SERVICE_STAGING
-          image-tag: "$CIRCLE_SHA1"
-  deploy-to-production:
-    executor: docker-python
-    steps:
-      - deploy-env:
-          cluster-name: $AWS_CLUSTER_PROD
-          service-name: $AWS_SERVICE_PROD
-          image-tag: "$CIRCLE_SHA1"
+          no_output_timeout: 30m
   build_and_push_image:
-    executor: aws-ecr/default
     parameters:
       account-url:
         default: AWS_ECR_ACCOUNT_URL
@@ -122,14 +86,44 @@ jobs:
           account-url: <<parameters.account-url>>
           repo: <<parameters.repo>>
           tag: <<parameters.tag>>
-          
-workflows:
-  check-and-deploy:
-      jobs:
-      - build-and-test:
-          filters:
-            branches:
-              only: development
+  
+jobs:
+  build-and-test:
+    executor: docker-python
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: build
+          command: docker-compose build mat-process-api-test
+      - run:
+          name: Run tests
+          command: docker-compose run mat-process-api-test
+  deploy-to-development:
+    executor: docker-python
+    steps:
+      - deploy-env:
+          cluster-name: $AWS_CLUSTER_DEV 
+          service-name: $AWS_SERVICE_DEV 
+          image-tag: "$CIRCLE_SHA1"
+  deploy-to-staging:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - deploy-env:
+          cluster-name: $AWS_CLUSTER_STAGING
+          service-name: $AWS_SERVICE_STAGING
+          image-tag: "$CIRCLE_SHA1"
+  deploy-to-production:
+    executor: docker-python
+    steps:
+      - deploy-env:
+          cluster-name: $AWS_CLUSTER_PROD
+          service-name: $AWS_SERVICE_PROD
+          image-tag: "$CIRCLE_SHA1"
+  build_and_push_image_development:
+    executor: aws-ecr/default
+    steps:
       - build_and_push_image:
           dockerfile: ./mat-process-api/Dockerfile
           path: $PROJECT_PATH 
@@ -138,6 +132,38 @@ workflows:
           region: AWS_REGION
           tag: "${CIRCLE_SHA1}"
           context: mat-assume-role-context
+  build_and_push_image_staging:
+    executor: aws-ecr/default
+    steps:
+      - build_and_push_image:
+          dockerfile: ./mat-process-api/Dockerfile
+          path: $PROJECT_PATH 
+          account-url: AWS_ECR_HOST
+          repo: $AWS_ECR_PATH_STAGING
+          region: AWS_REGION
+          tag: "${CIRCLE_SHA1}"
+          context: mat-assume-role-context
+  build_and_push_image_production:
+    executor: aws-ecr/default
+    steps:
+      - build_and_push_image:
+          #name: build_and_push_image_production
+          dockerfile: ./mat-process-api/Dockerfile
+          path: $PROJECT_PATH 
+          account-url: AWS_ECR_HOST
+          repo: $AWS_ECR_PATH_PRODUCTION
+          region: AWS_REGION
+          tag: "${CIRCLE_SHA1}"
+          context: mat-assume-role-context
+          
+workflows:
+  check-and-deploy:
+      jobs:
+      - build-and-test:
+          filters:
+            branches:
+              only: development
+      - build_and_push_image_development:
           requires:
             - build-and-test
           filters:
@@ -146,7 +172,7 @@ workflows:
       - deploy-to-development:
           context: mat-assume-role-context
           requires:
-            - build_and_push_image
+            - build_and_push_image_development
           filters:
             branches:
               only: development
@@ -163,14 +189,7 @@ workflows:
           filters:
             branches:
               only: test-circleci
-      - build_and_push_image:
-          dockerfile: ./mat-process-api/Dockerfile
-          path: $PROJECT_PATH 
-          account-url: AWS_ECR_HOST
-          repo: $AWS_ECR_PATH_STAGING
-          region: AWS_REGION
-          tag: "${CIRCLE_SHA1}"
-          context: mat-assume-role-context
+      - build_and_push_image_staging:
           requires:
             - permit-staging-release
           filters:
@@ -179,7 +198,7 @@ workflows:
       - deploy-to-staging:
           context: mat-assume-role-context
           requires:
-            - build_and_push_image
+            - build_and_push_image_staging
           filters:
             branches:
               only: test-circleci
@@ -188,15 +207,7 @@ workflows:
           filters:
             branches:
               only: test-circleci
-      - build_and_push_image:
-          name: build_and_push_image_production
-          dockerfile: ./mat-process-api/Dockerfile
-          path: $PROJECT_PATH 
-          account-url: AWS_ECR_HOST
-          repo: $AWS_ECR_PATH_PRODUCTION
-          region: AWS_REGION
-          tag: "${CIRCLE_SHA1}"
-          context: mat-assume-role-context
+      - build_and_push_image_production:
           requires:
             - permit-production-release
           filters:
