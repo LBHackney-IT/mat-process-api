@@ -90,20 +90,21 @@ namespace mat_process_api.Tests.V1.UseCase
             _processImageUseCase.ExecuteGet(new GetProcessImageRequest()); // no need for arrange, since it does not matter how the request object got set up for this test.
 
             //assert
-            _mockGateway.Verify(g => g.RetrieveImage(It.IsAny<GetProcessImageRequest>()), Times.Once);
+            _mockGateway.Verify(g => g.RetrieveImage(It.IsAny<string>()), Times.Once);
         }
 
         [Test]
-        public void given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_calls_the_gateway_with_that_request()
+        public void given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_calls_the_gateway_with_that_string()
         {
             //assert
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var imageKey = ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension);
 
             //act
             _processImageUseCase.ExecuteGet(request);
 
             //assert
-            _mockGateway.Verify(g => g.RetrieveImage(It.Is<GetProcessImageRequest>(obj => obj == request)), Times.Once);
+            _mockGateway.Verify(g => g.RetrieveImage(It.Is<string>(obj => obj == imageKey)), Times.Once);
         }
 
         [Test]
@@ -111,8 +112,10 @@ namespace mat_process_api.Tests.V1.UseCase
         {
             //assert
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var imageKey = ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension);
+
             var expectedBase64ImageString = MatProcessDataHelper.CreatePostProcessImageRequestObject().base64Image;
-            _mockGateway.Setup(g => g.RetrieveImage(It.Is<GetProcessImageRequest>(obj => obj == request))).Returns(expectedBase64ImageString);
+            _mockGateway.Setup(g => g.RetrieveImage(It.Is<string>(obj => obj == imageKey))).Returns(expectedBase64ImageString);
 
             var expectedUsecaseResponse = new GetProcessImageResponse(expectedBase64ImageString, DateTime.Now, request); //The date time is impossible to test equality for, as it will differ in few microseconds from the actual response one. So I set it to DateTime.Min to signify its unimportance.
 

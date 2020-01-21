@@ -96,7 +96,6 @@ namespace mat_process_api.Tests.V1.Gateways
         public void test_that_gateway_returns_base64_string_for_successful_request()
         {
             //arrange
-            var request = new GetProcessImageRequest();
             var s3Response = new GetObjectResponse();
             var data = faker.Random.Guid().ToByteArray();
             s3Response.ResponseStream = new MemoryStream(data);
@@ -108,7 +107,7 @@ namespace mat_process_api.Tests.V1.Gateways
             s3Response2.HttpStatusCode = HttpStatusCode.OK;
             var expectedResponse = ImageRetrievalFactory.EncodeStreamToBase64(s3Response2);
             //act
-            var response = classUnderTest.RetrieveImage(request);
+            var response = classUnderTest.RetrieveImage(It.IsAny<string>());
             Assert.NotNull(response);
             Assert.AreEqual(expectedResponse, response);         
         }
@@ -117,24 +116,22 @@ namespace mat_process_api.Tests.V1.Gateways
         public void test_that_gateway_throws_exception_when_http_status_code_is_not_200()
         {
             //arrange
-            var request = new GetProcessImageRequest();
             var s3Response = new GetObjectResponse();
             s3Response.ResponseStream = new MemoryStream(faker.Random.Guid().ToByteArray());
             s3Response.HttpStatusCode = HttpStatusCode.Created;
             mockS3Client.Setup(x => x.retrieveImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>())).Returns(s3Response);
             //assert
-            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage(request));
+            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage(It.IsAny<string>()));
         }
 
         [Test]
         public void test_that_gateway_throws_image_not_found_when_exception_message_is_specified_key_not_found()
         {
             //arrange
-            var request = new GetProcessImageRequest();
             var expectedException = new AggregateException("The specified key does not exist.");
             mockS3Client.Setup(x => x.retrieveImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>())).Throws(expectedException);
             //assert
-            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage(request));
+            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage(It.IsAny<string>()));
         }
         #endregion
     }

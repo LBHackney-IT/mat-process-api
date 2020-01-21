@@ -27,7 +27,8 @@ namespace mat_process_api.V1.UseCase
 
         public GetProcessImageResponse ExecuteGet(GetProcessImageRequest request)
         {
-            var gatewayResponse = _processImageGateway.RetrieveImage(request);
+            var imageKey = ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension); 
+            var gatewayResponse = _processImageGateway.RetrieveImage(imageKey);
 
             return new GetProcessImageResponse(gatewayResponse, DateTime.Now, request);
         }

@@ -83,6 +83,8 @@ namespace mat_process_api.Tests.V1.Helper
             {
                 processRef = faker.Random.Guid().ToString(),
                 imageId = faker.Random.Guid().ToString(),
+                fileExtension = faker.Random.Word(),
+                processType = faker.Random.Word()
             };
         }
 

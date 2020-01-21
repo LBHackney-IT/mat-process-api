@@ -32,7 +32,7 @@ namespace mat_process_api.V1.Controllers
         }
 
         /// <summary>
-        /// TODO: API endpoint to insert images in base64 format into S3
+        /// API endpoint to insert images in base64 format into S3
         /// </summary>
         /// <param name="imageData"></param>
         [HttpPost]
@@ -60,16 +60,20 @@ namespace mat_process_api.V1.Controllers
         }
 
         /// <summary>
-        /// TODO: Add description
+        /// API Endpoint to retrieve images saved as part of MaT processes in S3
         /// </summary>
-        /// <param name="requestData"></param>
+        /// <param name="processType">The process type (name) - e.g. Tenancy and household check </param>
+        /// <param name="processRef">The process reference, that the image is saved against</param>
+        /// <param name="imageId">The ID of the image to be retrieved</param>
+        /// <param name="fileExtension">The file extension of the file to be retrieved</param>
         [HttpGet]
+        [Route("{processType}/{processRef}/{imageId}/{fileExtension}")]
         [Produces("application/json")]
         [ProducesResponseType(typeof(GetProcessImageResponse), 200)]
-        public IActionResult GetProcessImage([FromBody] GetProcessImageRequest requestData)
+        public IActionResult GetProcessImage(string processType, string processRef, string imageId,string fileExtension)
         {
-            _logger.LogInformation($"Get ProcessImage request for process reference: {requestData.processRef} and image Id: {requestData.imageId}");
-
+            _logger.LogInformation($"Get ProcessImage request for process reference: {processRef} and image Id: {imageId}");
+            var requestData = new GetProcessImageRequest { processType = processType, processRef = processRef, imageId = imageId, fileExtension = fileExtension };
             var validationResult = _getValidator.Validate(requestData);
 
             if (validationResult.IsValid)

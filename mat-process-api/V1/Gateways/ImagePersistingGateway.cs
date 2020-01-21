@@ -40,11 +40,13 @@ namespace mat_process_api.V1.Gateways
             }
         }
 
-        public string RetrieveImage(GetProcessImageRequest request)
+        public string RetrieveImage(string imageKey)
         {
             try
             {
-                var result = s3Client.retrieveImage(assumeRoleHelper.GetTemporaryCredentials(), request.processRef, request.imageId);
+                var result = s3Client.retrieveImage(assumeRoleHelper.GetTemporaryCredentials(), imageKey,
+                    Environment.GetEnvironmentVariable("bucket-name"));
+
                 if(result.HttpStatusCode != HttpStatusCode.OK)
                 {
                     throw new ImageNotFound();
