@@ -189,6 +189,7 @@ workflows:
             branches:
               only: master
       - build_and_push_image:
+          name: build_and_push_image_production
           dockerfile: ./mat-process-api/Dockerfile
           path: $PROJECT_PATH 
           account-url: AWS_ECR_HOST
@@ -204,7 +205,7 @@ workflows:
       - deploy-to-production:
           context: mat-assume-role-context
           requires:
-            - build_and_push_image
+            - build_and_push_image_production
           filters:
             branches:
               only: master
