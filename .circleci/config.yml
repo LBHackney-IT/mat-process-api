@@ -73,7 +73,7 @@ jobs:
     executor: docker-python
     steps:
       - deploy-env:
-          cluster-name: $AWS_SERVICE_PROD
+          cluster-name: $AWS_CLUSTER_PROD
           service-name: $AWS_SERVICE_PROD
           image-tag: "$CIRCLE_SHA1"
   build_and_push_image:
@@ -105,9 +105,6 @@ jobs:
       #- aws-ecr/ecr-login:
       #    region: <<parameters.region>>
       - run:
-          name: docker exists check
-          command: docker ps
-      - run:
           name: authorize docker to access aws ecr
           command: |
             # aws ecr get-login returns a login command w/ a temp token
@@ -115,9 +112,6 @@ jobs:
             $<<parameters.region>> --profile default) # default default default default default default default 
             # save it to an env var & use that env var to login
             $LOGIN_COMMAND
-      - run:
-          name: docker exists check
-          command: docker ps
       - aws-ecr/build-image:
           account-url: <<parameters.account-url>>
           dockerfile: <<parameters.dockerfile>>
@@ -132,7 +126,10 @@ jobs:
 workflows:
   check-and-deploy:
       jobs:
-      - build-and-test
+      - build-and-test:
+          filters:
+            branches:
+              only: development
       - build_and_push_image:
           dockerfile: ./mat-process-api/Dockerfile
           path: $PROJECT_PATH 
@@ -180,6 +177,31 @@ workflows:
             branches:
               only: master
       - deploy-to-staging:
+          context: mat-assume-role-context
+          requires:
+            - build_and_push_image
+          filters:
+            branches:
+              only: master
+      - permit-production-release:
+          type: approval
+          filters:
+            branches:
+              only: master
+      - build_and_push_image:
+          dockerfile: ./mat-process-api/Dockerfile
+          path: $PROJECT_PATH 
+          account-url: AWS_ECR_HOST
+          repo: $AWS_ECR_PATH_PRODUCTION
+          region: AWS_REGION
+          tag: "${CIRCLE_SHA1}"
+          context: mat-assume-role-context
+          requires:
+            - permit-production-release
+          filters:
+            branches:
+              only: master
+      - deploy-to-production:
           context: mat-assume-role-context
           requires:
             - build_and_push_image
