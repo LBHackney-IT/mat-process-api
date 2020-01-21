@@ -155,14 +155,14 @@ workflows:
       - build-and-test:
           filters:
             branches:
-              only: master   
+              only: test-circleci   
       - permit-staging-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: master
+              only: test-circleci
       - build_and_push_image:
           dockerfile: ./mat-process-api/Dockerfile
           path: $PROJECT_PATH 
@@ -175,19 +175,19 @@ workflows:
             - permit-staging-release
           filters:
             branches:
-              only: master
+              only: test-circleci
       - deploy-to-staging:
           context: mat-assume-role-context
           requires:
             - build_and_push_image
           filters:
             branches:
-              only: master
+              only: test-circleci
       - permit-production-release:
           type: approval
           filters:
             branches:
-              only: master
+              only: test-circleci
       - build_and_push_image:
           name: build_and_push_image_production
           dockerfile: ./mat-process-api/Dockerfile
@@ -201,11 +201,11 @@ workflows:
             - permit-production-release
           filters:
             branches:
-              only: master
+              only: test-circleci
       - deploy-to-production:
           context: mat-assume-role-context
           requires:
             - build_and_push_image_production
           filters:
             branches:
-              only: master
+              only: test-circleci
