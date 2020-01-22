@@ -2,6 +2,7 @@ using Amazon.Runtime;
 using Amazon.S3.Model;
 using Amazon.SecurityToken.Model;
 using Bogus;
+using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.Factories;
@@ -106,7 +107,7 @@ namespace mat_process_api.Tests.V1.Gateways
             s3Response2.HttpStatusCode = HttpStatusCode.OK;
             var expectedResponse = ImageRetrievalFactory.EncodeStreamToBase64(s3Response2);
             //act
-            var response = classUnderTest.RetrieveImage();
+            var response = classUnderTest.RetrieveImage(It.IsAny<string>());
             Assert.NotNull(response);
             Assert.AreEqual(expectedResponse, response);         
         }
@@ -120,7 +121,7 @@ namespace mat_process_api.Tests.V1.Gateways
             s3Response.HttpStatusCode = HttpStatusCode.Created;
             mockS3Client.Setup(x => x.retrieveImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>())).Returns(s3Response);
             //assert
-            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage());
+            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage(It.IsAny<string>()));
         }
 
         [Test]
@@ -130,7 +131,7 @@ namespace mat_process_api.Tests.V1.Gateways
             var expectedException = new AggregateException("The specified key does not exist.");
             mockS3Client.Setup(x => x.retrieveImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>())).Throws(expectedException);
             //assert
-            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage());
+            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage(It.IsAny<string>()));
         }
         #endregion
     }

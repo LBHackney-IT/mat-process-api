@@ -28,6 +28,8 @@ namespace mat_process_api.Tests.V1.UseCase
             _processImageUseCase = new ProcessImageUseCase(_mockGateway.Object, _mockImageDecoder.Object);
         }
 
+        #region Post Process Image
+
         [Test]
         public void when_ProcessImageUseCase_ExecutePost_method_is_called_then_it_calls_the_gateway()
         {
@@ -76,5 +78,62 @@ namespace mat_process_api.Tests.V1.UseCase
                 obj.key == $"{request.processType}/{request.processRef}/{request.imageId}.{decodedData.imageExtension}"
                 )), Times.Once);
         }
+
+        #endregion
+
+        #region Get Process Image
+
+        [Test]
+        public void when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_calls_the_gateway()
+        {
+            //act
+            _processImageUseCase.ExecuteGet(new GetProcessImageRequest()); // no need for arrange, since it does not matter how the request object got set up for this test.
+
+            //assert
+            _mockGateway.Verify(g => g.RetrieveImage(It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public void given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_calls_the_gateway_with_imageKey_generated_based_on_the_request()
+        {
+            //assert
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var imageKey = ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension);
+
+            //act
+            _processImageUseCase.ExecuteGet(request);
+
+            //assert
+            _mockGateway.Verify(g => g.RetrieveImage(It.Is<string>(obj => obj == imageKey)), Times.Once);
+        }
+
+        [Test]
+        public void given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_returns_the_response_object_of_correct_type_and_data()
+        {
+            //assert
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var imageKey = ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension);
+
+            var expectedBase64ImageString = MatProcessDataHelper.CreatePostProcessImageRequestObject().base64Image;
+            _mockGateway.Setup(g => g.RetrieveImage(It.Is<string>(obj => obj == imageKey))).Returns(expectedBase64ImageString);
+
+            var expectedUsecaseResponse = new GetProcessImageResponse(expectedBase64ImageString, DateTime.Now, request); //The date time is impossible to test equality for, as it will differ in few microseconds from the actual response one. So I set it to DateTime.Min to signify its unimportance.
+
+            //act
+            var usecaseResponse = _processImageUseCase.ExecuteGet(request);
+
+            //assert
+            Assert.IsNotNull(usecaseResponse);
+            Assert.IsInstanceOf<GetProcessImageResponse>(usecaseResponse);
+
+            Assert.AreEqual(expectedUsecaseResponse.Base64Image, usecaseResponse.Base64Image);
+            Assert.AreEqual(expectedUsecaseResponse.Request.processRef, usecaseResponse.Request.processRef);
+            Assert.AreEqual(expectedUsecaseResponse.Request.imageId, usecaseResponse.Request.imageId);
+
+            //This assertion has an accuracy of 1 second. If time difference between [when expected object was created] and [when actual usecase response was created] is within 1 second, then the times are considered equal. 1 Second is plenty of time for the code in between to run, considering it's using a Mock gateway.
+            Assert.Less((usecaseResponse.GeneratedAt - expectedUsecaseResponse.GeneratedAt).TotalMilliseconds, 1000);
+        }
+
+        #endregion
     }
 }

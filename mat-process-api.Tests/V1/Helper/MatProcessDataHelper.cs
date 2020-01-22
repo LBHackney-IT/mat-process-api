@@ -52,11 +52,13 @@ namespace mat_process_api.Tests.V1.Helper
 
         public static PostProcessImageRequest CreatePostProcessImageRequestObject()
         {
+            string allowedCharacters = "0123456789abcdefghijklmnoqprstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
             return new PostProcessImageRequest()
             {
                 processRef = faker.Random.Guid().ToString(),
                 imageId = faker.Random.Guid().ToString(),
-                base64Image = "data:image/" + faker.System.FileExt() + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512)),
+                base64Image = "data:image/" + faker.Random.String2(faker.Random.Int(3, 7), allowedCharacters) + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512)),
                 processType = faker.Random.Word()
             };
         }
@@ -72,5 +74,20 @@ namespace mat_process_api.Tests.V1.Helper
                 imageExtension = fileExt
             };
         }
+
+        #region Get Process Image 
+
+        public static GetProcessImageRequest CreateGetProcessImageRequestObject()
+        {
+            return new GetProcessImageRequest()
+            {
+                processRef = faker.Random.Guid().ToString(),
+                imageId = faker.Random.Guid().ToString(),
+                fileExtension = faker.Random.Word(),
+                processType = faker.Random.Word()
+            };
+        }
+
+        #endregion
     }
 }

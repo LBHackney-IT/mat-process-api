@@ -32,9 +32,10 @@ namespace mat_process_api.Tests.V1.Factories
             testResponse.ResponseStream = new MemoryStream(faker.Random.Guid().ToByteArray());
             //act
             var result = ImageRetrievalFactory.EncodeStreamToBase64(testResponse);
+            var resultBase64 = result.Split(",")[1];
             //assert
             Assert.IsNotEmpty(result);
-            Assert.True(IsBase64String(result));
+            Assert.True(IsBase64String(resultBase64));
         }
 
         [Test]

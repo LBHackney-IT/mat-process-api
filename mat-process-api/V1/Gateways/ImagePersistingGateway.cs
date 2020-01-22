@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.Factories;
@@ -39,11 +40,13 @@ namespace mat_process_api.V1.Gateways
             }
         }
 
-        public string RetrieveImage()
+        public string RetrieveImage(string imageKey)
         {
             try
             {
-                var result = s3Client.retrieveImage(assumeRoleHelper.GetTemporaryCredentials(), "", "");
+                var result = s3Client.retrieveImage(assumeRoleHelper.GetTemporaryCredentials(), imageKey,
+                    Environment.GetEnvironmentVariable("bucket-name"));
+
                 if(result.HttpStatusCode != HttpStatusCode.OK)
                 {
                     throw new ImageNotFound();
