@@ -392,7 +392,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void when_GetProcessImage_controller_method_is_called_then_it_calls_the_logger_regardless_of_the_validation_result() //Since there's no validator setup, it returns no validation result. If the Verify bit shows that logger was called under these conditions, then this shows that validation result has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
+        public void when_GetProcessImage_controller_method_is_called_then_it_calls_the_logger_regardless_of_the_validator_behaviour() //Since there's no validator setup, it returns no validation result. If the Verify bit shows that logger was called under these conditions, then this shows that validation result has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
         {
             //act
             try { _processImageController.GetProcessImage(new GetProcessImageRequest()); } catch(Exception ex) { } //the empty try-catch is needed to ignore the exception being thrown due to absense of validation result returned later down the line. The idea is that logger is the first thing that is being called once request comes in.
@@ -408,14 +408,34 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_a_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_information_about_the_request_regardless_of_the_validation_result()  //Since there's no validator setup, it returns no validation result. If the Verify bit shows that logger was called under these conditions, then this shows that validation result has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
+        public void given_a_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_information_about_the_request_regardless_of_the_validator_behaviour()  //Since there's no validator setup, it returns no validation result. If the Verify bit shows that logger was called under these conditions, then this shows that validation result has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
-            string expectedLogMessage = $"Get ProcessImage request for process reference: {request.processRef} and image Id: {request.imageId}";
+            string expectedLogMessage = $"Get ProcessImage request for Process Type: {request.processType}, Process Reference: {request.processRef}, Image Id: {request.imageId} and File Extension: {request.fileExtension}";
 
             //act
             try { _processImageController.GetProcessImage(request); } catch(Exception ex) { } //the empty try-catch is needed to ignore the exception being thrown due to absense of validation result returned later down the line. The idea is that logger is the first thing that is being called once request comes in.
+
+            //assert
+            _mockLogger.Verify(l => l.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.Is<FormattedLogValues>(v => v.ToString().Contains(expectedLogMessage)),
+                        It.IsAny<Exception>(),
+                        It.IsAny<Func<object, Exception, string>>()
+                    ), Times.AtLeastOnce);
+        }
+
+        [Test]
+        public void given_a_request_with_null_properties_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_display_those_null_properties_as_string_saying_null_during_the_initial_logger_call_independent_of_the_validator_behaviour()  //Since there's no validator setup, it returns no validation result. If the Verify bit shows that logger was called under these conditions, then this shows that validation result has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
+        {
+            //arrange
+            var request = new GetProcessImageRequest(); //request with null properties
+            string expectedLogMessage = $"Get ProcessImage request for Process Type: {"null"}, Process Reference: {"null"}, Image Id: {"null"} and File Extension: {"null"}";
+
+            //act
+            try { _processImageController.GetProcessImage(request); } catch (Exception ex) { } //the empty try-catch is needed to ignore the exception being thrown due to absense of validation result returned later down the line. The idea is that logger is the first thing that is being called once request comes in.
 
             //assert
             _mockLogger.Verify(l => l.Log(
@@ -443,7 +463,7 @@ namespace mat_process_api.Tests.V1.Controllers
             string expectedValidationErrorMessages = fakeValidationResult.Errors
                 .Select(e => $"Validation error for: '{e.PropertyName}', message: '{e.ErrorMessage}'.")
                 .Aggregate((acc, m) => acc + "\n" + m);
-            string expectedLogMessage = $"The Get ProcessImage request with process reference: {request.processRef} and image Id: {request.imageId} did not pass the validation:\n\n{expectedValidationErrorMessages}";
+            string expectedLogMessage = $"Get ProcessImage request for Process Type: {request.processType}, Process Reference: {request.processRef}, Image Id: {request.imageId} and File Extension: {request.fileExtension} did not pass the validation:\n\n{expectedValidationErrorMessages}";
 
             //act
             _processImageController.GetProcessImage(request);
@@ -471,7 +491,7 @@ namespace mat_process_api.Tests.V1.Controllers
             var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
             _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
 
-            string expectedLogMessageSubstring = $"The Get ProcessImage request with process reference: {"null"} and image Id: {"null"} did not pass the validation:"; //set up only substring, because the test only cares about this first part of the full log message that would be passed in.
+            string expectedLogMessageSubstring = $"Get ProcessImage request for Process Type: {"null"}, Process Reference: {"null"}, Image Id: {"null"} and File Extension: {"null"}"; //set up only substring, because the test only cares about this first part of the full log message that would be passed in.
 
             //act
             _processImageController.GetProcessImage(request);
