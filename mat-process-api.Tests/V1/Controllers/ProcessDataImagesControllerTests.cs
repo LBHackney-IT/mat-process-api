@@ -189,7 +189,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_returns_a_200_Ok_response()
         {
             //arrange
-            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var request = new GetProcessImageRequest();
             var expectedStatusCode = 200;
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
@@ -301,7 +301,7 @@ namespace mat_process_api.Tests.V1.Controllers
                     return new GetProcessImageResponse(null, DateTime.MinValue, null); //dummy return that will never happen due to error being thrown prior to it. It's only needed to keep compiler happy.
                 });
 
-            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var request = new GetProcessImageRequest();
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //validation successful
 
             //act
@@ -338,7 +338,7 @@ namespace mat_process_api.Tests.V1.Controllers
                     return new GetProcessImageResponse(null, DateTime.MinValue, null); //dummy return that will never happen due to error being thrown prior to it. It's only needed to keep compiler happy.
                 });
 
-            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var request = new GetProcessImageRequest();
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //validation successful
 
             //act
@@ -357,7 +357,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_calls_usecase()
         {
             //arrange
-            GetProcessImageRequest request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            GetProcessImageRequest request = new GetProcessImageRequest();
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
@@ -403,7 +403,7 @@ namespace mat_process_api.Tests.V1.Controllers
         public void when_GetProcessImage_controller_method_is_called_then_it_calls_the_logger()
         {
             //arrange
-            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            var request = new GetProcessImageRequest();
             _mockGetValidator.Setup(l => l.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
