@@ -94,7 +94,7 @@ namespace mat_process_api.Tests.V1.UseCase
         }
 
         [Test]
-        public void given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_calls_the_gateway_with_that_string()
+        public void given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_calls_the_gateway_with_imageKey_generated_based_on_the_request()
         {
             //assert
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();

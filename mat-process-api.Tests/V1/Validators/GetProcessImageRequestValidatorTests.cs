@@ -20,36 +20,6 @@ namespace mat_process_api.Tests.V1.Validators
             _getValidator = new GetProcessImageRequestValidator();
         }
 
-        #region Field is required
-
-        [TestCase(null)]
-        [TestCase("")]
-        [TestCase(" ")]
-        public void given_a_request_with_null_empty_or_whitespace_processRef_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string processRef)
-        {
-            //arrange
-            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
-            request.processRef = processRef;
-
-            //act, assert
-            _getValidator.ShouldHaveValidationErrorFor(req => req.processRef, request).WithErrorMessage("Process reference must be provided.");
-        }
-
-        [TestCase(null)]
-        [TestCase("")]
-        [TestCase(" ")]
-        public void given_a_request_with_null_empty_or_whitespace_imageId_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string imageId)
-        {
-            //arrange
-            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
-            request.imageId = imageId;
-
-            //act, assert
-            _getValidator.ShouldHaveValidationErrorFor(req => req.imageId, request).WithErrorMessage("Image Id must be provided.");
-        }
-
-        #endregion
-
         #region Format is invalid
 
         [TestCase("fe7ce9fb-8833-e877-a28c-f0857e6962b")] //less characters than it should contain
