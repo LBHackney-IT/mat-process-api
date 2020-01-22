@@ -150,7 +150,7 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.NotNull(result);
             Assert.NotNull(resultContent);
             Assert.AreEqual(errorResponse, resultContent);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(404, result.StatusCode);
         }
 
         [Test]
