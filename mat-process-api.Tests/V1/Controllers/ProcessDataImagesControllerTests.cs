@@ -509,7 +509,7 @@ namespace mat_process_api.Tests.V1.Controllers
 
             var expectedErrorMessage = $"The image with ID = {request.imageId} has not been found.";
 
-            var fakeValidationResult = new FV.ValidationResult(); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
+            var fakeValidationResult = new FV.ValidationResult(); 
             _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
             _mockUsecase.Setup(x => x.ExecuteGet(request)).Throws<ImageNotFound>();
             //act
