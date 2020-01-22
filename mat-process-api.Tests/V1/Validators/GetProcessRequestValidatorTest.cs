@@ -18,32 +18,13 @@ namespace mat_process_api.Tests.V1.Validators
         {
             validator = new GetProcessDocumentRequestValidator();
         }
-        [Test]
-        public void given_an_null_processRef_the_validator_should_return_an_error()
-        {
-            //arrange
-            string processRef = null;
-
-            //assert
-            validator.ShouldHaveValidationErrorFor(req => req.processRef, processRef);
-        }
 
         [Test]
-        public void given_an_empty_string_processRef_the_validator_should_return_an_error()
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public void given_null_or_empty_or_whitespace_processRef_the_validator_should_return_an_error(string processRef)
         {
-            //arrange
-            string processRef = "";
-
-            //assert
-            validator.ShouldHaveValidationErrorFor(req => req.processRef, processRef);
-        }
-
-        [Test]
-        public void given_whitespace_processRef_the_validator_should_return_an_error()
-        {
-            //arrange
-            string processRef = " ";
-
             //assert
             validator.ShouldHaveValidationErrorFor(req => req.processRef, processRef);
         }
@@ -59,7 +40,7 @@ namespace mat_process_api.Tests.V1.Validators
         }
 
         [Test]
-        public void given_valid_guid_string_the_validator_should_return_an_error()
+        public void given_valid_guid_string_the_validator_should_not_return_an_error()
         {
             //arrange
             string processRef = faker.Random.Guid().ToString();

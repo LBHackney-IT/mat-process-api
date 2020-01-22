@@ -50,19 +50,20 @@ namespace mat_process_api.V1.Controllers
         [ProducesResponseType(typeof(GetProcessDataResponse), 200)]
         public IActionResult GetProcessData([FromRoute] GetProcessDataRequest request)
         {
+            _logger.LogInformation($"Get ProcessData request for process ID {request.processRef}");
+
             var isRequestValid = _getValidator.Validate(request);
 
             if (isRequestValid.IsValid)
             {
                 try
                 {
-                    _logger.LogInformation($"Get ProcessData request for process ID {request.processRef}");
                     var result = _processDataUsecase.ExecuteGet(request);
                     return Ok(result);
                 }
                 catch(DocumentNotFound ex)
                 {
-                    return StatusCode(200, ($"Document with reference {request.processRef} was not found in the database"));
+                    return StatusCode(404, ($"Document with reference {request.processRef} was not found in the database"));
                 }
                 catch(Exception ex)
                 {
