@@ -20,58 +20,102 @@ namespace mat_process_api.Tests.V1.Validators
             _getValidator = new GetProcessImageRequestValidator();
         }
 
-        #region Field is required
+        #region Field is required [Null]
 
-        [TestCase(null)]
+        [Test]
+        public void given_a_request_with_null_processRef_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error()
+        {
+            //arrange
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            request.processRef = null;
+
+            //act, assert
+            _getValidator.ShouldHaveValidationErrorFor(req => req.processRef, request).WithErrorMessage("Process reference must be provided.");
+        }
+
+        [Test]
+        public void given_a_request_with_null_imageId_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error()
+        {
+            //arrange
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            request.imageId = null;
+
+            //act, assert
+            _getValidator.ShouldHaveValidationErrorFor(req => req.imageId, request).WithErrorMessage("Image Id must be provided.");
+        }
+
+        [Test]
+        public void given_a_request_with_null_processType_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error()
+        {
+            //arrange
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            request.processType = null;
+
+            //act, assert
+            _getValidator.ShouldHaveValidationErrorFor(req => req.processType, request).WithErrorMessage("Process Type must be provided.");
+        }
+
+        [Test]
+        public void given_a_request_with_null_fileExtension_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error()
+        {
+            //arrange
+            var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
+            request.fileExtension = null;
+
+            //act, assert
+            _getValidator.ShouldHaveValidationErrorFor(req => req.fileExtension, request).WithErrorMessage("File Extension must be provided.");
+        }
+
+        #endregion
+
+        #region Field is required [Whitespace or Empty]
+
         [TestCase("")]
         [TestCase(" ")]
-        public void given_a_request_with_null_empty_or_whitespace_processRef_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string processRef)
+        public void given_a_request_with_empty_or_whitespace_processRef_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string processRef)
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
             request.processRef = processRef;
 
             //act, assert
-            _getValidator.ShouldHaveValidationErrorFor(req => req.processRef, request).WithErrorMessage("Process reference must be provided.");
+            _getValidator.ShouldHaveValidationErrorFor(req => req.processRef, request).WithErrorMessage("Process reference must not be empty.");
         }
 
-        [TestCase(null)]
         [TestCase("")]
         [TestCase(" ")]
-        public void given_a_request_with_null_empty_or_whitespace_imageId_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string imageId)
+        public void given_a_request_with_empty_or_whitespace_imageId_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string imageId)
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
             request.imageId = imageId;
 
             //act, assert
-            _getValidator.ShouldHaveValidationErrorFor(req => req.imageId, request).WithErrorMessage("Image Id must be provided.");
+            _getValidator.ShouldHaveValidationErrorFor(req => req.imageId, request).WithErrorMessage("Image Id must not be empty.");
         }
 
-        [TestCase(null)]
         [TestCase("")]
         [TestCase(" ")]
-        public void given_a_request_with_null_empty_or_whitespace_processType_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string processType)
+        public void given_a_request_with_empty_or_whitespace_processType_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string processType)
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
             request.processType = processType;
 
             //act, assert
-            _getValidator.ShouldHaveValidationErrorFor(req => req.processType, request).WithErrorMessage("Process Type must be provided.");
+            _getValidator.ShouldHaveValidationErrorFor(req => req.processType, request).WithErrorMessage("Process Type must not be empty.");
         }
 
-        [TestCase(null)]
         [TestCase("")]
         [TestCase(" ")]
-        public void given_a_request_with_null_empty_or_whitespace_fileExtension_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string fileExtension)
+        public void given_a_request_with_empty_or_whitespace_fileExtension_when_getProcessImageRequestValidator_is_called_then_it_returns_an_error(string fileExtension)
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
             request.fileExtension = fileExtension;
 
             //act, assert
-            _getValidator.ShouldHaveValidationErrorFor(req => req.fileExtension, request).WithErrorMessage("File Extension must be provided.");
+            _getValidator.ShouldHaveValidationErrorFor(req => req.fileExtension, request).WithErrorMessage("File Extension must not be empty.");
         }
 
         #endregion
