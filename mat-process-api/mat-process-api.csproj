@@ -12,6 +12,9 @@
       <DebugType>full</DebugType>
       <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
+    <ItemGroup>
+      <Compile Remove="V1\Validators\GetProcessRequestValidatorTest.cs" />
+    </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="3.3.110.11" />

@@ -1,27 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Bogus;
 using FluentValidation.Results;
-using FV = FluentValidation.Results; //give alias to namespace - shortens the 'ValidationResult' reference.
 using mat_process_api.Tests.V1.Helper;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Controllers;
 using mat_process_api.V1.Domain;
-using mat_process_api.V1.Gateways;
+using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.UseCase;
 using mat_process_api.V1.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
-using MongoDB.Bson.IO;
-using MongoDB.Driver;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using System;
+using System.Collections.Generic;
+using FV = FluentValidation.Results; //give alias to namespace - shortens the 'ValidationResult' reference.
 using JsonConvert = Newtonsoft.Json.JsonConvert;
-using mat_process_api.V1.Exceptions;
 
 namespace mat_process_api.Tests.V1.Controllers
 {
@@ -35,6 +29,7 @@ namespace mat_process_api.Tests.V1.Controllers
         private Mock<ILogger<ProcessDataController>> _mockLogger;
         private Mock<IPostInitialProcessDocumentRequestValidator> _mockValidatorPost;
         private Mock<IUpdateProcessDocumentRequestValidator> _mockValidatorUpdate;
+        private Mock<IGetProcessDocumentRequestValidator> _mockValidatorGet;
 
         [SetUp]
         public void set_up()
@@ -43,7 +38,8 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockLogger = new Mock<ILogger<ProcessDataController>>();
             _mockValidatorPost = new Mock<IPostInitialProcessDocumentRequestValidator>();
             _mockValidatorUpdate = new Mock<IUpdateProcessDocumentRequestValidator>();
-            _processDataController = new ProcessDataController(_mockUsecase.Object, _mockLogger.Object, _mockValidatorPost.Object,_mockValidatorUpdate.Object);
+            _mockValidatorGet = new Mock<IGetProcessDocumentRequestValidator>();
+            _processDataController = new ProcessDataController(_mockUsecase.Object, _mockLogger.Object, _mockValidatorPost.Object,_mockValidatorUpdate.Object, _mockValidatorGet.Object);
         }
 
         public void given_a_processRef_when_getprocessdata_method_is_called_the_controller_returns_correct_json_response()
@@ -54,7 +50,7 @@ namespace mat_process_api.Tests.V1.Controllers
             var response = new GetProcessDataResponse(request, new MatProcessData(), DateTime.Now);
             _mockUsecase.Setup(x=> x.ExecuteGet(It.Is<GetProcessDataRequest>(i => i.processRef == processRef))).Returns(response);
             //act
-            var actualResponse = _processDataController.GetProcessData(processRef);
+            var actualResponse = _processDataController.GetProcessData(request);
             var okResult = (OkObjectResult)actualResponse;
             var resultContent = (GetProcessDataResponse)okResult.Value;
             //assert
@@ -73,10 +69,112 @@ namespace mat_process_api.Tests.V1.Controllers
             var request = new GetProcessDataRequest { processRef = processRef };
             var response = new GetProcessDataResponse(request, new MatProcessData(), DateTime.Now);
             _mockUsecase.Setup(x => x.ExecuteGet(It.Is<GetProcessDataRequest>(i => i.processRef == processRef))).Returns(response);
+            _mockValidatorGet.Setup(x => x.Validate(It.IsAny<GetProcessDataRequest>())).Returns(new FV.ValidationResult());
+
             //act
-            _processDataController.GetProcessData(processRef);
+            _processDataController.GetProcessData(request);
             //assert
             _mockUsecase.Verify(x => x.ExecuteGet((It.Is<GetProcessDataRequest>(i => i.processRef == processRef))));
+        }
+
+        [Test]
+        public void given_a_valid_request_when_GetProcessData_controller_method_is_called_then_it_returns_a_response_that_resource_exists() 
+        {
+            //arrange
+            int expectedStatusCode = 200;
+            GetProcessDataRequest requestObject = new GetProcessDataRequest();
+            _mockValidatorGet.Setup(v => v.Validate(It.IsAny<GetProcessDataRequest>())).Returns(new FV.ValidationResult());
+
+            //act
+            IActionResult controllerResponse = _processDataController.GetProcessData(requestObject);
+            var result = (ObjectResult)controllerResponse;
+            var actualStatusCode = result.StatusCode;
+
+            //Assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.AreEqual(expectedStatusCode, actualStatusCode);
+        }
+
+        [Test]
+        public void given_GetProcessData_controller_method_call_when_request_validation_fails_then_the_controller_returns_correct_badRequest_response()
+        {
+            //arrange
+            int errorCount = faker.Random.Int(1, 10); //simulate from 1 to 10 validation errors (triangulation).
+            var validationErrorList = new List<ValidationFailure>(); //this list will be used as constructor argument for 'ValidationResult'.
+            for (int i = errorCount; i > 0; i--) { validationErrorList.Add(new ValidationFailure(faker.Random.Word(), faker.Random.Word())); } //generate from 1 to 10 fake validation errors. Single line for-loop so that it wouldn't distract from what's key in this test.
+
+            var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
+            _mockValidatorGet.Setup(v => v.Validate(It.IsAny<GetProcessDataRequest>())).Returns(fakeValidationResult);
+
+            string processRef = faker.Random.String();
+
+            GetProcessDataRequest request = new GetProcessDataRequest() { processRef = processRef };
+
+            //act
+            var controllerResponse = _processDataController.GetProcessData(request);
+            var result = (ObjectResult)controllerResponse;
+            var resultContents = (IList<ValidationFailure>)result.Value;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.IsInstanceOf<BadRequestObjectResult>(result); // should be bad request, since validation fails.
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<IList<ValidationFailure>>(resultContents);
+            Assert.NotNull(resultContents);
+
+            Assert.AreEqual(errorCount, resultContents.Count); // there should be 1 validation failure coming from the invalid guid
+            Assert.AreEqual(400, result.StatusCode); // expecting bad request result
+        }
+
+        [Test]
+        public void test_that_controller_returns_correct_message_and_status_code_when_no_document_was_found()
+        {
+            //Arrange
+            GetProcessDataRequest request = new GetProcessDataRequest
+            {
+                processRef = faker.Random.Guid().ToString()
+            };
+
+            var errorResponse = $"Document with reference {request.processRef} was not found in the database";
+            _mockUsecase.Setup(x => x.ExecuteGet(request)).Throws<DocumentNotFound>();
+            _mockValidatorGet.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
+
+            //Act
+            var actualResponse = _processDataController.GetProcessData(request);
+            var result = (ObjectResult)actualResponse;
+            var resultContent = result.Value;
+
+            //Assert
+            Assert.NotNull(actualResponse);
+            Assert.NotNull(result);
+            Assert.NotNull(resultContent);
+            Assert.AreEqual(errorResponse, resultContent);
+            Assert.AreEqual(200, result.StatusCode);
+        }
+
+        [Test]
+        public void test_that_get_controller_returns_correct_500_status_code_when_an_error_has_occured()
+        {
+            //Arrange
+            GetProcessDataRequest request = new GetProcessDataRequest()
+            {
+                processRef = faker.Random.Guid().ToString()
+            };
+
+            _mockUsecase.Setup(x => x.ExecuteGet(request)).Throws<AggregateException>();
+            _mockValidatorGet.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
+
+            //Act
+            var actualResult = _processDataController.GetProcessData(request);
+            var result = (ObjectResult)actualResult;
+            var resulContent = result.Value;
+
+            //Assert
+            Assert.NotNull(actualResult);
+            Assert.NotNull(result);
+            Assert.NotNull(resulContent);
+            Assert.AreEqual(500, result.StatusCode);
         }
 
         #region Update Process data
