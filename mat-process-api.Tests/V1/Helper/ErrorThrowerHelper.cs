@@ -32,32 +32,32 @@ namespace mat_process_api.Tests.V1.Helper
 
         private static SystemException GenerateInnerSystemException(string randomMessageAddon)
         {
-            try { throw new SystemException("Inner exception thrown." + randomMessageAddon); }
-            catch (SystemException e) { return new SystemException("Outer exception thrown.", e); }
+            try { throw new SystemException("Inner SystemException exception thrown." + randomMessageAddon); }
+            catch (SystemException e) { return new SystemException("Outer SystemException exception thrown.", e); }
         }
 
         private static InvalidCastException GenerateInnerInvalidCastException(string randomMessageAddon)
         {
-            try { throw new InvalidCastException("Inner exception thrown." + randomMessageAddon); }
-            catch (InvalidCastException e) { return new InvalidCastException("Outer exception thrown.", e); }
+            try { throw new InvalidCastException("Inner InvalidCastException exception thrown." + randomMessageAddon); }
+            catch (InvalidCastException e) { return new InvalidCastException("Outer InvalidCastException exception thrown.", e); }
         }
 
         private static ArgumentNullException GenerateInnerArgumentNullException(string randomMessageAddon)
         {
-            try { throw new ArgumentNullException("Inner exception thrown." + randomMessageAddon); }
-            catch (ArgumentNullException e) { return new ArgumentNullException("Outer exception thrown.", e); }
+            try { throw new ArgumentNullException("Inner ArgumentNullException exception thrown." + randomMessageAddon); }
+            catch (ArgumentNullException e) { return new ArgumentNullException("Outer ArgumentNullException exception thrown.", e); }
         }
 
         private static ApplicationException GenerateInnerApplicationException(string randomMessageAddon)
         {
-            try { throw new ApplicationException("Inner exception thrown." + randomMessageAddon); }
-            catch (ApplicationException e) { return new ApplicationException("Outer exception thrown.", e); }
+            try { throw new ApplicationException("Inner ApplicationException exception thrown." + randomMessageAddon); }
+            catch (ApplicationException e) { return new ApplicationException("Outer ApplicationException exception thrown.", e); }
         }
 
         private static AggregateException GenerateInnerAggregateException(string randomMessageAddon)
         {
-            try { throw new AggregateException("Inner exception thrown." + randomMessageAddon); }
-            catch (AggregateException e) { return new AggregateException("Outer exception thrown.", e); }
+            try { throw new AggregateException("Inner AggregateException exception thrown." + randomMessageAddon); }
+            catch (AggregateException e) { return new AggregateException("Outer AggregateException exception thrown.", e); }
         }
     }
 }
