@@ -287,14 +287,9 @@ namespace mat_process_api.Tests.V1.Controllers
         {
             //arrange
             var expectedStatusCode = 500;
-            int randomErrorNumber = _faker.Random.Int(); //triangulating unexpected exceptions
-            string messageRandomizer = _faker.Random.Hash().ToString(); //triangulating error messages
+            var randomExpectedError = ErrorThrowerHelper.GenerateError();
 
-            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>()))
-                .Returns(() => {
-                    ErrorThrowerHelper.GenerateError(randomErrorNumber, messageRandomizer); // throw that same random test error
-                    return new GetProcessImageResponse(null, DateTime.MinValue, null); //dummy return that will never happen due to error being thrown prior to it. It's only needed to keep compiler happy.
-                });
+            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>())).Throws(randomExpectedError); // throw random test error (triangulation)
 
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //validation successful
 
@@ -314,23 +309,18 @@ namespace mat_process_api.Tests.V1.Controllers
             //arrange
             string expectedErrorMessage = "An error has occured while processing the request - ";
 
-            var randomErrorNumber = _faker.Random.Int(); //triangulating unexpected exceptions
-            string messageRandomizer = _faker.Random.Hash().ToString(); //triangulating error messages
+            var randomExpectedError = ErrorThrowerHelper.GenerateError();
 
             try // throw random error
             {
-                ErrorThrowerHelper.GenerateError(randomErrorNumber, messageRandomizer);
+                throw randomExpectedError;
             }
             catch (Exception ex) //catch the expected error message
             {
                 expectedErrorMessage += (ex.Message + " " + ex.InnerException);
             }
 
-            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>()))
-                .Returns(() => {
-                    ErrorThrowerHelper.GenerateError(randomErrorNumber, messageRandomizer); // throw that same random test error
-                    return new GetProcessImageResponse(null, DateTime.MinValue, null); //dummy return that will never happen due to error being thrown prior to it. It's only needed to keep compiler happy.
-                });
+            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>())).Throws(randomExpectedError);
 
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //validation successful
 
