@@ -46,18 +46,13 @@ namespace mat_process_api.V1.Gateways
             {
                 var result = s3Client.retrieveImage(assumeRoleHelper.GetTemporaryCredentials(), imageKey,
                     Environment.GetEnvironmentVariable("bucket-name"));
-
-                if(result.HttpStatusCode != HttpStatusCode.OK)
-                {
-                    throw new ImageNotFound();
-                }
                 return ImageRetrievalFactory.EncodeStreamToBase64(result);
             }
             catch(AggregateException ex)
             {
-                if(ex.Message == "The specified key does not exist.")
+                if(ex.InnerException != null && ex.InnerException.Message == "The specified key does not exist.")
                 {
-                    throw new ImageNotFound();
+                    throw new ImageNotFound(); //if image not found
                 }
                 throw ex;
             }

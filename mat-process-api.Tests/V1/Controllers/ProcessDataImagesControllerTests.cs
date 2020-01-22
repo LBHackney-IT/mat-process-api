@@ -500,8 +500,28 @@ namespace mat_process_api.Tests.V1.Controllers
                     ), Times.AtLeastOnce);
         }
 
-        //Do we need to log the exception messages with the logger in the controller? Or does our logging service pick out a message from response? If no, need another test.
 
+        [Test]
+        public void given_an_ImageNotFound_exception_thrown_by_gateway_verify_controller_returns_404_status_code_and_message()
+        {
+            var expectedStatusCode = 404;
+            var request = new GetProcessImageRequest() { imageId = _faker.Random.Guid().ToString()};  //an empty request will be invalid
+
+            var expectedErrorMessage = $"The image with ID = {request.imageId} has not been found.";
+
+            var fakeValidationResult = new FV.ValidationResult(); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
+            _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
+            _mockUsecase.Setup(x => x.ExecuteGet(request)).Throws<ImageNotFound>();
+            //act
+            var controllerResponse = _processImageController.GetProcessImage(request);
+            var result = controllerResponse as NotFoundObjectResult;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.AreEqual(expectedStatusCode, result.StatusCode);
+            Assert.AreEqual(expectedErrorMessage, result.Value);
+        }
         #endregion
     }
 }

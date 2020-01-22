@@ -78,6 +78,11 @@ namespace mat_process_api.V1.Controllers
                     var usecaseResponse = _processImageUseCase.ExecuteGet(requestData);
                     return Ok(usecaseResponse);
                 }
+                catch(ImageNotFound ex)
+                {
+                    return NotFound($"The image with ID = {requestData.imageId} has not been found.");
+                    throw ex;
+                }
                 catch (Exception ex)
                 {
                     return StatusCode(500, "An error has occured while processing the request - " + ex.Message + " " + ex.InnerException);
