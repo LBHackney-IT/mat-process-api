@@ -128,7 +128,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void test_that_controller_returns_correct_message_and_status_code_when_no_document_was_found()
+        public void given_DocumentNotFound_exception_is_thrown_when_GetProcessData_controller_method_returns_404_status_code_with_correct_error_message()
         {
             //Arrange
             GetProcessDataRequest request = new GetProcessDataRequest
@@ -154,7 +154,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void test_that_get_controller_returns_correct_500_status_code_when_an_error_has_occured()
+        public void given_an_unexpected_exception_thrown_when_GetProcessData_controller_method_is_called_then_controller_returns_500_status_code_response()
         {
             //Arrange
             GetProcessDataRequest request = new GetProcessDataRequest()
