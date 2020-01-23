@@ -128,7 +128,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_DocumentNotFound_exception_is_thrown_when_GetProcessData_controller_method_returns_404_status_code_with_correct_error_message()
+        public void given_DocumentNotFound_exception_is_thrown_when_GetProcessData_controller_method_s_called_then_method_returns_404_status_code_with_correct_error_message()
         {
             //Arrange
             GetProcessDataRequest request = new GetProcessDataRequest
