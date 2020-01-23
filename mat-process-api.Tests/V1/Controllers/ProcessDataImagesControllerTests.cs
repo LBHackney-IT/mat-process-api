@@ -381,11 +381,20 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj == request)), Times.Once);
         }
 
+        /// <summary>
+        /// The test aims to show that the request gets logged at least once regardless of validator behaviour.
+        /// By behaviour it is meant that it shouldn't matter whether the validator has returned true or false, or if it crashed entirely.
+        /// If your initial log is dependent on the validator not crashing, then it's a bad of way of ensuring that every request gets logged.
+        /// So, this test is set up in such a way, that doesn't have validator setup to show that despite the crash during validation (which happens in the try-catch block), the logger was indeed called at least once.
+        /// This also demonstrates pretty clearly that whatever happens in the validator has no effect on the request getting logged.
+        /// In NUnit tests fail when either Assertion makes the test crash, or when the code inside it crashes. In order to proceed with assertion that shows that logger call does not depend on validation flow crashing, try-catch was needed.
+        /// Same applies for the test bellow this test: `given_a_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_information_about_the_request_regardless_of_the_validator_behaviour`
+        /// </summary>
         [Test]
-        public void when_GetProcessImage_controller_method_is_called_then_it_calls_the_logger_regardless_of_the_validator_behaviour() //Since there's no validator setup, it returns no validation result. If the Verify bit shows that logger was called under these conditions, then this shows that validation result has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
+        public void when_GetProcessImage_controller_method_is_called_then_it_calls_the_logger_regardless_of_the_validator_behaviour()
         {
             //act
-            try { _processImageController.GetProcessImage(new GetProcessImageRequest()); } catch(Exception ex) { } //the empty try-catch is needed to ignore the exception being thrown due to absense of validation result returned later down the line. The idea is that logger is the first thing that is being called once request comes in.
+            try { _processImageController.GetProcessImage(new GetProcessImageRequest()); } catch(Exception ex) { } //the empty try-catch is needed to ignore the exception being thrown due to absense of validation result returned later down the line, so that the test could get to the assertion step.
 
             //assert
             _mockLogger.Verify(l => l.Log(
@@ -398,7 +407,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_a_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_information_about_the_request_regardless_of_the_validator_behaviour()  //Since there's no validator setup, it returns no validation result. If the Verify bit shows that logger was called under these conditions, then this shows that validation result has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
+        public void given_a_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_information_about_the_request_regardless_of_the_validator_behaviour()  //Since there's no validator setup, it returns no validation result, which will make the flow crash. If the Verify bit shows that logger was called under these conditions, then this shows that validation result or behaviour has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
