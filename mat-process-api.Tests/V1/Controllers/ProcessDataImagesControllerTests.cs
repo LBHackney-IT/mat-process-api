@@ -186,15 +186,14 @@ namespace mat_process_api.Tests.V1.Controllers
         #region Get Process Image
 
         [Test]
-        public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_returns_a_200_Ok_response()
+        public void given_successful_request_validation_when_GetProcessImage_controller_method_is_called_then_it_returns_a_200_Ok_response()
         {
             //arrange
-            var request = new GetProcessImageRequest();
             var expectedStatusCode = 200;
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request);
+            var controllerResponse = _processImageController.GetProcessImage(new GetProcessImageRequest());
             var result = controllerResponse as ObjectResult;
 
             //assert
@@ -205,7 +204,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_returns_an_Ok_result_with_correct_data()
+        public void given_successful_request_validation_when_GetProcessImage_controller_method_is_called_then_it_returns_an_Ok_result_with_correct_data_based_of_that_request()
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
@@ -232,12 +231,10 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_an_invalid_request_when_GetProcessImage_controller_method_is_called_then_it_returns_400_BadRequest_result()
+        public void given_failed_request_validation_when_GetProcessImage_controller_method_is_called_then_it_returns_400_BadRequest_result()
         {
             //arrange
             var expectedStatusCode = 400;
-            var request = new GetProcessImageRequest(); //an empty request will be invalid
-
             int errorCount = _faker.Random.Int(1, 10); //simulate from 1 to 10 validation errors (triangulation).
             var validationErrorList = new List<ValidationFailure>(); //this list will be used as constructor argument for 'ValidationResult'.
             for (int i = errorCount; i > 0; i--) { validationErrorList.Add(new ValidationFailure(_faker.Random.Word(), _faker.Random.Word())); } //generate from 1 to 10 fake validation errors. Single line for-loop so that it wouldn't distract from what's key in this test.
@@ -246,7 +243,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request);
+            var controllerResponse = _processImageController.GetProcessImage(new GetProcessImageRequest());
             var result = controllerResponse as ObjectResult;
 
             //assert
@@ -257,12 +254,9 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_an_invalid_request_when_GetProcessImage_controller_method_is_called_then_the_response_BadRequest_result_contains_correct_error_messages()
+        public void given_failed_request_validation_when_GetProcessImage_controller_method_is_called_then_the_response_BadRequest_result_contains_error_messages_returned_by_validator()
         {
             //arrange
-            var expectedStatusCode = 400;
-            var request = new GetProcessImageRequest(); //an empty request will be invalid
-
             int errorCount = _faker.Random.Int(1, 10); //simulate from 1 to 10 validation errors (triangulation).
             var validationErrorList = new List<ValidationFailure>(); //this list will be used as constructor argument for 'ValidationResult'.
             for (int i = errorCount; i > 0; i--) { validationErrorList.Add(new ValidationFailure(_faker.Random.Word(), _faker.Random.Word())); } //generate from 1 to 10 fake validation errors. Single line for-loop so that it wouldn't distract from what's key in this test.
@@ -273,7 +267,7 @@ namespace mat_process_api.Tests.V1.Controllers
             var expectedControllerResponse = new BadRequestObjectResult(validationErrorList); // build up expected controller response to check if the contents of the errors match - that's probably the easiest way to check that.
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request);
+            var controllerResponse = _processImageController.GetProcessImage(new GetProcessImageRequest());
             var result = controllerResponse as ObjectResult;
             var resultContents = (IList<ValidationFailure>)result.Value;
 
@@ -292,57 +286,46 @@ namespace mat_process_api.Tests.V1.Controllers
         public void given_an_unexpected_error_would_be_thrown_when_GetProcessImage_controller_method_is_called_then_it_returns_500_status_code()
         {
             //arrange
-            int randomErrorNumber = _faker.Random.Int(); //triangulating unexpected exceptions
-            string messageRandomizer = _faker.Random.Hash().ToString(); //triangulating error messages
+            var expectedStatusCode = 500;
+            var randomExpectedError = ErrorThrowerHelper.GenerateError();
 
-            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>()))
-                .Returns(() => {
-                    ErrorThrowerHelper.GenerateError(randomErrorNumber, messageRandomizer); // throw that same random test error
-                    return new GetProcessImageResponse(null, DateTime.MinValue, null); //dummy return that will never happen due to error being thrown prior to it. It's only needed to keep compiler happy.
-                });
+            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>())).Throws(randomExpectedError); // throw random test error (triangulation)
 
-            var request = new GetProcessImageRequest();
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //validation successful
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request);
+            var controllerResponse = _processImageController.GetProcessImage(new GetProcessImageRequest());
             var result = controllerResponse as ObjectResult;
 
             //assert
             Assert.NotNull(controllerResponse);
             Assert.NotNull(result);
-            Assert.AreEqual(500, result.StatusCode);
+            Assert.AreEqual(expectedStatusCode, result.StatusCode);
         }
 
         [Test]
-        public void given_an_unexpected_error_would_be_thrown_when_GetProcessImage_controller_method_is_called_then_it_returns_a_correct_error_message()
+        public void given_an_unexpected_error_would_be_thrown_when_GetProcessImage_controller_method_is_called_then_it_returns_a_correctly_formatted_error_message_that_is_based_of_exception()
         {
             //arrange
             string expectedErrorMessage = "An error has occured while processing the request - ";
 
-            var randomErrorNumber = _faker.Random.Int(); //triangulating unexpected exceptions
-            string messageRandomizer = _faker.Random.Hash().ToString(); //triangulating error messages
+            var randomExpectedError = ErrorThrowerHelper.GenerateError();
 
             try // throw random error
             {
-                ErrorThrowerHelper.GenerateError(randomErrorNumber, messageRandomizer);
+                throw randomExpectedError;
             }
             catch (Exception ex) //catch the expected error message
             {
                 expectedErrorMessage += (ex.Message + " " + ex.InnerException);
             }
 
-            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>()))
-                .Returns(() => {
-                    ErrorThrowerHelper.GenerateError(randomErrorNumber, messageRandomizer); // throw that same random test error
-                    return new GetProcessImageResponse(null, DateTime.MinValue, null); //dummy return that will never happen due to error being thrown prior to it. It's only needed to keep compiler happy.
-                });
+            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessImageRequest>())).Throws(randomExpectedError);
 
-            var request = new GetProcessImageRequest();
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //validation successful
 
             //act
-            var controllerResponse = _processImageController.GetProcessImage(request);
+            var controllerResponse = _processImageController.GetProcessImage(new GetProcessImageRequest());
             var result = controllerResponse as ObjectResult;
             var resultContent = result.Value as string; //unwrap the error message from controller response.
 
@@ -354,21 +337,20 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_calls_usecase()
+        public void given_successful_request_validation_when_GetProcessImage_controller_method_is_called_then_it_calls_usecase()
         {
             //arrange
-            GetProcessImageRequest request = new GetProcessImageRequest();
             _mockGetValidator.Setup(x => x.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            _processImageController.GetProcessImage(request);
+            _processImageController.GetProcessImage(new GetProcessImageRequest());
 
             //assert
             _mockUsecase.Verify(u => u.ExecuteGet(It.IsAny<GetProcessImageRequest>()), Times.Once);
         }
 
         [Test]
-        public void given_a_valid_request_when_GetProcessImage_controller_method_is_called_then_it_calls_usecase_with_correct_data()
+        public void given_successful_request_validation_when_GetProcessImage_controller_method_is_called_then_it_calls_usecase_with_correct_data_based_of_request()
         {
             //arrange
             GetProcessImageRequest request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
@@ -385,7 +367,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_a_request_when_GetProcessImage_controller_method_is_called_then_it_calls_the_validator_with_that_request_object()
+        public void given_a_request_object_when_GetProcessImage_controller_method_is_called_then_it_calls_the_validator_with_that_request_object()
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
@@ -399,15 +381,20 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockGetValidator.Verify(v => v.Validate(It.Is<GetProcessImageRequest>(obj => obj == request)), Times.Once);
         }
 
+        /// <summary>
+        /// The test aims to show that the request gets logged at least once regardless of validator behaviour.
+        /// By behaviour it is meant that it shouldn't matter whether the validator has returned true or false, or if it crashed entirely.
+        /// If your initial log is dependent on the validator not crashing, then it's a bad of way of ensuring that every request gets logged.
+        /// So, this test is set up in such a way, that doesn't have validator setup to show that despite the crash during validation (which happens in the try-catch block), the logger was indeed called at least once.
+        /// This also demonstrates pretty clearly that whatever happens in the validator has no effect on the request getting logged.
+        /// In NUnit tests fail when either Assertion makes the test crash, or when the code inside it crashes. In order to proceed with assertion that shows that logger call does not depend on validation flow crashing, try-catch was needed.
+        /// Same applies for the test bellow this test: `given_a_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_information_about_the_request_regardless_of_the_validator_behaviour`
+        /// </summary>
         [Test]
-        public void when_GetProcessImage_controller_method_is_called_then_it_calls_the_logger()
+        public void when_GetProcessImage_controller_method_is_called_then_it_calls_the_logger_regardless_of_the_validator_behaviour()
         {
-            //arrange
-            var request = new GetProcessImageRequest();
-            _mockGetValidator.Setup(l => l.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
-
             //act
-            _processImageController.GetProcessImage(request);
+            try { _processImageController.GetProcessImage(new GetProcessImageRequest()); } catch(Exception ex) { } //the empty try-catch is needed to ignore the exception being thrown due to absense of validation result returned later down the line, so that the test could get to the assertion step.
 
             //assert
             _mockLogger.Verify(l => l.Log(
@@ -420,16 +407,14 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_any_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_that_request_happened()
+        public void given_a_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_information_about_the_request_regardless_of_the_validator_behaviour()  //Since there's no validator setup, it returns no validation result, which will make the flow crash. If the Verify bit shows that logger was called under these conditions, then this shows that validation result or behaviour has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
-            string expectedLogMessage = $"Get ProcessImage request for process reference: {request.processRef} and image Id: {request.imageId}";
-
-            _mockGetValidator.Setup(l => l.Validate(It.IsAny<GetProcessImageRequest>())).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
+            string expectedLogMessage = $"Get ProcessImage request for Process Type: {request.processType}, Process Reference: {request.processRef}, Image Id: {request.imageId} and File Extension: {request.fileExtension}";
 
             //act
-            _processImageController.GetProcessImage(request);
+            try { _processImageController.GetProcessImage(request); } catch(Exception ex) { } //the empty try-catch is needed to ignore the exception being thrown due to absense of validation result returned later down the line. The idea is that logger is the first thing that is being called once request comes in.
 
             //assert
             _mockLogger.Verify(l => l.Log(
@@ -442,7 +427,27 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_invalid_request_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_correct_validation_failure_message()
+        public void given_a_request_with_null_properties_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_display_those_null_properties_as_string_saying_null_during_the_initial_logger_call_independent_of_the_validator_behaviour()  //Since there's no validator setup, it returns no validation result. If the Verify bit shows that logger was called under these conditions, then this shows that validation result has no influence on logger being called at least once, which is important if you want to register that request happened regardless of the validity of the request.
+        {
+            //arrange
+            var request = new GetProcessImageRequest(); //request with null properties
+            string expectedLogMessage = $"Get ProcessImage request for Process Type: {"null"}, Process Reference: {"null"}, Image Id: {"null"} and File Extension: {"null"}";
+
+            //act
+            try { _processImageController.GetProcessImage(request); } catch (Exception ex) { } //the empty try-catch is needed to ignore the exception being thrown due to absense of validation result returned later down the line. The idea is that logger is the first thing that is being called once request comes in.
+
+            //assert
+            _mockLogger.Verify(l => l.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.Is<FormattedLogValues>(v => v.ToString().Contains(expectedLogMessage)),
+                        It.IsAny<Exception>(),
+                        It.IsAny<Func<object, Exception, string>>()
+                    ), Times.AtLeastOnce);
+        }
+
+        [Test]
+        public void given_failed_request_validation_when_GetProcessImage_controller_method_is_called_then_it_makes_the_logger_log_the_correctly_formatted_validation_failure_messages_returned_by_the_validator()
         {
             //arrange
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject(); //doesn't matter that it's valid right now, because validation failure is built up manually anyway. This object is needs values set so that logger message could be checked.
@@ -457,7 +462,7 @@ namespace mat_process_api.Tests.V1.Controllers
             string expectedValidationErrorMessages = fakeValidationResult.Errors
                 .Select(e => $"Validation error for: '{e.PropertyName}', message: '{e.ErrorMessage}'.")
                 .Aggregate((acc, m) => acc + "\n" + m);
-            string expectedLogMessage = $"The Get ProcessImage request with process reference: {request.processRef} and image Id: {request.imageId} did not pass the validation:\n\n{expectedValidationErrorMessages}";
+            string expectedLogMessage = $"Get ProcessImage request for Process Type: {request.processType}, Process Reference: {request.processRef}, Image Id: {request.imageId} and File Extension: {request.fileExtension} did not pass the validation:\n\n{expectedValidationErrorMessages}";
 
             //act
             _processImageController.GetProcessImage(request);
@@ -485,7 +490,7 @@ namespace mat_process_api.Tests.V1.Controllers
             var fakeValidationResult = new FV.ValidationResult(validationErrorList); //Need to create ValidationResult so that I could setup Validator mock to return it upon '.Validate()' call. Also this is the only place where it's possible to manipulate the validation result - You can only make the validation result invalid by inserting a list of validation errors as a parameter through a constructor. The boolean '.IsValid' comes from expression 'IsValid => Errors.Count == 0;', so it can't be set manually.
             _mockGetValidator.Setup(v => v.Validate(It.IsAny<GetProcessImageRequest>())).Returns(fakeValidationResult);
 
-            string expectedLogMessageSubstring = $"The Get ProcessImage request with process reference: {"null"} and image Id: {"null"} did not pass the validation:"; //set up only substring, because the test only cares about this first part of the full log message that would be passed in.
+            string expectedLogMessageSubstring = $"Get ProcessImage request for Process Type: {"null"}, Process Reference: {"null"}, Image Id: {"null"} and File Extension: {"null"}"; //set up only substring, because the test only cares about this first part of the full log message that would be passed in.
 
             //act
             _processImageController.GetProcessImage(request);

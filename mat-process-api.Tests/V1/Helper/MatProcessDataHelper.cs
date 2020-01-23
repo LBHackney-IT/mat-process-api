@@ -10,9 +10,11 @@ using Newtonsoft.Json.Linq;
 
 namespace mat_process_api.Tests.V1.Helper
 {
-    public class MatProcessDataHelper
+    public static class MatProcessDataHelper
     {
         private static Faker faker = new Faker();
+
+        #region Get Process Data
 
         public static MatProcessData CreateProcessDataObject()
         {
@@ -37,6 +39,10 @@ namespace mat_process_api.Tests.V1.Helper
             };
         }
 
+        #endregion
+
+        #region Post Initial Process Document
+
         public static PostInitialProcessDocumentRequest CreatePostInitialProcessDocumentRequestObject()
         {
             string processRef = faker.Random.Guid().ToString();
@@ -49,6 +55,10 @@ namespace mat_process_api.Tests.V1.Helper
 
             return new PostInitialProcessDocumentRequest() { processRef = processRef, processType = processType, processDataSchemaVersion = processDataSchemaVersion };
         }
+
+        #endregion
+
+        #region Post Process Image
 
         public static PostProcessImageRequest CreatePostProcessImageRequestObject()
         {
@@ -74,6 +84,8 @@ namespace mat_process_api.Tests.V1.Helper
                 imageExtension = fileExt
             };
         }
+
+        #endregion
 
         #region Get Process Image 
 
