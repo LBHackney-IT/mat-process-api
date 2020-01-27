@@ -162,20 +162,55 @@ namespace mat_process_api.Tests.V1.Controllers
                 processRef = faker.Random.Guid().ToString()
             };
 
-            _mockUsecase.Setup(x => x.ExecuteGet(request)).Throws<AggregateException>();
-            _mockValidatorGet.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult());
+            var randomExpectedError = ErrorThrowerHelper.GenerateError();
+
+            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessDataRequest>())).Throws(randomExpectedError);
+
+            _mockValidatorGet.Setup(x => x.Validate(It.IsAny<GetProcessDataRequest>())).Returns(new FV.ValidationResult());
 
             //Act
             var actualResult = _processDataController.GetProcessData(request);
             var result = (ObjectResult)actualResult;
-            var resulContent = result.Value;
 
             //Assert
             Assert.NotNull(actualResult);
             Assert.NotNull(result);
-            Assert.NotNull(resulContent);
             Assert.AreEqual(500, result.StatusCode);
         }
+
+        [Test]
+        public void given_an_unexpected_exception_thrown_when_GetProcessData_controller_method_is_called_then_controller_returns_correct_error_message()
+        {
+            //arrange
+            string expectedErrorMessage = "An error has occured while processing the request - ";
+
+            var randomExpectedError = ErrorThrowerHelper.GenerateError();
+
+            try // throw random error
+            {
+                throw randomExpectedError;
+            }
+            catch (Exception ex) //catch the expected error message
+            {
+                expectedErrorMessage += (ex.Message + " " + ex.InnerException);
+            }
+
+            _mockUsecase.Setup(x => x.ExecuteGet(It.IsAny<GetProcessDataRequest>())).Throws(randomExpectedError);
+
+            _mockValidatorGet.Setup(x => x.Validate(It.IsAny<GetProcessDataRequest>())).Returns(new FV.ValidationResult());
+
+            //act
+            var controllerResponse = _processDataController.GetProcessData(new GetProcessDataRequest());
+            var result = controllerResponse as ObjectResult;
+            var resultContent = result.Value as string; 
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.NotNull(resultContent);
+            Assert.AreEqual(expectedErrorMessage, result.Value); 
+        }
+
 
         #region Update Process data
 
