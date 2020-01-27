@@ -20,15 +20,6 @@ namespace mat_process_api.Tests.V1.Validators
         }
 
         [TestCase(null)]
-        [TestCase("")]
-        [TestCase(" ")]
-        public void given_null_or_empty_or_whitespace_processRef_the_GetProcessDocumentRequestValidator_should_return_an_error(string processRef)
-        {
-            //assert
-            validator.ShouldHaveValidationErrorFor(req => req.processRef, processRef);
-        }
-
-        [TestCase(null)]
         public void given_null_processRef_the_GetProcessDocumentRequestValidator_should_return_a_correct_error_message(string processRef)
         {
             //assert
