@@ -40,7 +40,6 @@ namespace mat_process_api.Tests.V1.Validators
         [TestCase("6418aa75-f5ee6975-5279d7bcfee5f948")] //missing dashes
         [TestCase("a98e73-4abd0-83542-4b73225-72b6adc65")] //dashes in the wrong places
         [TestCase("ju5t70m3-w0rd-th4t-w1ll-m34nn0th1ng0")] //uses characters that are not among hexadecimal numerals
-        [TestCase("randomstring")]
         public void given_invalid_guid_string_the_validator_should_return_an_error(string processRef)
         {
             //assert
