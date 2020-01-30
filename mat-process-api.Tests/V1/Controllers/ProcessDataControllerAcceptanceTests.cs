@@ -52,9 +52,10 @@ namespace mat_process_api.Tests.V1.Controllers
             var processDataUsecase = new ProcessDataUseCase(processDataGateway);
             var postInitDocValidator = new PostInitialProcessDocumentRequestValidator();
             var updateDocValidator = new UpdateProcessDocumentRequestValidator();
+            var getDocValidator = new GetProcessDocumentRequestValidator();
             Mock<ILogger<ProcessDataController>> logger = new Mock<ILogger<ProcessDataController>>();
 
-            _processDataController = new ProcessDataController(processDataUsecase, logger.Object, postInitDocValidator, updateDocValidator);
+            _processDataController = new ProcessDataController(processDataUsecase, logger.Object, postInitDocValidator, updateDocValidator, getDocValidator);
         }
 
         [Test]
@@ -65,8 +66,10 @@ namespace mat_process_api.Tests.V1.Controllers
             string processRef = _faker.Random.Guid().ToString();
             dataToInsert.Id = processRef;
             _dbcontext.getCollection().InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(dataToInsert)));
+
+            GetProcessDataRequest request = new GetProcessDataRequest() { processRef = processRef };
             //act
-            var response = _processDataController.GetProcessData(processRef);
+            var response = _processDataController.GetProcessData(request);
             var okResult = (OkObjectResult)response;
             //assert
             var getProcessDataResponse = okResult.Value as GetProcessDataResponse;

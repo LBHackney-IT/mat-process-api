@@ -24,14 +24,17 @@ namespace mat_process_api.V1.Controllers
         private ILogger<ProcessDataController> _logger;
         private IPostInitialProcessDocumentRequestValidator _postValidator;
         private IUpdateProcessDocumentRequestValidator _updateValidator;
+        private IGetProcessDocumentRequestValidator _getValidator;
 
         public ProcessDataController(IProcessData processDataUsecase, ILogger<ProcessDataController> logger,
-            IPostInitialProcessDocumentRequestValidator postInitDocValidator, IUpdateProcessDocumentRequestValidator updateValidator)
+            IPostInitialProcessDocumentRequestValidator postInitDocValidator, IUpdateProcessDocumentRequestValidator updateValidator,
+            IGetProcessDocumentRequestValidator getValidator)
         {
             _processDataUsecase = processDataUsecase;
             _logger = logger;
             _postValidator = postInitDocValidator;
             _updateValidator = updateValidator;
+            _getValidator = getValidator;
         }
 
         /// <summary>
@@ -45,12 +48,29 @@ namespace mat_process_api.V1.Controllers
         [Route("{processRef}")]
         [Produces("application/json")]
         [ProducesResponseType(typeof(GetProcessDataResponse), 200)]
-        public IActionResult GetProcessData(string processRef)
+        public IActionResult GetProcessData([FromRoute] GetProcessDataRequest request)
         {
-            _logger.LogInformation($"Get ProcessData request for process ID {processRef}");
-            var request = new GetProcessDataRequest() {processRef = processRef };
-            var result = _processDataUsecase.ExecuteGet(request);
-            return Ok(result);
+            _logger.LogInformation($"Get ProcessData request for process ID {request.processRef}");
+
+            var isRequestValid = _getValidator.Validate(request);
+
+            if (isRequestValid.IsValid)
+            {
+                try
+                {
+                    var result = _processDataUsecase.ExecuteGet(request);
+                    return Ok(result);
+                }
+                catch(DocumentNotFound ex)
+                {
+                    return StatusCode(404, ($"Document with reference {request.processRef} was not found in the database"));
+                }
+                catch(Exception ex)
+                {
+                    return StatusCode(500, "An error has occured while processing the request - " + ex.Message + " " + ex.InnerException);
+                }
+            }
+            return BadRequest(isRequestValid.Errors);
         }
 
         /// <summary>
