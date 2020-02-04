@@ -63,7 +63,7 @@ namespace mat_process_api.V1.Controllers
                 }
                 catch(DocumentNotFound ex)
                 {
-                    return StatusCode(404, ($"Document with reference {request.processRef} was not found in the database"));
+                    return NotFound($"Document with reference {request.processRef} was not found in the database");
                 }
                 catch(Exception ex)
                 {

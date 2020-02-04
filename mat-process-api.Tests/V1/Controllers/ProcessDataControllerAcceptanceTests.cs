@@ -26,6 +26,8 @@ namespace mat_process_api.Tests.V1.Controllers
 {
     public class ProcessDataControllerAcceptanceTests
     {
+        #region Setup
+
         private readonly Faker _faker = new Faker();
         private ProcessDataController _processDataController;
         private MatDbContext _dbcontext;
@@ -58,24 +60,101 @@ namespace mat_process_api.Tests.V1.Controllers
             _processDataController = new ProcessDataController(processDataUsecase, logger.Object, postInitDocValidator, updateDocValidator, getDocValidator);
         }
 
+        #endregion
+        #region Get Process Document (end to end)
+
         [Test]
-        public void controller_end_to_end_test()
+        public void given_a_valid_and_existing_processRef_when_GetProcessData_controller_method_is_called_then_it_returns_a_200_Ok_result()
         {
             //arrange
-            var dataToInsert = MatProcessDataHelper.CreateProcessDataObject();
-            string processRef = _faker.Random.Guid().ToString();
-            dataToInsert.Id = processRef;
-            _dbcontext.getCollection().InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(dataToInsert)));
+            int expectedStatusCode = 200;
+            var existingDocument = MatProcessDataHelper.CreateProcessDataObject();
+            _dbcontext.getCollection().InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(existingDocument))); // insert expected document, which we expect the gateway to retrieve
+            var request = new GetProcessDataRequest() { processRef = existingDocument.Id }; //valid, and existing
 
-            GetProcessDataRequest request = new GetProcessDataRequest() { processRef = processRef };
+            //act
+            var contollerResponse = _processDataController.GetProcessData(request);
+            var controllerObjectResult = contollerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(contollerResponse);
+            Assert.IsInstanceOf<OkObjectResult>(controllerObjectResult);
+            Assert.AreEqual(expectedStatusCode, controllerObjectResult.StatusCode);
+        }
+
+        [Test]
+        public void given_a_valid_and_existing_processRef_when_GetProcessData_controller_method_is_called_then_it_returns_matching_document_from_the_database()
+        {
+            //arrange
+            var expectedDocument = MatProcessDataHelper.CreateProcessDataObject();
+            string expectedProcessRef = expectedDocument.Id;
+            _dbcontext.getCollection().InsertOne(BsonDocument.Parse(JsonConvert.SerializeObject(expectedDocument))); // insert expected document, which we expect the gateway to retrieve
+
+            GetProcessDataRequest request = new GetProcessDataRequest() { processRef = expectedProcessRef };
+
             //act
             var response = _processDataController.GetProcessData(request);
             var okResult = (OkObjectResult)response;
-            //assert
             var getProcessDataResponse = okResult.Value as GetProcessDataResponse;
-            Assert.IsInstanceOf<MatProcessData>(getProcessDataResponse.ProcessData);
-            Assert.AreEqual(processRef,getProcessDataResponse.ProcessData.Id);
+            var retrievedDocument = getProcessDataResponse.ProcessData;
+
+            //assert
+            Assert.IsInstanceOf<MatProcessData>(retrievedDocument);
+            Assert.NotNull(getProcessDataResponse.ProcessData);
+            Assert.NotNull(getProcessDataResponse.ProcessData.ProcessType);
+
+            Assert.That(
+                expectedProcessRef == retrievedDocument.Id &&
+                expectedDocument.ProcessType.name == retrievedDocument.ProcessType.name &&
+                expectedDocument.ProcessType.value == retrievedDocument.ProcessType.value &&
+                expectedDocument.DateCreated == retrievedDocument.DateCreated &&
+                expectedDocument.DateLastModified == retrievedDocument.DateLastModified &&
+                expectedDocument.DateCompleted == retrievedDocument.DateCompleted &&
+                expectedDocument.ProcessDataAvailable == retrievedDocument.ProcessDataAvailable &&
+                expectedDocument.ProcessDataSchemaVersion == retrievedDocument.ProcessDataSchemaVersion &&
+                expectedDocument.ProcessStage == retrievedDocument.ProcessStage &&
+                expectedDocument.LinkedProcessId == retrievedDocument.LinkedProcessId
+                );
         }
+
+        [Test]
+        public void given_an_invalid_processRef_when_GetProcessData_controller_method_is_called_then_it_returns_a_400_BadRequest_result()
+        {
+            //arrange
+            int expectedStatusCode = 400;
+            var request = new GetProcessDataRequest() { processRef = _faker.Random.Word() }; //processRef of invalid format
+
+            //act
+            var contollerResponse = _processDataController.GetProcessData(request);
+            var controllerObjectResult = contollerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(contollerResponse);
+            Assert.IsInstanceOf<BadRequestObjectResult>(controllerObjectResult);
+            Assert.AreEqual(expectedStatusCode, controllerObjectResult.StatusCode);
+        }
+
+        [Test]
+        public void given_an_valid_and_nonexisting_processRef_when_GetProcessData_controller_method_is_called_then_it_returns_a_404_resource_NotFound_result()
+        {
+            //arrange
+            int expectedStatusCode = 404;
+            var request = new GetProcessDataRequest() { processRef = _faker.Random.Guid().ToString() }; //valid, but there's no instance of it in DB
+
+            //act
+            var contollerResponse = _processDataController.GetProcessData(request);
+            var controllerObjectResult = contollerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(contollerResponse);
+            Assert.IsInstanceOf<NotFoundObjectResult>(controllerObjectResult);
+            Assert.AreEqual(expectedStatusCode, controllerObjectResult.StatusCode);
+        }
+
+        //Not sure how to test 500 result.
+
+        #endregion
+
         [TestCase("00000000-0000-0000-0000-000000000000")]
         [TestCase("00000000-dd23-0000-abcd-000000000000")]
         [TestCase("2539ca27-12c0-e811-a96c-002248072cb4")]

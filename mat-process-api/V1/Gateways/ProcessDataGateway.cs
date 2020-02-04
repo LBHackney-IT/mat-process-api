@@ -28,7 +28,12 @@ namespace mat_process_api.V1.Gateways
             var filter = Builders<BsonDocument>.Filter.Eq("_id", processRef);
             //we will never expect more than one JSON documents matching an ID so we always choose the first/default result
             var result = matDbContext.getCollection().FindAsync(filter).Result.FirstOrDefault();
-            
+            //if document does not exist in the DB, then thrown a corresponsing error.
+            if (result == null)
+            {
+                throw new DocumentNotFound();
+            }
+
             return ProcessDataFactory.CreateProcessDataObject(result);
         }
 
