@@ -24,5 +24,13 @@ namespace mat_process_api.V1.UseCase
             ProcessImageData imageData = ImageDataFactory.CreateImageDataObject(request, base64Decoded);
             _processImageGateway.UploadImage(imageData);
         }
+
+        public GetProcessImageResponse ExecuteGet(GetProcessImageRequest request)
+        {
+            var imageKey = ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension); 
+            var gatewayResponse = _processImageGateway.RetrieveImage(imageKey);
+
+            return new GetProcessImageResponse(gatewayResponse, DateTime.Now, request);
+        }
     }
 }

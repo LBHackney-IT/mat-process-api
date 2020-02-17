@@ -154,6 +154,8 @@ namespace mat_process_api
             services.AddSingleton<IPostInitialProcessDocumentRequestValidator, PostInitialProcessDocumentRequestValidator>();
             services.AddSingleton<IUpdateProcessDocumentRequestValidator, UpdateProcessDocumentRequestValidator>();
             services.AddSingleton<IPostProcessImageRequestValidator, PostProcessImageRequestValidator>();
+            services.AddSingleton<IGetProcessImageRequestValidator, GetProcessImageRequestValidator>();
+            services.AddSingleton<IGetProcessDocumentRequestValidator, GetProcessDocumentRequestValidator>();
         }
 
         private static void RegisterHelpers(IServiceCollection services)

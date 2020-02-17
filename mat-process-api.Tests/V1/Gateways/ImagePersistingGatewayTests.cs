@@ -1,7 +1,9 @@
 using Amazon.Runtime;
+using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.SecurityToken.Model;
 using Bogus;
+using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.Factories;
@@ -103,34 +105,45 @@ namespace mat_process_api.Tests.V1.Gateways
             //second response, as if reusing first one, the stream of data will be closed
             var s3Response2 = new GetObjectResponse();
             s3Response2.ResponseStream = new MemoryStream(data);
-            s3Response2.HttpStatusCode = HttpStatusCode.OK;
             var expectedResponse = ImageRetrievalFactory.EncodeStreamToBase64(s3Response2);
             //act
-            var response = classUnderTest.RetrieveImage();
+            var response = classUnderTest.RetrieveImage(It.IsAny<string>());
             Assert.NotNull(response);
             Assert.AreEqual(expectedResponse, response);         
         }
 
         [Test]
-        public void test_that_gateway_throws_exception_when_http_status_code_is_not_200()
+        public void test_that_gateway_throws_aggregate_exception_and_not_ImageNotFound_exception_if_s3_throws_exception_different_to_key_not_found()
         {
             //arrange
-            var s3Response = new GetObjectResponse();
-            s3Response.ResponseStream = new MemoryStream(faker.Random.Guid().ToByteArray());
-            s3Response.HttpStatusCode = HttpStatusCode.Created;
-            mockS3Client.Setup(x => x.retrieveImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>())).Returns(s3Response);
+            var expectedException = new AggregateException();
+
+            mockS3Client.Setup(x => x.retrieveImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>())).Throws(expectedException);
+
             //assert
-            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage());
+            Assert.Throws<AggregateException>(() => classUnderTest.RetrieveImage(It.IsAny<string>()));
+        }
+        [Test]
+        public void test_that_gateway_throws_caught_exception_and_not_ImageNotFound_exception_if_s3_throws_exception_different_to_AggregateException()
+        {
+            //arrange
+            var expectedException = new FieldAccessException();
+
+            mockS3Client.Setup(x => x.retrieveImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>())).Throws(expectedException);
+
+            //assert
+            Assert.Throws<FieldAccessException>(() => classUnderTest.RetrieveImage(It.IsAny<string>()));
         }
 
         [Test]
-        public void test_that_gateway_throws_image_not_found_when_exception_message_is_specified_key_not_found()
+        public void test_that_gateway_throws_imageNotFound_exception_when_S3_throws_key_not_found_error()
         {
             //arrange
-            var expectedException = new AggregateException("The specified key does not exist.");
+            var s3Exception = new AmazonS3Exception("The specified key does not exist.");
+            var expectedException = new AggregateException("One or more errors occured.",s3Exception);
             mockS3Client.Setup(x => x.retrieveImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>())).Throws(expectedException);
             //assert
-            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage());
+            Assert.Throws<ImageNotFound>(() => classUnderTest.RetrieveImage(It.IsAny<string>()));
         }
         #endregion
     }

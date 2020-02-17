@@ -10,9 +10,11 @@ using Newtonsoft.Json.Linq;
 
 namespace mat_process_api.Tests.V1.Helper
 {
-    public class MatProcessDataHelper
+    public static class MatProcessDataHelper
     {
         private static Faker faker = new Faker();
+
+        #region Get Process Data
 
         public static MatProcessData CreateProcessDataObject()
         {
@@ -37,6 +39,10 @@ namespace mat_process_api.Tests.V1.Helper
             };
         }
 
+        #endregion
+
+        #region Post Initial Process Document
+
         public static PostInitialProcessDocumentRequest CreatePostInitialProcessDocumentRequestObject()
         {
             string processRef = faker.Random.Guid().ToString();
@@ -50,13 +56,19 @@ namespace mat_process_api.Tests.V1.Helper
             return new PostInitialProcessDocumentRequest() { processRef = processRef, processType = processType, processDataSchemaVersion = processDataSchemaVersion };
         }
 
+        #endregion
+
+        #region Post Process Image
+
         public static PostProcessImageRequest CreatePostProcessImageRequestObject()
         {
+            string allowedCharacters = "0123456789abcdefghijklmnoqprstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
             return new PostProcessImageRequest()
             {
                 processRef = faker.Random.Guid().ToString(),
                 imageId = faker.Random.Guid().ToString(),
-                base64Image = "data:image/" + faker.System.FileExt() + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512)),
+                base64Image = "data:image/" + faker.Random.String2(faker.Random.Int(3, 7), allowedCharacters) + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512)),
                 processType = faker.Random.Word()
             };
         }
@@ -72,5 +84,22 @@ namespace mat_process_api.Tests.V1.Helper
                 imageExtension = fileExt
             };
         }
+
+        #endregion
+
+        #region Get Process Image 
+
+        public static GetProcessImageRequest CreateGetProcessImageRequestObject()
+        {
+            return new GetProcessImageRequest()
+            {
+                processRef = faker.Random.Guid().ToString(),
+                imageId = faker.Random.Guid().ToString(),
+                fileExtension = faker.Random.Word(),
+                processType = faker.Random.Word()
+            };
+        }
+
+        #endregion
     }
 }

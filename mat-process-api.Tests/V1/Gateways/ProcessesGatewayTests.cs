@@ -36,6 +36,8 @@ namespace UnitTests.V1.Gateways
             processDataGateway = new ProcessDataGateway(mockContext.Object);
         }
 
+        #region Get Process Document
+
         [Test]
         public void test_that_gateway_class_implements_gateway_interface()
         {
@@ -68,29 +70,17 @@ namespace UnitTests.V1.Gateways
             Assert.IsInstanceOf<MatProcessData>(result);
         }
 
-
         [Test]
-        public void test_that_gateway_return_mat_process_object_if_no_match_is_found()
+        public void given_nonexistent_processRef_when_GetProcessData_gateway_method_is_called_then_gateway_throws_DocumentNotFound_exception()
         {
             //arrange
-            string id = _faker.Random.Guid().ToString();
-            //act
-            var result = processDataGateway.GetProcessData(id);
-            //assert
-            Assert.Null(result.Id);
-            Assert.Null(result.ProcessType);
-            Assert.AreEqual(DateTime.MinValue, result.DateCreated);
-            Assert.AreEqual(DateTime.MinValue, result.DateLastModified);
-            Assert.AreEqual(DateTime.MinValue, result.DateCompleted);
-            Assert.False(result.ProcessDataAvailable);
-            Assert.Zero(result.ProcessDataSchemaVersion);
-            Assert.Null(result.ProcessStage);
-            Assert.Null(result.LinkedProcessId);
-            Assert.Null(result.PreProcessData);
-            Assert.Null(result.ProcessData);
-            Assert.Null(result.PostProcessData);
-            Assert.IsInstanceOf<MatProcessData>(result);
+            string processRef = _faker.Random.Guid().ToString();
+
+            //act, assert
+            Assert.Throws<DocumentNotFound>(() => processDataGateway.GetProcessData(processRef));
         }
+
+        #endregion
 
         #region Update Process
         [Test]

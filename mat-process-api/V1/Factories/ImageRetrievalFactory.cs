@@ -21,7 +21,7 @@ namespace mat_process_api.V1.Factories
                         responseStream.CopyTo(memoryStream);
                         bytes = memoryStream.ToArray();
                     }
-                    return Convert.ToBase64String(bytes);
+                    return $"data:{s3Response.Headers.ContentType};base64,"+Convert.ToBase64String(bytes);
                 }
             }
             else
