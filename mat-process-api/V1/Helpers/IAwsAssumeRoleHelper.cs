@@ -8,6 +8,6 @@ namespace mat_process_api.V1.Helpers
 {
     public interface IAwsAssumeRoleHelper
     {
-        Credentials GetTemporaryCredentials();
+        Task<Credentials> GetTemporaryCredentials();
     }
 }

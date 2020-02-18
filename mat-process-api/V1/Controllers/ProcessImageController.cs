@@ -38,15 +38,15 @@ namespace mat_process_api.V1.Controllers
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult PostProcessImage([FromBody] PostProcessImageRequest imageData)
+        public async Task<IActionResult> PostProcessImage([FromBody] PostProcessImageRequest imageData)
         {
             try
             {
-                var validationResult = _postValidator.Validate(imageData);
+                var validationResult = _postValidator.Validate(imageData); //TODO: look at refactoring
 
                 if (validationResult.IsValid)
                 {
-                    _processImageUseCase.ExecutePost(imageData);
+                    await _processImageUseCase.ExecutePost(imageData);
 
                     return NoContent();
                 }

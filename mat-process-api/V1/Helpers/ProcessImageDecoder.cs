@@ -9,10 +9,17 @@ namespace mat_process_api.V1.Helpers
 {
     public class ProcessImageDecoder : IProcessImageDecoder
     {
-        public Base64DecodedData DecodeBase64ImageString(string imageString)
+        public async Task<Base64DecodedData> DecodeBase64ImageString(string imageString)
+        {
+            Base64DecodedData data = Decode(imageString);
+
+            return await Task.FromResult(data);
+            
+        }
+
+        private Base64DecodedData Decode(string imageString)
         {
             string base64Part = imageString.Split(",")[1];
-            //byte[] base64Bytes = Convert.FromBase64String(base64Part);
             string fileTypePart = Regex.Match(imageString, @"(?<=:).+(?=;)").Value;
             string fileExt = Regex.Match(fileTypePart, @"(?<=\/).+").Value;
 

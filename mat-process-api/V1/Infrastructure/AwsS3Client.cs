@@ -13,25 +13,23 @@ namespace mat_process_api.V1.Infrastructure
     public class AwsS3Client : IAmazonS3Client
     {
       
-        public PutObjectResponse insertImage(AWSCredentials credentials, string base64, string key,string contentType)
+        public async Task<PutObjectResponse> insertImage(AWSCredentials credentials, string base64, string key,string contentType)
         {
-          
-            try
+          try
             {
                 var s3Client = new AmazonS3Client(credentials, Amazon.RegionEndpoint.EUWest2);
             
                 byte[] data = Convert.FromBase64String(base64);
                 using (var stream = new MemoryStream(data))
                 {
-                    var putRequest1 = new PutObjectRequest
+                    var putRequest = new PutObjectRequest
                     {
                         BucketName = Environment.GetEnvironmentVariable("bucket-name"),
                         Key = key, //file path in S3 to be included here
                         InputStream = stream,
                         ContentType = contentType
                     };
-                    PutObjectResponse response = s3Client.PutObjectAsync(putRequest1).Result;
-                    return response;
+                    return await s3Client.PutObjectAsync(putRequest);
                 }
             }
             catch(Exception ex)

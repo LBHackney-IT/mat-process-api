@@ -33,9 +33,9 @@ namespace mat_process_api.Tests.V1.Helper
             client.Setup(x => x.getStsClient(It.IsAny<BasicAWSCredentials>())).Returns(stsClient);
             var assumeRoleResponse = new AssumeRoleResponse() { Credentials = new Credentials() };
             client.Setup(x => x.assumeRole(It.IsAny<AmazonSecurityTokenServiceClient>(), It.IsAny<AssumeRoleRequest>()))
-                .Returns(assumeRoleResponse);
+                .ReturnsAsync(assumeRoleResponse);
             //act
-            var response = awsAssumeRoleHelper.GetTemporaryCredentials();
+            var response = awsAssumeRoleHelper.GetTemporaryCredentials().Result;
             //assert
             Assert.IsInstanceOf<Credentials>(response);
             Assert.IsNotEmpty(response.AccessKeyId);

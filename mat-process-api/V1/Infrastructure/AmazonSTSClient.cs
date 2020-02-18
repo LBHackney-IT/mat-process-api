@@ -14,9 +14,9 @@ namespace mat_process_api.V1.Infrastructure
         {
             return new AmazonSecurityTokenServiceClient(credentials, Amazon.RegionEndpoint.EUWest2);
         }
-        public AssumeRoleResponse assumeRole(AmazonSecurityTokenServiceClient client,AssumeRoleRequest request)
+        public async Task<AssumeRoleResponse> assumeRole(AmazonSecurityTokenServiceClient client,AssumeRoleRequest request)
         {
-            return client.AssumeRoleAsync(request).Result;
+            return await client.AssumeRoleAsync(request);
         }
     }
 }

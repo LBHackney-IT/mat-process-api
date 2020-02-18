@@ -8,7 +8,7 @@ namespace mat_process_api.V1.UseCase
 {
     public interface IProcessImageUseCase
     {
-        void ExecutePost(PostProcessImageRequest request);
+        Task ExecutePost(PostProcessImageRequest request);
         GetProcessImageResponse ExecuteGet(GetProcessImageRequest request);
     }
 }

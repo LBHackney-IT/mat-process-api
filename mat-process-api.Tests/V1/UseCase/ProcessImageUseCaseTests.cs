@@ -9,6 +9,7 @@ using mat_process_api.V1.Domain;
 using System.Linq;
 using mat_process_api.V1.Helpers;
 using mat_process_api.Tests.V1.Helper;
+using System.Threading.Tasks;
 
 namespace mat_process_api.Tests.V1.UseCase
 {
@@ -35,7 +36,7 @@ namespace mat_process_api.Tests.V1.UseCase
         {
             //arrange
             var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
-            _mockImageDecoder.Setup(x => x.DecodeBase64ImageString(request.base64Image)).Returns(new Base64DecodedData() { imageExtension = _faker.Random.Word() });
+            _mockImageDecoder.Setup(x => x.DecodeBase64ImageString(request.base64Image)).ReturnsAsync(new Base64DecodedData() { imageExtension = _faker.Random.Word() });
             //act
             _processImageUseCase.ExecutePost(request);
 
@@ -48,7 +49,7 @@ namespace mat_process_api.Tests.V1.UseCase
         {
             //arrange
             var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
-            _mockImageDecoder.Setup(x => x.DecodeBase64ImageString(request.base64Image)).Returns(new Base64DecodedData() { imageExtension = _faker.Random.Word() });
+            _mockImageDecoder.Setup(x => x.DecodeBase64ImageString(request.base64Image)).ReturnsAsync(new Base64DecodedData() { imageExtension = _faker.Random.Word() });
             //act
             _processImageUseCase.ExecutePost(request);
 
@@ -63,7 +64,7 @@ namespace mat_process_api.Tests.V1.UseCase
             var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
             var decodedData = MatProcessDataHelper.CreateBase64DecodedDataObject();
 
-            _mockImageDecoder.Setup(d => d.DecodeBase64ImageString(It.IsAny<string>())).Returns(decodedData); //At this step, this test does not care about the validity of the decoder output, it only cares to see if the usecase passes the decoder output into gateway or not.
+            _mockImageDecoder.Setup(d => d.DecodeBase64ImageString(It.IsAny<string>())).ReturnsAsync(decodedData); //At this step, this test does not care about the validity of the decoder output, it only cares to see if the usecase passes the decoder output into gateway or not.
 
             //act
             _processImageUseCase.ExecutePost(request);
@@ -94,11 +95,11 @@ namespace mat_process_api.Tests.V1.UseCase
         }
 
         [Test]
-        public void given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_calls_the_gateway_with_imageKey_generated_based_on_the_request()
+        public async Task given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_calls_the_gateway_with_imageKey_generated_based_on_the_request()
         {
             //assert
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
-            var imageKey = ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension);
+            var imageKey = await ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension);
 
             //act
             _processImageUseCase.ExecuteGet(request);
@@ -108,11 +109,11 @@ namespace mat_process_api.Tests.V1.UseCase
         }
 
         [Test]
-        public void given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_returns_the_response_object_of_correct_type_and_data()
+        public async Task given_a_request_when_ProcessImageUseCase_ExecuteGet_method_is_called_then_it_returns_the_response_object_of_correct_type_and_data()
         {
             //assert
             var request = MatProcessDataHelper.CreateGetProcessImageRequestObject();
-            var imageKey = ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension);
+            var imageKey = await ImagePersistingHelper.generateImageKey(request.processType, request.imageId, request.processRef, request.fileExtension);
 
             var expectedBase64ImageString = MatProcessDataHelper.CreatePostProcessImageRequestObject().base64Image;
             _mockGateway.Setup(g => g.RetrieveImage(It.Is<string>(obj => obj == imageKey))).Returns(expectedBase64ImageString);

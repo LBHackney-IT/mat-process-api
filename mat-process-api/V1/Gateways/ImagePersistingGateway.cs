@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Amazon.SecurityToken.Model;
 using mat_process_api.V1.Boundary;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Exceptions;
@@ -22,13 +23,16 @@ namespace mat_process_api.V1.Gateways
             assumeRoleHelper = _assumeRoleHelper;
         }
 
-        public void UploadImage(ProcessImageData request)
+        public async Task UploadImage(ProcessImageData request)
         {
             try
             {
+                //get temporary credentials
+                Credentials credentials = await assumeRoleHelper.GetTemporaryCredentials();
                 //insert image
-                var result = s3Client.insertImage(assumeRoleHelper.GetTemporaryCredentials(), request.imageData.imagebase64String.ToString(), request.key,
+                var result = await s3Client.insertImage(credentials, request.imageData.imagebase64String.ToString(), request.key,
                     request.imageData.imageType);
+
                 if (result.HttpStatusCode != HttpStatusCode.OK)
                 {
                     throw new ImageNotInsertedToS3();
@@ -44,7 +48,7 @@ namespace mat_process_api.V1.Gateways
         {
             try
             {
-                var result = s3Client.retrieveImage(assumeRoleHelper.GetTemporaryCredentials(), imageKey,
+                var result = s3Client.retrieveImage(assumeRoleHelper.GetTemporaryCredentials().Result, imageKey,
                     Environment.GetEnvironmentVariable("bucket-name"));
                 return ImageRetrievalFactory.EncodeStreamToBase64(result);
             }

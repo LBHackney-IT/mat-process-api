@@ -50,8 +50,10 @@ namespace mat_process_api.Tests.V1.Gateways
                 processRef = faker.Random.Guid().ToString()};
             var expectedResponse = new PutObjectResponse();
             expectedResponse.HttpStatusCode = System.Net.HttpStatusCode.OK;
-            mockS3Client.Setup(x => x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(),It.IsAny<string>())).Returns(expectedResponse);
-            mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).Returns(It.IsAny<Credentials>());
+
+            mockS3Client.Setup(x => x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(expectedResponse);
+            mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).ReturnsAsync(It.IsAny<Credentials>());
             //act
             Assert.DoesNotThrow(() => classUnderTest.UploadImage(request));
         }
@@ -69,10 +71,12 @@ namespace mat_process_api.Tests.V1.Gateways
             var expectedResponse = new PutObjectResponse();
             expectedResponse.HttpStatusCode = HttpStatusCode.Conflict;
 
-            mockS3Client.Setup(x => x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(),It.IsAny<string>())).Returns(expectedResponse);
-            mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).Returns(It.IsAny<Credentials>());
+            mockS3Client.Setup(x => x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(),It.IsAny<string>()))
+                .ReturnsAsync(expectedResponse);
+
+            mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).ReturnsAsync(It.IsAny<Credentials>());
             //assert
-            Assert.Throws<ImageNotInsertedToS3>(() => classUnderTest.UploadImage(request));     
+            Assert.ThrowsAsync<ImageNotInsertedToS3>(() => classUnderTest.UploadImage(request));     
         }
 
         [Test]
@@ -87,9 +91,9 @@ namespace mat_process_api.Tests.V1.Gateways
             };
 
             mockS3Client.Setup(x => x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(),It.IsAny<string>())).Throws<AggregateException>();
-            mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).Returns(It.IsAny<Credentials>());
+            mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).ReturnsAsync(It.IsAny<Credentials>());
             //assert
-            Assert.Throws<ImageNotInsertedToS3>(() => classUnderTest.UploadImage(request));
+            Assert.ThrowsAsync<ImageNotInsertedToS3>(() => classUnderTest.UploadImage(request));
         }
 
         #region Get Image

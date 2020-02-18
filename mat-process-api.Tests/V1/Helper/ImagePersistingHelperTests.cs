@@ -12,7 +12,7 @@ namespace mat_process_api.Tests.V1.Helper
     public class ImagePersistingHelperTests
     {
         Faker faker;
-        ImagePersistingHelper helper;
+
         [SetUp]
         public void set_up()
         {
@@ -20,7 +20,7 @@ namespace mat_process_api.Tests.V1.Helper
         }
         [TestCase("2021/01/abc-123-bbb")]
         [TestCase("2020/12/abc-123-ggg")]
-        public void test_that_generated_key_is_correct(string imageId)
+        public async Task test_that_generated_key_is_correct(string imageId)
         {
             //arrange
             var processRef = faker.Random.Guid().ToString();
@@ -28,7 +28,7 @@ namespace mat_process_api.Tests.V1.Helper
             var processType = faker.Random.Word();
             var expectedKey = $"{processType}/{processRef}/{imageId}.{fileExtension}";
             //act
-            var result = ImagePersistingHelper.generateImageKey(processType,imageId, processRef, fileExtension);
+            var result = await ImagePersistingHelper.generateImageKey(processType,imageId, processRef, fileExtension);
             Assert.AreEqual(expectedKey, result);
         }
     }

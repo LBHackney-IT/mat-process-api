@@ -17,7 +17,7 @@ namespace mat_process_api.V1.Helpers
         {
             client = _client;
         }
-        public Credentials GetTemporaryCredentials()
+        public async Task<Credentials> GetTemporaryCredentials()
         {
             BasicAWSCredentials creds = new BasicAWSCredentials(Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID"),
                 Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY"));
@@ -32,7 +32,7 @@ namespace mat_process_api.V1.Helpers
                         RoleArn = Environment.GetEnvironmentVariable("S3_ASSUME_ROLE_ARN"), //get from env var
                         RoleSessionName = "Session"
                     };
-                    AssumeRoleResponse assumeRoleTokenResponse = client.assumeRole(stsClient,assumeRoleTokenRequest);
+                    AssumeRoleResponse assumeRoleTokenResponse = await client.assumeRole(stsClient,assumeRoleTokenRequest);
                     Credentials credentials = assumeRoleTokenResponse.Credentials;
                     return credentials;
                 }

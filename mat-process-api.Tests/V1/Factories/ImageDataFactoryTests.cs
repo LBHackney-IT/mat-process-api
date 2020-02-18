@@ -12,14 +12,14 @@ namespace mat_process_api.Tests.V1.Factories
     public class ImageDataFactoryTests
     {
         [Test]
-        public void given_a_request_and_decodedBase64Data_objects_when_CreateImageDataObject_factory_method_is_called_then_it_outputs_correctly_populated_ProcessImageData_object()
+        public async Task given_a_request_and_decodedBase64Data_objects_when_CreateImageDataObject_factory_method_is_called_then_it_outputs_correctly_populated_ProcessImageData_object()
         {
             //arrange
             var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
             var decodedData = MatProcessDataHelper.CreateBase64DecodedDataObject();
 
             //act
-            var processImageData = ImageDataFactory.CreateImageDataObject(request, decodedData);
+            var processImageData = await ImageDataFactory.CreateImageDataObject(request, decodedData);
 
             //asssert
             Assert.AreEqual(request.processRef, processImageData.processRef);

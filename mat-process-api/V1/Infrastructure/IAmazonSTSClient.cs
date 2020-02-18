@@ -11,6 +11,6 @@ namespace mat_process_api.V1.Infrastructure
     public interface IAmazonSTSClient
     {
         AmazonSecurityTokenServiceClient getStsClient(BasicAWSCredentials credentials);
-        AssumeRoleResponse assumeRole(AmazonSecurityTokenServiceClient client, AssumeRoleRequest request);
+        Task<AssumeRoleResponse> assumeRole(AmazonSecurityTokenServiceClient client, AssumeRoleRequest request);
     }
 }

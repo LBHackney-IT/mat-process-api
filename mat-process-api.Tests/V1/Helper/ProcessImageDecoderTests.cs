@@ -22,14 +22,14 @@ namespace mat_process_api.Tests.V1.Helper
         }
 
         [Test]
-        public void given_a_base64ImageString_when_ProcessImageDecoder_is_called_then_it_returns_Base64DecodedData_with_correctly_decoded_byte_array() //in this case it's imageExtension
+        public async Task given_a_base64ImageString_when_ProcessImageDecoder_is_called_then_it_returns_Base64DecodedData_with_correctly_decoded_byte_array() //in this case it's imageExtension
         {
             //arrange
             string base64ImageString = MatProcessDataHelper.CreatePostProcessImageRequestObject().base64Image;
             var decodedImageBytes = base64ImageString.Split(",")[1]; //expected decoded bytes
 
             //act
-            var base64DecodedData = _processImageDecoder.DecodeBase64ImageString(base64ImageString);
+            var base64DecodedData = await _processImageDecoder.DecodeBase64ImageString(base64ImageString);
 
             //assert
             Assert.NotNull(base64DecodedData);
@@ -37,14 +37,14 @@ namespace mat_process_api.Tests.V1.Helper
         }
 
         [Test]
-        public void given_a_base64ImageString_when_ProcessImageDecoder_is_called_then_it_returns_Base64DecodedData_with_correctly_decoded_file_type() //in this case it's imageType
+        public async Task given_a_base64ImageString_when_ProcessImageDecoder_is_called_then_it_returns_Base64DecodedData_with_correctly_decoded_file_type() //in this case it's imageType
         {
             //arrange
             string base64ImageString = MatProcessDataHelper.CreatePostProcessImageRequestObject().base64Image;
             string decodedImageType = base64ImageString.Split(";")[0].Split(":")[1]; //expected File Type
 
             //act
-            var base64DecodedData = _processImageDecoder.DecodeBase64ImageString(base64ImageString);
+            var base64DecodedData = await _processImageDecoder.DecodeBase64ImageString(base64ImageString);
 
             //assert
             Assert.IsInstanceOf<Base64DecodedData>(base64DecodedData);
@@ -52,14 +52,14 @@ namespace mat_process_api.Tests.V1.Helper
         }
 
         [Test]
-        public void given_a_base64ImageString_when_ProcessImageDecoder_is_called_then_it_returns_Base64DecodedData_with_correctly_decoded_file_extension() //in this case it's imageExtension
+        public async Task given_a_base64ImageString_when_ProcessImageDecoder_is_called_then_it_returns_Base64DecodedData_with_correctly_decoded_file_extension() //in this case it's imageExtension
         {
             //arrange
             string base64ImageString = MatProcessDataHelper.CreatePostProcessImageRequestObject().base64Image;
             string decodedImageExtension = base64ImageString.Split(";")[0].Split(":")[1].Split("/")[1]; //expected File Type
 
             //act
-            var base64DecodedData = _processImageDecoder.DecodeBase64ImageString(base64ImageString);
+            var base64DecodedData = await _processImageDecoder.DecodeBase64ImageString(base64ImageString);
 
             //assert
             Assert.IsInstanceOf<Base64DecodedData>(base64DecodedData);

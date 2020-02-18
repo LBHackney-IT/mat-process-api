@@ -76,7 +76,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_valid_request_when_postProcessImage_controller_method_is_called_then_it_returns_204_NoContent_result()
+        public async Task given_valid_request_when_postProcessImage_controller_method_is_called_then_it_returns_204_NoContent_result()
         {
             //arrange
             var expectedStatusCode = 204;
@@ -84,7 +84,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockPostValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
 
             //act
-            var controllerResponse = _processImageController.PostProcessImage(request);
+            var controllerResponse = await _processImageController.PostProcessImage(request);
             var result = (StatusCodeResult)controllerResponse; //not 'ObjectResult' because there's no object contained in this response
 
             //assert
@@ -107,7 +107,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_an_invalid_request_when_postProcessImage_controller_method_is_called_then_it_returns_400_BadRequest_result()
+        public async Task given_an_invalid_request_when_postProcessImage_controller_method_is_called_then_it_returns_400_BadRequest_result()
         {
             //arrange
             var expectedStatusCode = 400;
@@ -121,7 +121,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockPostValidator.Setup(v => v.Validate(It.IsAny<PostProcessImageRequest>())).Returns(fakeValidationResult);
 
             //act
-            var controllerResponse = _processImageController.PostProcessImage(request);
+            var controllerResponse = await _processImageController.PostProcessImage(request);
             var result = controllerResponse as ObjectResult;
 
             //assert
@@ -132,7 +132,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_an_invalid_request_when_postProcessImage_controller_method_is_called_then_the_response_BadRequest_result_contains_correct_error_messages()
+        public async Task given_an_invalid_request_when_postProcessImage_controller_method_is_called_then_the_response_BadRequest_result_contains_correct_error_messages()
         {
             //arrange
             var expectedStatusCode = 400;
@@ -148,7 +148,7 @@ namespace mat_process_api.Tests.V1.Controllers
             var expectedControllerResponse = new BadRequestObjectResult(validationErrorList); // build up expected controller response to check if the contents of the errors match - that's probably the easiest way to check that.
 
             //act
-            var controllerResponse = _processImageController.PostProcessImage(request);
+            var controllerResponse = await _processImageController.PostProcessImage(request);
             var result = controllerResponse as ObjectResult;
             var resultContents = (IList<ValidationFailure>)result.Value;
 
@@ -164,7 +164,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_an_exception_thrown_check_that_the_controller_throws_correct_exception_and_500_status_code()
+        public async Task given_an_exception_thrown_check_that_the_controller_throws_correct_exception_and_500_status_code()
         {
             var expectedStatusCode = 500;
             var request = new PostProcessImageRequest(); //an empty request will be invalid
@@ -173,7 +173,7 @@ namespace mat_process_api.Tests.V1.Controllers
             _mockPostValidator.Setup(v => v.Validate(It.IsAny<PostProcessImageRequest>())).Returns(fakeValidationResult);
             _mockUsecase.Setup(x => x.ExecutePost(request)).Throws<ImageNotInsertedToS3>();
             //act
-            var controllerResponse = _processImageController.PostProcessImage(request);
+            var controllerResponse = await _processImageController.PostProcessImage(request);
             var result = controllerResponse as ObjectResult;
 
             //assert
