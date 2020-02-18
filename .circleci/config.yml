@@ -178,46 +178,46 @@ workflows:
       - build-and-test:
           filters:
             branches:
-              only: master   
+              only: feature/disable-validation   
       - permit-staging-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: master
+              only: feature/disable-validation
       - build_and_push_image_staging:
           context: mat-assume-role-context
           requires:
             - permit-staging-release
           filters:
             branches:
-              only: master
+              only: feature/disable-validation
       - deploy-to-staging:
           context: mat-assume-role-context
           requires:
             - build_and_push_image_staging
           filters:
             branches:
-              only: master
+              only: feature/disable-validation
       - permit-production-release:
           type: approval
           requires:
             - deploy-to-staging
           filters:
             branches:
-              only: master
+              only: feature/disable-validation
       - build_and_push_image_production:
           context: mat-assume-role-context
           requires:
             - permit-production-release
           filters:
             branches:
-              only: master
+              only: feature/disable-validation
       - deploy-to-production:
           context: mat-assume-role-context
           requires:
             - build_and_push_image_production
           filters:
             branches:
-              only: master
+              only: feature/disable-validation
