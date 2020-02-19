@@ -15,8 +15,8 @@ namespace mat_process_api.V1.Validators
                .WithMessage("You need to provide a valid process reference.");
             RuleFor(req => req.imageId).NotNull().WithMessage("Image Id must be provided.").NotEmpty().WithMessage("Image Id must be provided.").Must(ValidateGuid)
                 .WithMessage("You need to provide a valid Image Id.");
-            RuleFor(req => req.base64Image).NotNull().WithMessage("Base64 Image string must be provided.").NotEmpty().WithMessage("Base64 Image string must be provided.")
-                .Must(ValidateBase64Length).WithMessage("You need to provide a valid Base64 Image string.");
+            RuleFor(req => req.base64Image).NotNull().WithMessage("Base64 Image string must be provided.").NotEmpty().WithMessage("Base64 Image string must be provided.");
+                //.Must(ValidateBase64Length).WithMessage("You need to provide a valid Base64 Image string.")
                 //.Matches(new Regex(@"^data:image\/([^_\W]{3,});base64,([^_\W]|[+\/])+={0,3}$")).WithMessage("You need to provide a valid Base64 Image string.");
         }
 
@@ -25,12 +25,12 @@ namespace mat_process_api.V1.Validators
             return Guid.TryParse(guid, out var result);
         }
 
-        private bool ValidateBase64Length(string imageBase64)
-        {
-            var stringParts = imageBase64.Split(",");
-            if (stringParts.Length != 2) { return false; }
-            var base64partLenght = stringParts[1].Length;
-            return 0 == base64partLenght % 4;
-        }
+        //private bool ValidateBase64Length(string imageBase64)
+        //{
+        //    var stringParts = imageBase64.Split(",");
+        //    if (stringParts.Length != 2) { return false; }
+        //    var base64partLenght = stringParts[1].Length;
+        //    return 0 == base64partLenght % 4;
+        //}
     }
 }
