@@ -46,18 +46,18 @@ namespace mat_process_api.Tests.V1.Validators
             _postValidator.ShouldHaveValidationErrorFor(req => req.imageId, request).WithErrorMessage("Image Id must be provided.");
         }
 
-        [TestCase(null)]
-        [TestCase("")]
-        [TestCase(" ")]
-        public void given_a_request_with_null_empty_or_whitespace_base64Image_string_when_postProcessImageRequestValidator_is_called_then_it_returns_an_error(string base64Image)
-        {
-            //arrange
-            var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
-            request.base64Image = base64Image;
+        //[TestCase(null)]
+        //[TestCase("")]
+        //[TestCase(" ")]
+        //public void given_a_request_with_null_empty_or_whitespace_base64Image_string_when_postProcessImageRequestValidator_is_called_then_it_returns_an_error(string base64Image)
+        //{
+        //    //arrange
+        //    var request = MatProcessDataHelper.CreatePostProcessImageRequestObject();
+        //    request.base64Image = base64Image;
 
-            //act, assert
-            _postValidator.ShouldHaveValidationErrorFor(req => req.base64Image, request).WithErrorMessage("Base64 Image string must be provided.");
-        }
+        //    //act, assert
+        //    _postValidator.ShouldHaveValidationErrorFor(req => req.base64Image, request).WithErrorMessage("Base64 Image string must be provided.");
+        //}
 
         #endregion
 
