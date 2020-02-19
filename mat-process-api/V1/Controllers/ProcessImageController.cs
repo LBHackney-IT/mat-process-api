@@ -42,16 +42,16 @@ namespace mat_process_api.V1.Controllers
         {
             try
             {
-                //var validationResult = _postValidator.Validate(imageData);
+                var validationResult = _postValidator.Validate(imageData);
 
-                //if (validationResult.IsValid)
-                //{
+                if (validationResult.IsValid)
+                {
                     _processImageUseCase.ExecutePost(imageData);
 
                     return NoContent();
-                //}
+                }
 
-                //return BadRequest(validationResult.Errors);
+                return BadRequest(validationResult.Errors);
             }
             catch(ImageNotInsertedToS3 ex)
             {
