@@ -42,7 +42,7 @@ namespace mat_process_api.V1.Controllers
         {
             try
             {
-                ///var validationResult = _postValidator.Validate(imageData);
+                //var validationResult = _postValidator.Validate(imageData);
 
                 //if (validationResult.IsValid)
                 //{

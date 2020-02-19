@@ -92,7 +92,19 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.AreEqual(expectedStatusCode, result.StatusCode);
         }
 
-object 
+        //[Test]
+        //public void given_any_request_when_postProcessImage_controller_method_is_called_then_it_calls_the_validator_with_that_request_object()
+        //{
+        //    //arrange
+        //    var request = new PostProcessImageRequest();
+        //    _mockPostValidator.Setup(x => x.Validate(request)).Returns(new FV.ValidationResult()); //setup validator to return a no error validation result
+
+        //    //act
+        //    _processImageController.PostProcessImage(request);
+
+        //    //assert
+        //    _mockPostValidator.Verify(v => v.Validate(It.Is<PostProcessImageRequest>(obj => obj == request)), Times.Once);
+        //}
 
         //[Test]
         //public void given_an_invalid_request_when_postProcessImage_controller_method_is_called_then_it_returns_400_BadRequest_result()
