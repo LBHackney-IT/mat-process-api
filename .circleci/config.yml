@@ -155,10 +155,7 @@ jobs:
 workflows:
   check-and-deploy:
       jobs:
-      - build-and-test:
-          filters:
-            branches:
-              only: development
+      - build-and-test
       - build_and_push_image_development:
           context: mat-assume-role-context
           requires:
