@@ -118,6 +118,7 @@ module "production" {
   host_port                             = 1000
   desired_number_of_ec2_nodes           = 2
   port                                  = 1000
+
   task_definition_environment_variables = {}
 
   task_definition_environment_variable_count = 0
