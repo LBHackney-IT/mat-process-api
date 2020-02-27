@@ -53,7 +53,23 @@ namespace mat_process_api.V1.Controllers
 
                 return BadRequest(validationResult.Errors);
             }
-            catch(ImageNotInsertedToS3 ex)
+            //thrown if base64 string cannot be converted to valid Base64DecodedData object (validation cannot be done on boundary object at the moment for performance reasons)
+            catch (ProcessImageDecoderException ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, ex); //issue with base64 string input
+            }
+            //thrown if base64 string cannot be converter to byte array
+            catch(Base64StringConversionToByteArrayException ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, ex); //issue with base64 string input
+            }
+            //thrown if uploading image to S3 fails
+            catch (ImageNotInsertedToS3 ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex);
+            }
+            //thrown for any other exception
+            catch(Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex);
             }
