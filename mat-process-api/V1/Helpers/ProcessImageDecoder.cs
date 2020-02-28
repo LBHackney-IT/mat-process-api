@@ -20,19 +20,22 @@ namespace mat_process_api.V1.Helpers
                 string fileExt = Regex.Match(fileTypePart, @"(?<=\/).+").Value;
 
                 //do additional validation here since it's too heavy to run against the boundary object
-                if (allowedFileTypes.Contains(fileTypePart))
+
+                if (string.IsNullOrWhiteSpace(base64Part))
                 {
-                    return new Base64DecodedData()
-                    {
-                        imagebase64String = base64Part,
-                        imageType = fileTypePart,
-                        imageExtension = fileExt
-                    };
+                    throw new ProcessImageDecoderException("Missing base64 content");
                 }
-                else
+                if (!allowedFileTypes.Contains(fileTypePart))
                 {
                     throw new ProcessImageDecoderException("Invalid image type");
                 }
+
+                return new Base64DecodedData()
+                {
+                    imagebase64String = base64Part,
+                    imageType = fileTypePart,
+                    imageExtension = fileExt
+                };
             }
             catch (Exception ex)
             {

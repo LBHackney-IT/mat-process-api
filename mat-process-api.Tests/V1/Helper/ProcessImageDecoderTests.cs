@@ -81,6 +81,19 @@ namespace mat_process_api.Tests.V1.Helper
                             delegate { _processImageDecoder.DecodeBase64ImageString(base64String); }
                          );
         }
+
+        [TestCase("data:image/jpeg;base64,")] //missing base64 content after comma
+        public void given_missing_base64_content_is_passed_in_base64ImageString_when_ProcessImageDecoder_is_called_then_decoder_throws_ProcessImageDecoderException_with_correct_message(string base64String)
+        {
+            //arrange
+            string expectedMessage = "Missing base64 content";
+
+            //assert
+            Assert.Throws(Is.TypeOf<ProcessImageDecoderException>().And.Message.EqualTo(expectedMessage),
+                            delegate { _processImageDecoder.DecodeBase64ImageString(base64String); }
+                         );
+        }
+
         //check that base64 string is ready for convertion to byte array. Checking the validity of the entire string is too heavy at this level so has to be done on infrastructure level
         [TestCase("data:image/jpeg;base64B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //missing comma after base64
         public void given_comma_is_missing_from_base64String_when_ProcessImageDecoder_is_called_then_decoder_throws_ProcessImageDecoderException_with_correct_message(string base64String)
