@@ -13,6 +13,15 @@ namespace mat_process_api.V1.Exceptions
     public class DocumentNotFound : Exception { }
     public class ImageNotInsertedToS3 : Exception { }
     public class ImageNotFound : Exception { }
-    public class ProcessImageDecoderException : Exception {}
+    public class ProcessImageDecoderException : Exception
+    {
+        public ProcessImageDecoderException() : base()
+        {
+        }
+        public ProcessImageDecoderException(string message) : base(message)
+        {
+        }
+    }
     public class Base64StringConversionToByteArrayException : Exception { }
+
 }

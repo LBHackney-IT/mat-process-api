@@ -71,21 +71,34 @@ namespace mat_process_api.Tests.V1.Helper
         //gateway will handle some validation errors using exceptions, but these are required to cover the ones not caught by the gateway
         [TestCase("data:imade/jpeg;base64,B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //does start with the 'data:image/{fileext};base64,', but it has a typo
         [TestCase("data:image/zz;base64,B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //file extension in the data bit is not valid
-        [TestCase("data:image/jpeg;base64B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //missing comma after base64
-        public void given_invalid_filetype_is_passed_in_base64ImageString_when_ProcessImageDecoder_is_called_then_decoder_throws_ProcessImageDecoderException(string base64String)
+        public void given_invalid_imageType_is_passed_in_base64ImageString_when_ProcessImageDecoder_is_called_then_decoder_throws_ProcessImageDecoderException_with_correct_message(string base64String)
         {
             //arrange
-            var expectedException = new ProcessImageDecoderException();
-            
+            string expectedMessage = "Invalid image type";
+
             //assert
-            Assert.Throws<ProcessImageDecoderException>(() => _processImageDecoder.DecodeBase64ImageString(base64String));
+            Assert.Throws(Is.TypeOf<ProcessImageDecoderException>().And.Message.EqualTo(expectedMessage),
+                            delegate { _processImageDecoder.DecodeBase64ImageString(base64String); }
+                         );
+        }
+        //check that base64 string is ready for convertion to byte array. Checking the validity of the entire string is too heavy at this level so has to be done on infrastructure level
+        [TestCase("data:image/jpeg;base64B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //missing comma after base64
+        public void given_comma_is_missing_from_base64String_when_ProcessImageDecoder_is_called_then_decoder_throws_ProcessImageDecoderException_with_correct_message(string base64String)
+        {
+            //arrange
+            string expectedMessage = "Unable to parse base64 string";
+
+            //assert
+            Assert.Throws(Is.TypeOf<ProcessImageDecoderException>().And.Message.EqualTo(expectedMessage),
+                                delegate { _processImageDecoder.DecodeBase64ImageString(base64String); }
+                            );
         }
 
         [TestCase("data:image/jpeg;base64,B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //jpeg
         [TestCase("data:image/png;base64,B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //png
         [TestCase("data:image/bmp;base64,B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //bmp
         [TestCase("data:image/gif;base64,B0RXh8DNi8QcWJHJDgjRTkiVEc4Oisv/EABoBAAMBAQEBAAA")] //gif
-        public void given_valid_filetype_is_passed_in_base64ImageString_when_ProcessImageDecoder_is_called_then_decoder_does_not_throw_an_error(string base64String)
+        public void given_valid_filetype_and_base64String_is_passed_in_base64ImageString_when_ProcessImageDecoder_is_called_then_decoder_does_not_throw_an_error(string base64String)
         {
             //act
             var result = _processImageDecoder.DecodeBase64ImageString(base64String);

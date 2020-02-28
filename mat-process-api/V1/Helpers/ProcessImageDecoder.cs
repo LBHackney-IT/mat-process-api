@@ -8,8 +8,7 @@ namespace mat_process_api.V1.Helpers
 {
     public class ProcessImageDecoder : IProcessImageDecoder
     {
-        //TODO: move to config
-        //check for valid image/ part as well
+        //check for valid 'image/' part as well
         private static readonly List<string> allowedFileTypes = new List<string>() { "image/jpeg", "image/png", "image/bmp", "image/gif" };
 
         public Base64DecodedData DecodeBase64ImageString(string imageString)
@@ -32,12 +31,12 @@ namespace mat_process_api.V1.Helpers
                 }
                 else
                 {
-                    throw new ProcessImageDecoderException();
+                    throw new ProcessImageDecoderException("Invalid image type");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ProcessImageDecoderException();
+                throw ex is ProcessImageDecoderException ? ex : new ProcessImageDecoderException("Unable to parse base64 string");
             }
         }
     }
