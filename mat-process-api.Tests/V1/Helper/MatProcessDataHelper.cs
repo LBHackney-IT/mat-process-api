@@ -73,6 +73,17 @@ namespace mat_process_api.Tests.V1.Helper
             };
         }
 
+        public static PostProcessImageRequest CreatePostProcessImageRequestObject(string fileExtension)
+        {
+            return new PostProcessImageRequest()
+            {
+                processRef = faker.Random.Guid().ToString(),
+                imageId = faker.Random.Guid().ToString(),
+                base64Image = "data:image/" + fileExtension + ";base64," + Convert.ToBase64String(faker.Random.Bytes(512)),
+                processType = faker.Random.Word()
+            };
+        }
+
         public static Base64DecodedData CreateBase64DecodedDataObject()
         {
             var fileExt = faker.System.FileExt();

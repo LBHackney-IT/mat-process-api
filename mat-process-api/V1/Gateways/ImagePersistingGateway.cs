@@ -23,20 +23,14 @@ namespace mat_process_api.V1.Gateways
         }
 
         public void UploadImage(ProcessImageData request)
-        {
-            try
+        {   
+            //insert image
+            var result = s3Client.insertImage(assumeRoleHelper.GetTemporaryCredentials(), request.imageData.imagebase64String.ToString(), request.key,
+                request.imageData.imageType);
+
+            if (result.HttpStatusCode != HttpStatusCode.OK)
             {
-                //insert image
-                var result = s3Client.insertImage(assumeRoleHelper.GetTemporaryCredentials(), request.imageData.imagebase64String.ToString(), request.key,
-                    request.imageData.imageType);
-                if (result.HttpStatusCode != HttpStatusCode.OK)
-                {
-                    throw new ImageNotInsertedToS3();
-                }
-            }
-            catch(Exception ex)
-            {
-                throw new ImageNotInsertedToS3(); //500
+                throw new ImageNotInsertedToS3();
             }
         }
 

@@ -7,20 +7,28 @@ using System.Threading.Tasks;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
+using mat_process_api.V1.Exceptions;
 
 namespace mat_process_api.V1.Infrastructure
 {
     public class AwsS3Client : IAmazonS3Client
     {
-      
-        public PutObjectResponse insertImage(AWSCredentials credentials, string base64, string key,string contentType)
+        public PutObjectResponse insertImage(AWSCredentials credentials, string base64, string key, string contentType)
         {
-          
+            byte[] data;
+            var s3Client = new AmazonS3Client(credentials, Amazon.RegionEndpoint.EUWest2);
+
             try
             {
-                var s3Client = new AmazonS3Client(credentials, Amazon.RegionEndpoint.EUWest2);
-            
-                byte[] data = Convert.FromBase64String(base64);
+                data = Convert.FromBase64String(base64);
+            }
+            catch (Exception) //ArgumentNull or Format exception
+            {
+                throw new Base64StringConversionToByteArrayException();
+            }
+
+            try
+            {
                 using (var stream = new MemoryStream(data))
                 {
                     var putRequest1 = new PutObjectRequest
@@ -34,9 +42,9 @@ namespace mat_process_api.V1.Infrastructure
                     return response;
                 }
             }
-            catch(Exception ex)
-            {
-                throw ex;
+            catch (Exception)
+            {   
+                throw new ImageNotInsertedToS3();
             }     
         }
 
