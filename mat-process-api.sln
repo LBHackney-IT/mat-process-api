@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mat-process-api", "mat-proc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mat-process-api.Tests", "mat-process-api.Tests\mat-process-api.Tests.csproj", "{DE8E4E61-EB76-416B-8417-E8F2F6A0C0D3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Terraform", "Terraform", "{6F3EA021-1E61-4F8E-A663-D4D90953865A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Terraform", "Terraform", "{2CDC2459-1C66-4D52-9C10-143A8C9A3278}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\mat-terraform\main.tf = ..\..\mat-terraform\main.tf
+		main.tf = main.tf
 	EndProjectSection
 EndProject
 Global
