@@ -13,7 +13,6 @@ namespace mat_process_api
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseSentry(Environment.GetEnvironmentVariable("SENTRY_URL"))
                 .UseStartup<Startup>();
     }
 }
