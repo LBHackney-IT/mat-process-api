@@ -3,7 +3,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.SecurityToken.Model;
 using Bogus;
-using mat_process_api.V1.Boundary;
+using mat_process_api.Tests.V1.Helper;
 using mat_process_api.V1.Domain;
 using mat_process_api.V1.Exceptions;
 using mat_process_api.V1.Factories;
@@ -13,11 +13,8 @@ using mat_process_api.V1.Infrastructure;
 using Moq;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace mat_process_api.Tests.V1.Gateways
 {
@@ -60,12 +57,20 @@ namespace mat_process_api.Tests.V1.Gateways
         public void test_that_gateway_throws_document_not_inserted_when_status_code_is_not_204()
         {
             //arrange
+            string fileExt = faker.System.FileExt();
+
             var request = new ProcessImageData()
             {
-                imageData = new Base64DecodedData(),
+                imageData = new Base64DecodedData()
+                {
+                    imagebase64String = faker.Random.Word(),
+                    imageExtension = fileExt,
+                    imageType = faker.System.FileType() + "/" + fileExt
+                },
                 imageId = faker.Random.Word(),
                 processRef = faker.Random.Guid().ToString()
             };
+
             var expectedResponse = new PutObjectResponse();
             expectedResponse.HttpStatusCode = HttpStatusCode.Conflict;
 
@@ -76,20 +81,86 @@ namespace mat_process_api.Tests.V1.Gateways
         }
 
         [Test]
-        public void test_that_gateway_throws_document_not_inserted_when_s3_call_throws_an_exception()
+        public void given_that_s3_client_throws_ImageNotInsertedToS3_exception_the_gateway_throws_ImageNotInsertedToS3_exception()
         {
             //arrange
+            string fileExt = faker.System.FileExt();
+
             var request = new ProcessImageData()
             {
-                imageData = new Base64DecodedData(),
+                imageData = new Base64DecodedData()
+                {
+                    imagebase64String = faker.Random.Word(),
+                    imageExtension = fileExt,
+                    imageType = faker.System.FileType() + "/" + fileExt
+                },
                 imageId = faker.Random.Word(),
                 processRef = faker.Random.Guid().ToString()
             };
 
-            mockS3Client.Setup(x => x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(),It.IsAny<string>())).Throws<AggregateException>();
+            mockS3Client.Setup(x =>
+                x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(),It.IsAny<string>()))
+                .Throws<ImageNotInsertedToS3>();
+
             mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).Returns(It.IsAny<Credentials>());
             //assert
             Assert.Throws<ImageNotInsertedToS3>(() => classUnderTest.UploadImage(request));
+        }
+
+        [Test]
+        public void given_that_s3_client_throws_Base64StringConversionToByteArrayException_exception_the_gateway_throws_Base64StringConversionToByteArrayException_exception()
+        {
+            //arrange
+            string fileExt = faker.System.FileExt();
+
+            var request = new ProcessImageData()
+            {
+                imageData = new Base64DecodedData()
+                {
+                    imagebase64String = faker.Random.Word(),
+                    imageExtension = fileExt,
+                    imageType = faker.System.FileType() + "/" + fileExt
+                },
+                imageId = faker.Random.Word(),
+                processRef = faker.Random.Guid().ToString()
+            };
+
+            mockS3Client.Setup(x =>
+                x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Throws<Base64StringConversionToByteArrayException>();
+
+            mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).Returns(It.IsAny<Credentials>());
+            //assert
+            Assert.Throws<Base64StringConversionToByteArrayException>(() => classUnderTest.UploadImage(request));
+        }
+
+        [Test]
+        public void given_that_s3_client_throws_Exception_then_gateway_throws_Exception()
+        {
+            //arrange
+            string fileExt = faker.System.FileExt();
+            var expectedException = new Exception();
+
+            var request = new ProcessImageData()
+            {
+                imageData = new Base64DecodedData()
+                {
+                    imagebase64String = faker.Random.Word(),
+                    imageExtension = fileExt,
+                    imageType = faker.System.FileType() + "/" + fileExt
+                },
+                imageId = faker.Random.Word(),
+                processRef = faker.Random.Guid().ToString()
+            };
+
+            mockS3Client.Setup(x =>
+                x.insertImage(It.IsAny<AWSCredentials>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Throws(expectedException);
+
+            mockAssumeRoleHelper.Setup(x => x.GetTemporaryCredentials()).Returns(It.IsAny<Credentials>());
+
+            //assert
+            Assert.Throws<Exception>(() => classUnderTest.UploadImage(request));
         }
 
         #region Get Image

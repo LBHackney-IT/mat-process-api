@@ -164,7 +164,7 @@ namespace mat_process_api.Tests.V1.Controllers
         }
 
         [Test]
-        public void given_an_exception_thrown_check_that_the_controller_throws_correct_exception_and_500_status_code()
+        public void given_ImageNotInsertedToS3_exception_thrown_check_that_the_controller_throws_correct_exception_and_500_status_code()
         {
             var expectedStatusCode = 500;
             var request = new PostProcessImageRequest(); //an empty request will be invalid
@@ -181,6 +181,66 @@ namespace mat_process_api.Tests.V1.Controllers
             Assert.NotNull(result);
             Assert.AreEqual(expectedStatusCode, result.StatusCode);
         }
+
+        [Test]
+        public void given_ProcessImageDecoderException_exception_thrown_check_that_the_controller_throws_correct_exception_and_400_status_code()
+        {
+            var expectedStatusCode = 400;
+            var request = new PostProcessImageRequest(); //an empty request will be invalid
+
+            var fakeValidationResult = new FV.ValidationResult(); 
+            _mockPostValidator.Setup(v => v.Validate(It.IsAny<PostProcessImageRequest>())).Returns(fakeValidationResult);
+            _mockUsecase.Setup(x => x.ExecutePost(request)).Throws<ProcessImageDecoderException>();
+            //act
+            var controllerResponse = _processImageController.PostProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.AreEqual(expectedStatusCode, result.StatusCode);
+        }
+
+        [Test]
+        public void given_Base64StringConversionToByteArrayException_exception_thrown_check_that_the_controller_throws_correct_exception_and_400_status_code()
+        {
+            var expectedStatusCode = 400;
+            var request = new PostProcessImageRequest(); //an empty request will be invalid
+
+            var fakeValidationResult = new FV.ValidationResult();
+            _mockPostValidator.Setup(v => v.Validate(It.IsAny<PostProcessImageRequest>())).Returns(fakeValidationResult);
+            _mockUsecase.Setup(x => x.ExecutePost(request)).Throws<Base64StringConversionToByteArrayException>();
+
+            //act
+            var controllerResponse = _processImageController.PostProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.AreEqual(expectedStatusCode, result.StatusCode);
+        }
+
+        [Test]
+        public void given_other_Exception_thrown_check_that_the_controller_throws_correct_exception_and_500_status_code()
+        {
+            var expectedStatusCode = 500;
+            var request = new PostProcessImageRequest(); //an empty request will be invalid
+            var randomExpectedException = ErrorThrowerHelper.GenerateError();
+
+            var fakeValidationResult = new FV.ValidationResult();
+            _mockPostValidator.Setup(v => v.Validate(It.IsAny<PostProcessImageRequest>())).Returns(fakeValidationResult);
+            _mockUsecase.Setup(x => x.ExecutePost(request)).Throws(randomExpectedException);
+            //act
+            var controllerResponse = _processImageController.PostProcessImage(request);
+            var result = controllerResponse as ObjectResult;
+
+            //assert
+            Assert.NotNull(controllerResponse);
+            Assert.NotNull(result);
+            Assert.AreEqual(expectedStatusCode, result.StatusCode);
+        }
+
         #endregion
 
         #region Get Process Image
